@@ -1,13 +1,13 @@
 BEGIN;
 create extension "basejump-supabase_test_helpers" version '0.0.6';
 
-select plan(36);
+select plan(40);
 
 select tests.create_supabase_user('test_reader');
 
 
 ------------------------------------------------------------
--- Schema shape (5 assertions)
+-- Schema shape (8 assertions) — includes precision coverage (EE2)
 ------------------------------------------------------------
 
 select has_table('public', 'param_plafond', 'param_plafond table exists');
@@ -16,6 +16,12 @@ select col_is_pk('public', 'param_plafond', 'param_plafond_id', 'param_plafond_i
 select col_is_pk('public', 'param_rsz', 'param_rsz_id', 'param_rsz_id is PK');
 select col_type_is('public', 'param_rsz', 'basisbijdrage_pct', 'numeric(6,4)',
     'basisbijdrage_pct is numeric(6,4) per Constitution v1.0.1');
+select col_type_is('public', 'param_rsz', 'basisfactor_arbeider_pct', 'numeric(6,4)',
+    'basisfactor_arbeider_pct is numeric(6,4) per Constitution v1.0.1 (EE2)');
+select col_type_is('public', 'param_plafond', 'jaarplafond', 'numeric(18,4)',
+    'jaarplafond is numeric(18,4) per Constitution v1.0.1 money precision (EE2)');
+select col_type_is('public', 'param_plafond', 'kwartaalplafond', 'numeric(18,4)',
+    'kwartaalplafond is numeric(18,4) per Constitution v1.0.1 money precision (EE2)');
 
 
 ------------------------------------------------------------
@@ -220,7 +226,7 @@ select lives_ok(
 
 
 ------------------------------------------------------------
--- Exclusion constraint on param_rsz (4 assertions — E1, E4)
+-- Exclusion constraint on param_rsz (5 assertions — E1, E4, EE5)
 ------------------------------------------------------------
 
 -- 1) Non-overlapping same (status, categorie) — allowed
@@ -249,6 +255,16 @@ select lives_ok(
     $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
        values ('bediende', 2, '2024-06-01', '2025-01-01', 0.2555, 'x') $$,
     'zelfde periode + status maar andere werkgeverscategorie: allowed (cross-cat E1)'
+);
+
+-- 5) Two open-ended rows same (status, werkgeverscategorie) — blocked (EE5, symmetric with param_plafond E4)
+insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
+    values ('bediende', 3, '2024-01-01', null, 0.2540, 'x');
+
+select throws_ok(
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
+       values ('bediende', 3, '2025-06-01', null, 0.2540, 'x') $$,
+    '23P01'
 );
 
 
