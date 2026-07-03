@@ -1,0 +1,19 @@
+{
+  "components": [
+    "schema",
+    "naming"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-046",
+  "impact": "Na T-041 HOTFIX heeft basisfactor_arbeider_pct ook betekenis voor bediende rows (1.0000). Het `_arbeider_` infix in de kolomnaam suggereert dat de kolom alleen op arbeider slaat — misleidend na de refactor. Rename schema-wide (kolom + alle referenties in code + comments + tests) naar basisfactor_pct maakt schema self-describing. Non-blocking; documenteert de naming drift ontdekt door clean-code lens.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-041"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "low",
+  "status": "open",
+  "title": "Rename param_rsz.basisfactor_arbeider_pct → basisfactor_pct (kolom draagt nu betekenis voor beide status waarden)"
+}

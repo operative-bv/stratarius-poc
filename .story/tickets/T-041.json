@@ -3,13 +3,14 @@
     "T-018",
     "T-026"
   ],
-  "completedDate": null,
+  "claimedBySession": "fa242d10-dd50-4901-b0dc-24abf2b90dcd",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Pure functie cascade_stap2_basis_patronale_rsz(rsz_grondslag, status, werkgeverscategorie, periode) = grondslag × basisbijdrage_pct × basisfactor. Temporele join op param_rsz (status, werkgeverscategorie, periode) — Principe II, geen hardcoded 25%. Fold uit T-026 plan-review: seed basisfactor_arbeider_pct = 1.0000 voor bediende ipv coalesce, en add CHECK (basisfactor_arbeider_pct is not null) verwijderen NULL-branching. Add SET search_path=public,pg_temp per hardening.",
   "id": "T-041",
   "order": 90,
   "phase": "calculation-cascade",
-  "status": "open",
+  "status": "complete",
   "title": "Rekencascade stap 2: basis patronale RSZ (grondslag × tarief × arbeider-factor)",
   "type": "task"
 }
