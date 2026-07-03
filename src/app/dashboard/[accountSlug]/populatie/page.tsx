@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, TrendingUp, TrendingDown } from "lucide-react";
 
 type PopRow = {
     contract_id: string;
@@ -22,6 +23,8 @@ type PopRow = {
     tco: number;
 };
 
+type Scenario = { scenario_id: string; naam: string; kind: string };
+
 function roundFinal(value: number): string {
     const scaled = value * 100;
     const floor = Math.floor(scaled);
@@ -35,26 +38,59 @@ function roundFinal(value: number): string {
     return (cents / 100).toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function sum(rows: PopRow[], key: keyof PopRow): number {
+    return rows.reduce((s, r) => s + Number(r[key]), 0);
+}
+
 export default async function PopulatiePage({
     searchParams,
 }: {
-    searchParams: Promise<{ periode?: string }>;
+    searchParams: Promise<{ periode?: string; scenario?: string; compare?: string }>;
 }) {
     const params = await searchParams;
     const periode = params.periode ?? "2024-06-01";
-
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("cascade_populatie_snapshot", { p_periode: periode });
+
+    // Load scenarios list voor dropdown
+    const { data: scenariosData } = await supabase
+        .from("dim_scenario")
+        .select("scenario_id, naam, kind")
+        .order("kind", { ascending: true });
+    const scenarios = (scenariosData ?? []) as Scenario[];
+    const baseline = scenarios.find((s) => s.kind === "baseline");
+    const scenarioId = params.scenario ?? baseline?.scenario_id ?? null;
+    const activeScenario = scenarios.find((s) => s.scenario_id === scenarioId);
+
+    // Load populatie snapshot voor actief scenario
+    const { data, error } = await supabase.rpc("cascade_populatie_snapshot", {
+        p_periode: periode,
+        p_scenario_id: scenarioId,
+    });
     const rows = (data ?? []) as PopRow[];
 
-    const totalBruto = rows.reduce((s, r) => s + Number(r.bruto), 0);
-    const totalRSZ = rows.reduce((s, r) => s + Number(r.stap2_basis_rsz), 0);
-    const totalVerm = rows.reduce((s, r) => s + Number(r.stap3_vermindering), 0);
-    const totalBijz = rows.reduce((s, r) => s + Number(r.stap5_bijzondere), 0);
-    const totalVak = rows.reduce((s, r) => s + Number(r.stap6_vakantiegeld), 0);
-    const totalExtra = rows.reduce((s, r) => s + Number(r.stap7_extralegaal), 0);
-    const totalPatronale = rows.reduce((s, r) => s + Number(r.totaal_patronale_kost), 0);
-    const totalTco = rows.reduce((s, r) => s + Number(r.tco), 0);
+    // Optional compare-baseline
+    let compareRows: PopRow[] = [];
+    if (params.compare === "1" && baseline && scenarioId !== baseline.scenario_id) {
+        const { data: compData } = await supabase.rpc("cascade_populatie_snapshot", {
+            p_periode: periode,
+            p_scenario_id: baseline.scenario_id,
+        });
+        compareRows = (compData ?? []) as PopRow[];
+    }
+
+    const totals = {
+        bruto: sum(rows, "bruto"),
+        rsz: sum(rows, "stap2_basis_rsz"),
+        verm: sum(rows, "stap3_vermindering"),
+        bijz: sum(rows, "stap5_bijzondere"),
+        vak: sum(rows, "stap6_vakantiegeld"),
+        extra: sum(rows, "stap7_extralegaal"),
+        pat: sum(rows, "totaal_patronale_kost"),
+        tco: sum(rows, "tco"),
+    };
+    const compareTotals = compareRows.length > 0
+        ? { bruto: sum(compareRows, "bruto"), pat: sum(compareRows, "totaal_patronale_kost"), tco: sum(compareRows, "tco") }
+        : null;
 
     return (
         <div className="mx-auto max-w-7xl py-8 space-y-6">
@@ -64,24 +100,59 @@ export default async function PopulatiePage({
                         <Users className="h-5 w-5" />
                         Populatie snapshot
                         <Badge variant="secondary">{rows.length} contracten</Badge>
+                        {activeScenario && (
+                            <Badge variant={activeScenario.kind === "baseline" ? "outline" : "default"}>
+                                {activeScenario.naam}
+                            </Badge>
+                        )}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form className="flex items-end gap-4" method="get">
-                        <div className="space-y-2 flex-1 max-w-xs">
+                    <form className="flex items-end gap-3 flex-wrap" method="get">
+                        <div className="space-y-2 min-w-[180px]">
+                            <Label htmlFor="scenario">Scenario</Label>
+                            <Select name="scenario" defaultValue={scenarioId ?? undefined}>
+                                <SelectTrigger id="scenario"><SelectValue placeholder="Selecteer scenario" /></SelectTrigger>
+                                <SelectContent>
+                                    {scenarios.map((s) => (
+                                        <SelectItem key={s.scenario_id} value={s.scenario_id}>
+                                            {s.naam} <span className="text-xs text-muted-foreground">({s.kind})</span>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
                             <Label htmlFor="periode">Periode</Label>
                             <Input id="periode" name="periode" type="date" defaultValue={periode} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="compare" className="text-xs">Vergelijk met baseline</Label>
+                            <div className="flex items-center h-9">
+                                <input id="compare" name="compare" type="checkbox" value="1" defaultChecked={params.compare === "1"} className="h-4 w-4" />
+                                <span className="ml-2 text-sm">Toon delta</span>
+                            </div>
                         </div>
                         <Button type="submit">Herbereken</Button>
                     </form>
                 </CardContent>
             </Card>
 
-            {error && (
+            {compareTotals && (
                 <Card>
                     <CardContent className="pt-6">
-                        <p className="text-red-500">Error: {error.message}</p>
+                        <div className="grid grid-cols-3 gap-4">
+                            <DeltaBox label="Δ Bruto (populatie)" baseline={compareTotals.bruto} current={totals.bruto} />
+                            <DeltaBox label="Δ Patronale kost" baseline={compareTotals.pat} current={totals.pat} />
+                            <DeltaBox label="Δ TCO totaal" baseline={compareTotals.tco} current={totals.tco} highlight />
+                        </div>
                     </CardContent>
+                </Card>
+            )}
+
+            {error && (
+                <Card>
+                    <CardContent className="pt-6"><p className="text-red-500">Error: {error.message}</p></CardContent>
                 </Card>
             )}
 
@@ -126,19 +197,19 @@ export default async function PopulatiePage({
                             <tfoot>
                                 <tr className="border-t-2 font-semibold bg-muted/40">
                                     <td className="py-3 pr-3" colSpan={3}>Totaal populatie ({rows.length})</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totalBruto)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totalRSZ)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums text-green-600">−€ {roundFinal(totalVerm)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totalBijz)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totalVak)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totalExtra)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums text-primary">€ {roundFinal(totalPatronale)}</td>
-                                    <td className="py-3 text-right tabular-nums text-primary">€ {roundFinal(totalTco)}</td>
+                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.bruto)}</td>
+                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.rsz)}</td>
+                                    <td className="py-3 pr-3 text-right tabular-nums text-green-600">−€ {roundFinal(totals.verm)}</td>
+                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.bijz)}</td>
+                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.vak)}</td>
+                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.extra)}</td>
+                                    <td className="py-3 pr-3 text-right tabular-nums text-primary">€ {roundFinal(totals.pat)}</td>
+                                    <td className="py-3 text-right tabular-nums text-primary">€ {roundFinal(totals.tco)}</td>
                                 </tr>
                             </tfoot>
                         </table>
                         <p className="text-xs text-muted-foreground mt-4">
-                            POC subset: exclusief stap 4 (doelgroepverminderingen), stap 8-9 (wagen, arbeidsongevallen). Bedragen via <code>round_final(display)</code> banker&apos;s rounding. RLS filtert automatisch op tenant.
+                            POC subset: exclusief stap 4 (doelgroepverminderingen), stap 8-9 (wagen, arbeidsongevallen). Bedragen via banker&apos;s rounding. RLS filtert automatisch op tenant.
                         </p>
                     </CardContent>
                 </Card>
@@ -147,10 +218,28 @@ export default async function PopulatiePage({
             {rows.length === 0 && !error && (
                 <Card>
                     <CardContent className="pt-6">
-                        <p className="text-muted-foreground">Geen contracten gevonden voor periode {periode}. Check dat je legale entiteiten + contracten hebt geseed voor deze tenant.</p>
+                        <p className="text-muted-foreground">Geen contracten gevonden. Check scenario + periode filter.</p>
                     </CardContent>
                 </Card>
             )}
+        </div>
+    );
+}
+
+function DeltaBox({ label, baseline, current, highlight = false }: { label: string; baseline: number; current: number; highlight?: boolean }) {
+    const delta = current - baseline;
+    const pct = baseline > 0 ? (delta / baseline) * 100 : 0;
+    const isUp = delta >= 0;
+    return (
+        <div className={`rounded-lg border p-4 ${highlight ? "bg-secondary" : ""}`}>
+            <div className="text-xs text-muted-foreground">{label}</div>
+            <div className="text-2xl font-semibold mt-1 tabular-nums flex items-center gap-2">
+                {isUp ? <TrendingUp className="h-5 w-5 text-orange-500" /> : <TrendingDown className="h-5 w-5 text-green-600" />}
+                {isUp ? "+" : ""}€ {roundFinal(Math.abs(delta))}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+                {isUp ? "+" : ""}{pct.toFixed(1)}% vs baseline (€ {roundFinal(baseline)})
+            </div>
         </div>
     );
 }

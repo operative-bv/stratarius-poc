@@ -4,7 +4,8 @@
 -- Filter via RLS: user ziet alleen contracten waar has_role_on_account(basejump_account_id).
 
 create or replace function public.cascade_populatie_snapshot(
-    p_periode date
+    p_periode date,
+    p_scenario_id uuid default null
 )
     returns table (
         contract_id uuid,
@@ -38,6 +39,7 @@ as $$
                 join public.dim_looncomponent dl on dl.component_id = fl.component_id
                 where fl.contract_id = c.contract_id
                   and fl.periode = date_trunc('month', p_periode)::date
+                  and (p_scenario_id is null or fl.scenario_id = p_scenario_id)
                   and dl.is_basisloon
             ), 0)::numeric(18, 4) as bruto
         from public.dim_contract c
@@ -63,6 +65,7 @@ as $$
             join public.param_extralegaal pe on pe.voordeeltype = dl.component_id
             where fl.contract_id = c.contract_id
               and fl.periode = date_trunc('month', p_periode)::date
+              and (p_scenario_id is null or fl.scenario_id = p_scenario_id)
               and dl.familie = 'extralegaal'
               and p_periode >= pe.geldig_van
               and (pe.geldig_tot is null or p_periode < pe.geldig_tot)
@@ -85,7 +88,7 @@ as $$
     from contracten c;
 $$;
 
-comment on function public.cascade_populatie_snapshot(date) is
+comment on function public.cascade_populatie_snapshot(date, uuid) is
     'Populatie-snapshot: alle contracten in tenant + cascade output. RLS filtert via dim_contract / dim_legale_entiteit tenant-scoping.';
 
-grant execute on function public.cascade_populatie_snapshot(date) to authenticated;
+grant execute on function public.cascade_populatie_snapshot(date, uuid) to authenticated;
