@@ -132,7 +132,7 @@ export default async function SimulatorPage({
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form className="grid gap-4 md:grid-cols-2" action="/dashboard/simulator" method="get">
+                    <form className="grid gap-4 md:grid-cols-2" method="get">
                         <div className="space-y-2">
                             <Label htmlFor="bruto">Bruto basisloon (EUR)</Label>
                             <Input id="bruto" name="bruto" type="number" step="0.01" defaultValue={params.bruto ?? "4000"} required />
