@@ -2,13 +2,14 @@
   "blockedBy": [
     "T-007"
   ],
-  "completedDate": null,
+  "claimedBySession": "71b2ca95-ddbf-4d84-9a76-16a66cce402c",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "De resterende 7 param-tabellen in één coherente migration (allen effective-dated, bron_url NOT NULL, exclusion constraint tegen overlap): param_arbeidsduur (pc_id, geldig_van, geldig_tot, gemiddelde_wekelijkse_uren — de S-referentie voor μ = Q/S), param_vakantiegeld (regime arb|bed, geldig_van, geldig_tot, enkel_pct, dubbel_pct), param_index (pc_id, geldig_van, geldig_tot, index_coefficient, drempel_bruto — bv €4000 voor centenindex), param_bijzondere_bijdragen (type FSO|BEV|centenindex|asbest, geldig_van, geldig_tot, tarief, formule_json), param_sectorbijdrage (pc_id, fonds, geldig_van, geldig_tot, tarief), param_extralegaal (voordeeltype cheque|groepsverzekering|..., geldig_van, geldig_tot, max_wg, taks_pct), param_wagen_mobiliteit (geldig_van, geldig_tot, co2_formule_json, referentie_co2, minimumbijdrage, vaa_coefficient).",
   "id": "T-017",
   "order": 30,
   "phase": "parameter-layer",
-  "status": "open",
+  "status": "complete",
   "title": "Migration: param_arbeidsduur + param_vakantiegeld + param_index + param_bijzondere_bijdragen + param_sectorbijdrage + param_extralegaal + param_wagen_mobiliteit",
   "type": "task"
 }
