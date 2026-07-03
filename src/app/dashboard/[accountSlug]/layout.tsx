@@ -23,6 +23,10 @@ export default async function PersonalAccountDashboard({children, params: {accou
             href: `/dashboard/${accountSlug}/populatie`
         },
         {
+            name: 'Scenarios',
+            href: `/dashboard/${accountSlug}/scenarios`
+        },
+        {
             name: 'Simulator',
             href: `/dashboard/${accountSlug}/simulator`
         },
