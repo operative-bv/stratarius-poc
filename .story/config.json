@@ -27,6 +27,20 @@
       "BUILD": {
         "enabled": true,
         "command": "npm run build"
+      },
+      "PLAN_REVIEW": {
+        "backends": [
+          "lenses",
+          "agent",
+          "codex"
+        ]
+      },
+      "CODE_REVIEW": {
+        "backends": [
+          "lenses",
+          "agent",
+          "codex"
+        ]
       }
     },
     "codexReviewBackends": [

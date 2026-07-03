@@ -1,0 +1,25 @@
+{
+  "components": [
+    "supabase/migrations/20240414161707_basejump-setup.sql",
+    "supabase/tests/database/21-dim-persoon-en-functie.sql",
+    "basejump",
+    "pgtap"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-012",
+  "impact": "basejump.trigger_set_timestamps() (defined at supabase/migrations/20240414161707_basejump-setup.sql) uses now() which returns transaction-start time. Within a single BEGIN/ROLLBACK pgTAP test, INSERT then UPDATE both produce the same timestamp → cmp_ok(updated_at > created_at) always fails. Affects T-004's test (21-dim-persoon-en-functie.sql line 90) which has the same broken assertion. Fixes: (a) modify trigger to use clock_timestamp() — invasive; (b) use two-transaction test pattern — pgTAP doesn't natively support; (c) drop the trigger test entirely and rely on visual code review of the trigger definition. Option (c) is the POC-pragmatic call; T-007 test already omits this assertion.",
+  "location": [
+    "supabase/migrations/20240414161707_basejump-setup.sql",
+    "supabase/tests/database/21-dim-persoon-en-functie.sql:90"
+  ],
+  "phase": null,
+  "relatedTickets": [
+    "T-004",
+    "T-007"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "low",
+  "status": "open",
+  "title": "basejump.trigger_set_timestamps uses now(), broken for same-tx updated_at tests"
+}
