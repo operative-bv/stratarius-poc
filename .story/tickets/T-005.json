@@ -3,13 +3,14 @@
     "T-004",
     "T-039"
   ],
-  "completedDate": null,
+  "claimedBySession": "215d6b2e-7cfc-4a0b-96bb-3351ffb794bd",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Migration voor dim_legale_entiteit (legale_entiteit_id PK, werkgeverscategorie int check 1|2|3, ondernemingsnr, land_id FK, basejump_account_id FK to Basejump accounts.id WITH CHECK personal_account = false — per N-007 team-only decision) en dim_land (land_id PK, name, iso_code). Elke legale entiteit is eigendom van precies één Basejump TEAM account (accountantskantoor/HR-adviseur). RLS-policy hergebruikt basejump.has_role_on_account() helper — expliciet inheriting, geen reinvention. Blokkeert op T-039 (personal accounts disabled) zodat de CHECK constraint direct kan. Werkgeverscategorie sleutelt param_rsz en param_structurele_vermindering (Principe II data-driven).",
   "id": "T-005",
   "order": 20,
   "phase": "schema-ruggengraat",
-  "status": "open",
+  "status": "complete",
   "title": "Migration: dim_legale_entiteit + dim_land + Basejump RLS adoption",
   "type": "task"
 }
