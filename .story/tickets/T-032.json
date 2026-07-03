@@ -2,13 +2,14 @@
   "blockedBy": [
     "T-030"
   ],
-  "completedDate": null,
+  "claimedBySession": "6a49fd93-8acd-4f01-af91-2fd8b1ba9bf9",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Postgres RPC function refresh_mart_loonkloof(force bool) exposed via Supabase RPC endpoint zodat admins on-demand een refresh kunnen triggeren (bv na parameter-correctie of historische data-fix). Vereist elevated role (accountantskantoor-admin, geen medewerker). Loguit rechtsgrondslag argument (waarom nu, welk incident). Roept intern dezelfde refresh-logic aan als de cron; log-entry markeert kind=manual met initiator user_id.",
   "id": "T-032",
   "order": 30,
   "phase": "loonkloof-mart",
-  "status": "open",
+  "status": "complete",
   "title": "Manual refresh RPC voor mart_loonkloof",
   "type": "task"
 }

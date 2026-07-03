@@ -1,0 +1,21 @@
+{
+  "components": [
+    "schema",
+    "audit",
+    "gdpr"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-071",
+  "impact": "T-032 RPC returnt JSON audit metadata maar er is geen persistent audit_log tabel. Productie moet: (1) audit_log tabel met kolommen (event_type, initiator_user_id, target_resource, rechtsgrondslag, timestamp, metadata_jsonb), (2) RPC schrijft naar tabel ipv return, (3) GDPR-vereisten voor dim_persoon reads en mart_loonkloof queries eveneens hierin. Filed vanuit T-032 push-through.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-032",
+    "T-034"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Persistent audit_log tabel voor mart_loonkloof refresh + GDPR reads"
+}
