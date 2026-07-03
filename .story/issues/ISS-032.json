@@ -1,0 +1,26 @@
+{
+  "components": [
+    "schema",
+    "parameterlaag"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-032",
+  "impact": "EE4 was tijdens T-015/T-016 code-review gedeferred naar T-018 met scope 'add value-range CHECK when baseline waarden bekend'. Bij T-018 plan-review is besloten scope-scheiding aan te houden: T-018 blijft puur import, deze issue vangt de schema-side CHECK-constraint uitbreiding voor alle parameter-laag tabellen. Concrete voorstel: `basisbijdrage_pct BETWEEN 0 AND 1`, `basisfactor_arbeider_pct IS NULL OR BETWEEN 1 AND 2`, `forfait >= 0`, `coefficient_a/_b BETWEEN 0 AND 1`, `coefficient BETWEEN 0 AND 2`, `enkel_pct/dubbel_pct BETWEEN 0 AND 1`, `tarief BETWEEN 0 AND 1`, `index_coefficient BETWEEN 0.5 AND 2`, `taks_pct BETWEEN 0 AND 1`, `vaa_coefficient BETWEEN 0 AND 2`, `gemiddelde_wekelijkse_uren BETWEEN 0 AND 60`. Met pgTAP throws_ok tests per constraint. Impact: silently accepterende parameters buiten domain die de rekencascade later corrumperen.",
+  "location": [
+    "supabase/migrations/20260703120000_param_rsz_and_plafond.sql",
+    "supabase/migrations/20260703130000_param_structurele_and_doelgroepvermindering.sql",
+    "supabase/migrations/20260703140000_param_seven_tables.sql"
+  ],
+  "phase": null,
+  "relatedTickets": [
+    "T-015",
+    "T-016",
+    "T-017",
+    "T-018"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Add value-range CHECK constraints across parameter layer (EE4 concrete follow-up)"
+}

@@ -3,13 +3,14 @@
     "T-015",
     "T-016"
   ],
-  "completedDate": null,
+  "claimedBySession": "13eda08a-91fc-4f83-80ac-a558fa281743",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Idempotent import script (scripts/import-rsz.ts of Supabase edge function) dat param_rsz + param_structurele_vermindering + param_doelgroepvermindering (per gewest) vult voor huidige jaargang uit officiële bronnen: RSZ instructiegids voor werkgeversbasisbijdrage (±25%/cat) + basisfactor 108% arbeiders, RSZ voor structurele vermindering (forfait + coefficient), gewest-specifieke KBs voor doelgroepverminderingen (Vlaanderen 55+/langdurig werkzoekend, Wallonie/Brussel varianten). Elke rij krijgt bron_url. Idempotent: re-run met identieke bron = 0 nieuwe rijen. Reconciliation test: totaal aantal rijen matcht verwacht + geen NULL bron_url.",
   "id": "T-018",
   "order": 40,
   "phase": "parameter-layer",
-  "status": "open",
+  "status": "complete",
   "title": "Import: RSZ + structurele + doelgroepverminderingen (huidige jaargang)",
   "type": "task"
 }
