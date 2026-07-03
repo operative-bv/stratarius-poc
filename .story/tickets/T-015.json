@@ -2,7 +2,7 @@
   "blockedBy": [],
   "completedDate": null,
   "createdDate": "2026-07-03",
-  "description": "Migration voor param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url NOT NULL, bron_document) en param_plafond (land_id, bijdragetype, geldig_van, geldig_tot, jaarplafond, kwartaalplafond, bron_url NOT NULL). BE heeft geen algemene RSZ-cap (geen rij = onbegrensd); CAO 90 jaarcap wel. UNIQUE(status, werkgeverscategorie, geldig_van) op param_rsz. Effective-dating invariant check via exclusion constraint: geen overlappende (discriminatoren, [geldig_van, geldig_tot)) rijen — deze test is expliciet onderdeel van deze ticket.",
+  "description": "Migration voor param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url NOT NULL, bron_document) en param_plafond (land_id, bijdragetype, geldig_van, geldig_tot, jaarplafond, kwartaalplafond, bron_url NOT NULL). BE heeft geen algemene RSZ-cap (geen rij = onbegrensd); CAO 90 jaarcap wel. UNIQUE(status, werkgeverscategorie, geldig_van) op param_rsz. Effective-dating invariant check via exclusion constraint: geen overlappende (discriminatoren, [geldig_van, geldig_tot)) rijen — deze test is expliciet onderdeel van deze ticket. **DEPENDENCY**: bij implementatie moet T-015 ALTER TABLE public.dim_sz_behandeling ADD CONSTRAINT dim_sz_behandeling_cap_fk FOREIGN KEY (cap_param_plafond_id) REFERENCES public.param_plafond(param_plafond_id) ON DELETE RESTRICT — nieuwere param_plafond rows moeten dim_sz_behandeling.cap_param_plafond_id kunnen backfillen (VIN jaarcap, Vrijgesteld forfait-grens, Gunstregime CAO 90 jaarcap).",
   "id": "T-015",
   "order": 10,
   "phase": "parameter-layer",
