@@ -4,13 +4,14 @@
     "T-019",
     "T-020"
   ],
-  "completedDate": null,
+  "claimedBySession": "9423cd44-39dc-42cf-b172-ffdce37951a0",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Bouw een Supabase edge function / CI hook die bij elke bulk-parameter-import automatisch een snapshot-commit produceert (parameter-diff per tabel met rowcount + source_url delta) naar een dedicated audit_snapshots tabel of .audit/ folder. Manual trigger CLI command voor one-off imports. Integriteitsttests: (a) elke param_* rij heeft bron_url NOT NULL (invariant, breekt op deploy als false), (b) exclusion constraint holds — geen overlappende tijdvakken per discriminator groep, (c) reconciliation totals per tabel matchen officiële verwachte counts binnen tolerantie. Per Constitution Domain sectie \"Parameter-snapshot audit\".",
   "id": "T-021",
   "order": 70,
   "phase": "parameter-layer",
-  "status": "open",
+  "status": "complete",
   "title": "Parameter-snapshot audit hook + reconciliation tests",
   "type": "feature"
 }
