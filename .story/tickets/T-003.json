@@ -1,12 +1,13 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "claimedBySession": "db889388-0f9c-4af7-b5d6-aecf6e942da1",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Basejump ships een minimale .env.example. Audit tegen Basejump docs + Supabase docs + Stripe webhook requirements: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server actions), NEXT_PUBLIC_URL (invitations link), STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET. Inline comments voor prod vs local dev verschillen. Ook supabase/functions/.env.example checken.",
   "id": "T-003",
   "order": 30,
   "phase": "foundation",
-  "status": "open",
+  "status": "complete",
   "title": "Complete .env.example voor Supabase + Stripe (local + prod)",
   "type": "chore"
 }
