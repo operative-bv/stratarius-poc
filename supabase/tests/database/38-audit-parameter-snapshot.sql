@@ -4,7 +4,7 @@ BEGIN;
 
 create extension "basejump-supabase_test_helpers" version '0.0.6';
 
-select plan(16);
+select plan(17);
 
 set local role service_role;
 
@@ -157,6 +157,20 @@ select is(
      where snapshot_batch_id = (select batch_id from t021_second_batch)),
     11,
     'batch bevat alle 11 param_* tabellen (parameter-laag coverage complete)'
+);
+
+
+------------------------------------------------------------
+-- Coverage-drift guard (1 assertion)
+-- Aantal snapshot-tabellen matcht daadwerkelijk aantal param_* tabellen in DB.
+-- Vangt: iemand voegt param_12 toe zonder v_tables array update in de function.
+------------------------------------------------------------
+
+select is(
+    (select count(*)::int from pg_tables where schemaname = 'public' and tablename like 'param\_%' escape '\'),
+    (select count(distinct tabel_naam)::int from public.audit_parameter_snapshot
+     where snapshot_batch_id = (select batch_id from t021_second_batch)),
+    'snapshot dekt ALLE param_* tabellen in pg_tables (coverage-drift guard bij nieuwe param tabel)'
 );
 
 

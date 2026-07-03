@@ -78,7 +78,7 @@ create or replace function public.create_parameter_snapshot(p_reden text)
     returns uuid
     language plpgsql
     security definer
-    set search_path = pg_catalog, public
+    set search_path = pg_catalog, pg_temp
 as $$
 declare
     v_batch uuid := gen_random_uuid();
