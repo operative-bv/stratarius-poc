@@ -13,7 +13,7 @@ BEGIN;
 
 create extension "basejump-supabase_test_helpers" version '0.0.6';
 
-select plan(2);
+select plan(3);
 
 
 ------------------------------------------------------------
@@ -40,6 +40,24 @@ select results_eq(
     $sql$,
     $sql$ values (1.0000::numeric(6,4)) $sql$,
     'S2 HOTFIX backfill: bediende cat 1 heeft basisfactor 1.0000 (was null)'
+);
+
+
+------------------------------------------------------------
+-- S3: geen bediende rows meer met NULL basisfactor
+--     (fold code-review error-handling MAJOR: verifieer volledigheid backfill
+--     over cat 2/3 en toekomstige seeds, niet alleen cat 1 spot-check.)
+------------------------------------------------------------
+
+select results_eq(
+    $sql$
+        select count(*)::int
+        from public.param_rsz
+        where status = 'bediende'
+          and basisfactor_arbeider_pct is null
+    $sql$,
+    $sql$ values (0) $sql$,
+    'S3 HOTFIX volledigheid: 0 bediende rows met NULL basisfactor (alle cat 1/2/3 gebackfilt)'
 );
 
 

@@ -19,7 +19,7 @@ BEGIN;
 
 create extension "basejump-supabase_test_helpers" version '0.0.6';
 
-select plan(11);
+select plan(10);
 
 -- Geen contract/tenant setup nodig — function neemt numeric + text + smallint + date.
 -- param_rsz seed uit T-018 al aanwezig na db reset.
@@ -87,51 +87,43 @@ select isnt(
 );
 
 
-------------------------------------------------------------
--- T8: Temporele join LOWER boundary INCLUSIEF
---     periode = geldig_van (2024-01-01) → matcht row
-------------------------------------------------------------
-
-select is(
-    public.cascade_stap2_basis_patronale_rsz(4000.0000, 'bediende', 1::smallint, '2024-01-01'::date),
-    1002.8000::numeric(18, 4),
-    'T8 temporele LOWER inclusief: periode = geldig_van 2024-01-01 → matcht (grens inclusief)'
-);
+-- T8-oud was byte-identical aan T2 (fold code-review clean-code MINOR "duplication").
+-- T2 dekt lower inclusive boundary al: periode = 2024-01-01 IS geldig_van. Dropped.
 
 
 ------------------------------------------------------------
--- T9: Temporele join UPPER-1 dag INCLUSIEF
+-- T8: Temporele join UPPER-1 dag INCLUSIEF
 --     periode = geldig_tot - 1 dag (2024-12-31) → matcht row
 ------------------------------------------------------------
 
 select is(
     public.cascade_stap2_basis_patronale_rsz(4000.0000, 'bediende', 1::smallint, '2024-12-31'::date),
     1002.8000::numeric(18, 4),
-    'T9 temporele UPPER-1 inclusief: periode = geldig_tot 2025-01-01 minus 1 dag = 2024-12-31 → matcht'
+    'T8 temporele UPPER-1 inclusief: periode = geldig_tot 2025-01-01 minus 1 dag = 2024-12-31 → matcht'
 );
 
 
 ------------------------------------------------------------
--- T10: Temporele join UPPER boundary EXCLUSIEF
---      periode = geldig_tot (2025-01-01) → NULL (grens exclusief; 2025 heeft geen seed)
+-- T9: Temporele join UPPER boundary EXCLUSIEF
+--     periode = geldig_tot (2025-01-01) → NULL (grens exclusief; 2025 heeft geen seed)
 ------------------------------------------------------------
 
 select is(
     public.cascade_stap2_basis_patronale_rsz(4000.0000, 'bediende', 1::smallint, '2025-01-01'::date),
     null::numeric(18, 4),
-    'T10 temporele UPPER exclusief: periode = geldig_tot 2025-01-01 → NULL (valt buiten interval [geldig_van, geldig_tot))'
+    'T9 temporele UPPER exclusief: periode = geldig_tot 2025-01-01 → NULL (valt buiten interval [geldig_van, geldig_tot))'
 );
 
 
 ------------------------------------------------------------
--- T11: Temporele join miss vroeger
+-- T10: Temporele join miss vroeger
 --      periode voor geldig_van → NULL
 ------------------------------------------------------------
 
 select is(
     public.cascade_stap2_basis_patronale_rsz(4000.0000, 'bediende', 1::smallint, '2023-01-01'::date),
     null::numeric(18, 4),
-    'T11 temporele miss vroeger: periode 2023-01-01 (voor geldig_van 2024-01-01) → NULL'
+    'T10 temporele miss vroeger: periode 2023-01-01 (voor geldig_van 2024-01-01) → NULL'
 );
 
 
