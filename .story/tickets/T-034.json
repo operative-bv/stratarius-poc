@@ -3,13 +3,14 @@
     "T-030",
     "T-004"
   ],
-  "completedDate": null,
+  "claimedBySession": "cd9ebf37-97b1-452b-bdf9-5fee7e171e1e",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Audit-log tabel gdpr_access_log (user_id, timestamp, query_hash, table_ref, columns[], rechtsgrondslag text, resulting_rows int). Elke SELECT op dim_persoon.geslacht / dim_persoon.opleidingsniveau EN elke SELECT op mart_loonkloof MOET via een RPC gaan die rechtsgrondslag als parameter accepteert en logt. Direct SELECT via SQL is geblokkeerd door column-level RLS (grant SELECT enkel op subset zonder deze kolommen, plus RPC met SECURITY DEFINER voor de gevoelige subset). Negatieve test: SELECT geslacht FROM dim_persoon zonder RPC faalt met permission denied. Materialized view mart_loonkloof BAKT geslacht in als kolom — reads op de mart komen ook via de RPC om audit-consistentie te garanderen (kritische reviewer-bevinding).",
   "id": "T-034",
   "order": 50,
   "phase": "loonkloof-mart",
-  "status": "open",
+  "status": "complete",
   "title": "GDPR-audit-log voor dim_persoon + mart_loonkloof reads",
   "type": "feature"
 }
