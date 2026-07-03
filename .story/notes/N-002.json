@@ -1,0 +1,13 @@
+{
+  "content": "**Question**: Hoe snel moet een mid-year indexatie live zijn in Stratarius nadat het officieel is gepubliceerd?\n\nOpties:\n- **Real-time / same-day**: scheduled scraper draait dagelijks, alerting op parameter-diff. Complex, hoge onderhoudslast.\n- **Weekly**: Cron-run 1×/week, parameter-snapshot commit. Redelijk, past bij POC.\n- **Per kwartaal**: Handmatige batch bij kwartaal-boundaries. Simpelste, maar mid-quarter indexatie mist tot volgende cyclus.\n- **Manual on demand**: Enkel bij expliciete trigger. Voor POC-fase praktisch.\n\n**Aanbevolen voor POC**: Manual on demand met UI-badge \"Parameters last updated: [datum]\" en manual refresh knop voor admins.\n\n**Bepaalt**: cadans van T-018/T-019/T-020 en of T-021 (snapshot audit) manual of scheduled is.",
+  "createdDate": "2026-07-03",
+  "id": "N-002",
+  "status": "active",
+  "tags": [
+    "decision-pending",
+    "phase-4",
+    "operations"
+  ],
+  "title": "Decision: Parameter-freshness SLA",
+  "updatedDate": "2026-07-03"
+}

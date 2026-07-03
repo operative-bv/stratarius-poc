@@ -39,3 +39,8 @@ next-env.d.ts
 # claude code — commit shared config & speckit skills, ignore local overrides
 .claude/settings.local.json
 .claude/*.log
+
+# storybloq — commit roadmap/tickets/notes/handovers, ignore session/snapshot state
+.story/snapshots/
+.story/sessions/
+.story/status.json

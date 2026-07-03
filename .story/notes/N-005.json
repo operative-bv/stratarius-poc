@@ -1,0 +1,14 @@
+{
+  "content": "**Question**: Basejump ships met Stripe billing scaffolding (billing-functions, billing-webhooks, migrations, account_billing_status component). T-002 verwijdert marketing pagina's maar niet billing.\n\nOpties:\n- **Keep billing scaffolding**: nuttig als de POC snel richting SaaS pricing moet. Complexiteit blijft voor onderhoud.\n- **Rip out billing**: schoner voor pure POC-fase; add-back als een expliciet ticket wanneer commerciëel model duidelijk is.\n\n**Aanbevolen voor POC**: Rip out (voor POC is billing afleider), add-back-ticket voorbereiden voor Phase 8+. Als billing wél wordt behouden, Constitution amendment nodig voor Stripe scope-uitbreiding.\n\n**Impact op tickets**: extra chore-ticket in Phase 1 (T-002 uitbreiden of nieuwe) om supabase/functions/billing-*, src/lib/actions/billing.ts, src/components/basejump/account-billing-status.tsx etc. te verwijderen.",
+  "createdDate": "2026-07-03",
+  "id": "N-005",
+  "status": "active",
+  "tags": [
+    "decision-pending",
+    "phase-1",
+    "scope",
+    "basejump"
+  ],
+  "title": "Decision: Basejump Stripe billing in POC scope of ripped out?",
+  "updatedDate": "2026-07-03"
+}

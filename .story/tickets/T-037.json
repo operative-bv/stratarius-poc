@@ -1,0 +1,15 @@
+{
+  "blockedBy": [
+    "T-035",
+    "T-022"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Optionele collapsible sectie \"Bedrijfswagen\" onder het hoofdformulier. Fields: cataloguswaarde numeric(18,4), CO2 g/km integer, brandstoftype select (benzine|diesel|hybride|elektrisch|CNG|LPG), aanschaffingsdatum date picker (voor 6-jarige afschrijvingscurve). Op submit: creëert een fact_wagen rij gekoppeld aan het synthetic contract. Toont dan expliciet in het result: TCO als WERKGEVERSKOST (included in totaal, per Principe II dim_looncomponent tag) en VAA gescheiden weergegeven als \"fiscale waardering werknemer — buiten kost\" (excluded). Voorkomt de VAA-valkuil visueel.",
+  "id": "T-037",
+  "order": 30,
+  "phase": "simulator-ui",
+  "status": "open",
+  "title": "UI: wagen-toevoeging (cataloguswaarde, CO2, brandstoftype)",
+  "type": "feature"
+}

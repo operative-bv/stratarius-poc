@@ -1,0 +1,15 @@
+{
+  "blockedBy": [
+    "T-028",
+    "T-021"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Next.js App Router pagina /dashboard/[accountSlug]/simulator met een formulier: legale entiteit selector (dropdown scoped op tenant), functie + pc_id + status (arbeider|bediende) dropdowns, bruto basisloon numeric input, fte_breuk numeric(6,4) input, periode range picker (kwartaal-granulariteit). Op submit: server action creëert een synthetic contract in dim_contract + fact_prestatie + fact_looncomponent onder een what-if scenario, roept de rekencascade, schrijft fact_loonkost, redirect naar result page /dashboard/[accountSlug]/simulator/[scenario_id]. Gebruikt shadcn/ui components (Card, Input, Select, Button) reeds beschikbaar in src/components/ui/.",
+  "id": "T-035",
+  "order": 10,
+  "phase": "simulator-ui",
+  "status": "open",
+  "title": "UI: enkelvoudige contract-simulator",
+  "type": "feature"
+}

@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Bouw round_final(bedrag numeric, purpose enum display|report|export|invoice) als de ENIGE plek waar bedragen worden afgerond in Stratarius. Standaard: banker's rounding op 2 decimalen voor display/report, 2 decimalen half-up voor invoice (fiscaal). Cascade-tussenberekeningen behouden numeric(18,4). Per Constitution Domain sectie \"Afronding gebeurt UITSLUITEND bij eindpresentatie\". Naast SQL-function ook TypeScript-mirror voor UI. Lint-regel of custom test: geen andere `ROUND`, `TRUNC`, `.toFixed()` in codebase behalve via deze functie.",
+  "id": "T-025",
+  "order": 40,
+  "phase": "calculation-cascade",
+  "status": "open",
+  "title": "Centrale round_final() functie als enige afrondingslocatie",
+  "type": "task"
+}

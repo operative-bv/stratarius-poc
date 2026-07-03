@@ -1,0 +1,15 @@
+{
+  "blockedBy": [
+    "T-027",
+    "T-020"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Stap 7: cascade_stap7_extralegaal per SZ-behandeling gedrag (Normaal loon regime = gewone bijdrage; VIN = aparte bijdrage; Vrijgesteld = geen SZ maar wel plafond op forfait). Rekent werkgeverskost incl gekoppelde bijkosten (uitgiftekost cheques, groepsverzekeringstaks 8.86+4.4%). Stap 8: cascade_stap8_wagen berekent TCO (afschrijving + brandstof + verzekering + onderhoud) + CO2-solidariteitsbijdrage; VAA is expliciet EXCLUDED (Principe II: dim_looncomponent.is_werkgeverskost=false voor VAA). Stap 9: cascade_stap9_arbeidsongevallen (premie op basis van pc_id × sector-risicocategorie × grondslag). Eindaggregatie schrijft fact_loonkost decomposed per kostenblok.",
+  "id": "T-028",
+  "order": 70,
+  "phase": "calculation-cascade",
+  "status": "open",
+  "title": "Rekencascade stap 7-9: extralegaal → wagen & mobiliteit → arbeidsongevallen",
+  "type": "feature"
+}

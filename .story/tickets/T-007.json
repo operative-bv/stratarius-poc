@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Canonieke lookup-tabel voor paritair comités (dim_pc): pc_id PK (bv \"200\" voor PC 200), name, sector, sub_pc parent-FK voor sub-comités (bv 200.01), status active/deprecated. Feed voor dim_contract.pc_id, param_sectorbijdrage, param_arbeidsduur en map_entiteit_pc_competentie. Seed vanuit FOD WASO paritair-comité-register voor de meest voorkomende PCs (200, 201, 218, 220, 302, 322, etc.). Bron: FOD WASO officiële lijst.",
+  "id": "T-007",
+  "order": 40,
+  "phase": "schema-ruggengraat",
+  "status": "open",
+  "title": "Migration: dim_pc (paritair comité)",
+  "type": "task"
+}

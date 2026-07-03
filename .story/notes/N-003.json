@@ -1,0 +1,13 @@
+{
+  "content": "**Constitution** legt `numeric(18,4)` vast voor geldbedragen. Onduidelijk voor niet-geld numerics:\n\n- `fte_breuk`: momenteel `numeric(6,4)` in T-006 — genoeg voor 0.0000-9.9999, praktisch 0.0000-1.0000. Prima.\n- `mu` (μ = Q/S): praktisch bereik 0.0000-1.5000 (overuren kunnen &gt;1 duwen). `numeric(6,4)` volstaat.\n- Structurele vermindering forfait: geld → `numeric(18,4)` (constitution).\n- Coefficient_a/b in param_structurele: dimensieloos, praktisch 0.0-9.9 met 6-8 significant digits. `numeric(12,8)` beter voor precisie.\n- Index_coefficient in param_index: rond 1.02 tot 1.10, 6 decimalen nodig. `numeric(10,6)`.\n\n**Aanbevolen policy**: geld = `numeric(18,4)`, breuken (0..&lt;2) = `numeric(6,4)`, coefficients = `numeric(12,8)`. Vastleggen in Constitution PATCH-bump wanneer bevestigd.",
+  "createdDate": "2026-07-03",
+  "id": "N-003",
+  "status": "active",
+  "tags": [
+    "decision-pending",
+    "constitution",
+    "schema"
+  ],
+  "title": "Decision: Non-money numeric precision (fte_breuk, μ, coefficients)",
+  "updatedDate": "2026-07-03"
+}

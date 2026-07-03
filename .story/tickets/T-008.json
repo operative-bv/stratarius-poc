@@ -1,0 +1,15 @@
+{
+  "blockedBy": [
+    "T-005",
+    "T-007"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Migration voor de organisatie-hiërarchie infrastructuur. dim_org_unit (org_unit_id PK, name, kind — legale entiteit/BU/departement/team), dim_hierarchie (hierarchie_id PK, name — statutair/business/geografisch/kostenplaats), bridge_hierarchie als closure table (hierarchie_id, ancestor_org_unit_id, descendant_org_unit_id, afstamming int — depth). Ongelijk en overlappend per PDF Laag 1. Plus map_entiteit_pc_competentie (entiteit_id, activiteit, categorie, pc_id, geldig_van, geldig_tot) — geërfd door contract bij creatie maar per individu overrideable.",
+  "id": "T-008",
+  "order": 50,
+  "phase": "schema-ruggengraat",
+  "status": "open",
+  "title": "Migration: dim_org_unit + dim_hierarchie + bridge_hierarchie + map_entiteit_pc_competentie",
+  "type": "task"
+}

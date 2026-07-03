@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Migration voor dim_legale_entiteit (legale_entiteit_id PK, werkgeverscategorie int check 1|2|3, ondernemingsnr, land_id FK, basejump_account_id FK to Basejump accounts.id) en dim_land (land_id PK, name, iso_code). Elke legale entiteit is eigendom van precies één Basejump account (accountantskantoor/HR-adviseur). RLS-policy hergebruikt basejump.has_role_on_account() helper — expliciet inheriting, geen reinvention. Werkgeverscategorie sleutelt param_rsz en param_structurele_vermindering (Principe II data-driven).",
+  "id": "T-005",
+  "order": 20,
+  "phase": "schema-ruggengraat",
+  "status": "open",
+  "title": "Migration: dim_legale_entiteit + dim_land + Basejump RLS adoption",
+  "type": "task"
+}

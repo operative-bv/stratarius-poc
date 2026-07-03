@@ -1,0 +1,17 @@
+{
+  "blockedBy": [
+    "T-006",
+    "T-012",
+    "T-013",
+    "T-014"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Migration voor de 3 input feit-tabellen + 1 output feit: fact_looncomponent (contract_id, periode date range, component_id FK, scenario_id FK, bedrag numeric(18,4), bron_ref), fact_prestatie (contract_id, periode, prestatiecode FK, uren numeric, dagen numeric), fact_wagen (contract_id, periode, catalogus_waarde numeric(18,4), co2_g_km int, brandstoftype enum, aanschaffingsdatum), fact_loonkost (contract_id, periode, kostenblok enum bruto|werkgevers_rsz|vakantiegeld|ejp|extralegaal|wagen_tco|arbeidsongevallen, scenario_id FK, bedrag numeric(18,4)). RLS via contract → legale_entiteit → basejump account. Principe III: fact_loonkost is AFGELEID, nooit handmatig — trigger of check constraint bewaakt dit.",
+  "id": "T-022",
+  "order": 10,
+  "phase": "calculation-cascade",
+  "status": "open",
+  "title": "Migration: fact_looncomponent + fact_prestatie + fact_wagen + fact_loonkost",
+  "type": "task"
+}

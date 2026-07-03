@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "src/app/page.tsx + src/components/getting-started/ tonen momenteel de Basejump starter homepage (logo grid, \"Welcome to Basejump\"). Vervang door een Stratarius-branded landing page of een simpele redirect naar /dashboard voor authenticated users en /login voor guests. Verwijder public/images/basejump-*.png. src/components/getting-started/ helemaal weg.",
+  "id": "T-002",
+  "order": 20,
+  "phase": "foundation",
+  "status": "open",
+  "title": "Verwijder Basejump demo marketing surface",
+  "type": "chore"
+}

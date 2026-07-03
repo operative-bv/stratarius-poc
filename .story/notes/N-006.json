@@ -1,0 +1,14 @@
+{
+  "content": "**Question**: Constitution legt narratief in Nederlands vast + domein-schema in Nederlands. UI-copy niet expliciet.\n\nOpties:\n- **NL only**: past bij Vlaamse/Belgische markt en Constitution consistency. Simpelste voor POC.\n- **NL + FR + DE**: Belgische wettelijke rechten voor gebruikers in gewestelijke taal. Zwaarder voor POC.\n- **NL + EN**: EN voor internationale investeerders / demos. Redelijke tussenweg.\n\n**Aanbevolen voor POC**: NL only. Alle T-035..T-038 UI copy in Nederlands. i18n-scaffolding wel voorbereiden (next-intl) om later FR/DE toe te voegen zonder rewrite.\n\n**Bepaalt**: UI copy conventie in T-035..T-038 + optioneel een i18n-scaffolding ticket in Phase 1.",
+  "createdDate": "2026-07-03",
+  "id": "N-006",
+  "status": "active",
+  "tags": [
+    "decision-pending",
+    "phase-7",
+    "ui",
+    "scope"
+  ],
+  "title": "Decision: UI language (Nederlands / Engels / meertalig)",
+  "updatedDate": "2026-07-03"
+}

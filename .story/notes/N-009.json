@@ -1,0 +1,14 @@
+{
+  "content": "**Assumption**: Vercel voor Next.js frontend + Supabase managed voor backend. Bevestigen of alternatief kiezen.\n\nAlternatieven:\n- **Vercel + Supabase managed** (default) — 0-config deploy, git-push workflow, prima voor POC.\n- **Self-hosted Supabase + Vercel** — meer controle, kost minder bij schaal, maar operationeel zwaarder.\n- **AWS ECS + RDS Postgres + eigen Supabase-stack** — enterprise fit als klanten data-residency eisen.\n- **Fly.io + Supabase managed** — European regions default, GDPR-friendly.\n\n**Aanbevolen voor POC**: Vercel (EU regio) + Supabase managed (EU regio, bv Frankfurt). Data blijft binnen EU voor GDPR-alignement met Constitution. Bevestigen dat Supabase Pro plan met EU regio wordt gekozen.\n\n**Impact**: environment variables in T-003, Stripe webhook endpoints, mogelijk Custom Domain setup.",
+  "createdDate": "2026-07-03",
+  "id": "N-009",
+  "status": "active",
+  "tags": [
+    "decision-pending",
+    "infra",
+    "deployment",
+    "gdpr"
+  ],
+  "title": "Decision: Deployment target (Vercel + Supabase managed)",
+  "updatedDate": "2026-07-03"
+}

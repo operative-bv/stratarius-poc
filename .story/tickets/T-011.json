@@ -1,0 +1,14 @@
+{
+  "blockedBy": [
+    "T-010"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Migration voor dim_looncomponent: component_id PK, name, familie, rsz_plichtig bool, is_werkgeverskost bool, telt_voor_vakantiegeld bool, sz_behandeling_id FK, telt_voor_mu bool. Principe II: gedrag zit ENKEL in tags; rekencascade leest tags, nooit component_id/name. Geen seed data in deze ticket — enkel de tabelstructuur + FK-constraints + comments die de gedragssemantiek expliciet documenteren.",
+  "id": "T-011",
+  "order": 20,
+  "phase": "schema-componenten",
+  "status": "open",
+  "title": "Migration: dim_looncomponent schema + gedragstags",
+  "type": "task"
+}

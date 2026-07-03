@@ -1,0 +1,15 @@
+{
+  "blockedBy": [
+    "T-035",
+    "T-025"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Result-pagina toont aggregate TCO bovenaan (via round_final(sum, 'display')) + collapsible drill-down per kostenblok: bruto, werkgevers-RSZ na verminderingen, vakantiegeld, EJP, extralegaal, wagen-TCO, arbeidsongevallen. Elk blok hover-expandable naar sub-breakdown: welke rekencascade-stap, welke parameters (met geldig_van/geldig_tot en bron_url), welke tussentotalen. Dient als debug + educational surface — helpt de gebruiker vertrouwen op te bouwen in de berekening én bugs op te sporen. Alle bedragen gerenderd via round_final(); geen inline .toFixed() of Math.round() (per T-025 lint-regel).",
+  "id": "T-038",
+  "order": 40,
+  "phase": "simulator-ui",
+  "status": "open",
+  "title": "UI: TCO drill-down per kostenblok met round_final()",
+  "type": "feature"
+}

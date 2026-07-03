@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Migration voor dim_prestatiecode: prestatiecode PK, familie, telt_voor_mu bool, gelijkgesteld_rsz bool, gelijkgesteld_vakantiegeld bool, betaalbron enum (werkgever, mutualiteit, RIZIV, RVA, vakantiekas). Seed voor bekende families uit PDF Laag 2: overuren, ADV-dagen, feestdagen, wettelijke vakantie (arb/bed splitsing), extralegale vakantie, arbeidsongeschiktheid (2 fasen — gewaarborgd loon dan mutualiteit/RIZIV), moederschapsrust (RIZIV zonder gewaarborgd loon), tijdelijke urenvermindering (RVA-uitkering; contract blijft 100% maar μ&lt;1 — kritische μ-onderscheid). Comment per familie linkt naar RIZIV/RVA/RSZ bron.",
+  "id": "T-013",
+  "order": 40,
+  "phase": "schema-componenten",
+  "status": "open",
+  "title": "Migration + seed: dim_prestatiecode met gedragstags",
+  "type": "task"
+}

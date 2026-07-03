@@ -1,0 +1,15 @@
+{
+  "blockedBy": [
+    "T-035",
+    "T-021"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Boven het simulator-formulier: een parameter-datum picker (Radix Popover + Calendar) met default = today. Wanneer gebruiker een toekomstige datum kiest, laadt de temporele join parameters die geldig zijn op die datum, INCLUSIEF aangekondigd-maar-nog-niet-actieve tarieven (rijen met geldig_van &gt; today). Duidelijke visuele indicator \"Forecasting mode\" wanneer parameter-datum &gt; today. Toont per param-tabel welke rijen actief zijn (met bron_url tooltip). Principe I ondersteunt dit natively — geen speciale query-logic vereist.",
+  "id": "T-036",
+  "order": 20,
+  "phase": "simulator-ui",
+  "status": "open",
+  "title": "UI: parameter-datum picker met forecasting",
+  "type": "feature"
+}

@@ -1,0 +1,19 @@
+{
+  "blockedBy": [
+    "T-022",
+    "T-023",
+    "T-024",
+    "T-018",
+    "T-021",
+    "T-025"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Pure functies voor de eerste 3 cascade-stappen. Stap 1: cascade_stap1_rsz_grondslag(contract, periode, scenario) = geïndexeerd bruto basisloon + overloon (overuren × uurloon × toeslag). Stap 2: cascade_stap2_basis_patronale_rsz leest param_rsz keyed on (status, werkgeverscategorie, periode) via temporele join — Principe II: nooit hardcoded 25%. Stap 3: cascade_stap3_structurele_vermindering leest param_structurele_vermindering en past pro rata μ toe. TDD verplicht per Principe V: tests per werkgeverscategorie (1/2/3) × per tijdvak waar tarief wijzigt × per grensgeval (deeltijds, tijdskrediet, moederschap). Testnaam citeert bron (RSZ-brochure sectie).",
+  "id": "T-026",
+  "order": 50,
+  "phase": "calculation-cascade",
+  "status": "open",
+  "title": "Rekencascade stap 1-3: bruto+overloon → RSZ-grondslag → basis patronale RSZ → structurele vermindering",
+  "type": "feature"
+}

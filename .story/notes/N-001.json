@@ -1,0 +1,14 @@
+{
+  "content": "**Blocked by**: T-018, T-019, T-020 (parameter imports).\n\nRSZ instructiegids en gewest-KBs zijn open PDFs, scrapeable. Maar PC-CAOs leven vaak achter FOD WASO / sector-portalen met wisselende licentievoorwaarden. Twee paden:\n\n- **DIY scrape** — build parsers per bron, kwetsbaar voor layout-wijzigingen, maar 0€ recurring cost. Werkt voor huidige jaargang + terugwerkende jaren.\n- **Vendor feed** — Partena, SD Worx, Attentia bieden geconsolideerde parameter-feeds als API/CSV. Recurring cost, maar breed getest en updates door de vendor onderhouden.\n\n**Aanbevolen keuze voor POC-fase**: DIY scrape voor RSZ/RVA/FOD Economie (stabiele bronnen), handmatige CSV-load voor PC-CAOs (volume is klein). Vendor overweging na eerste customer-signal.\n\n**Beslisdatum nodig**: voor T-018 begint (Phase 4).",
+  "createdDate": "2026-07-03",
+  "id": "N-001",
+  "status": "active",
+  "tags": [
+    "decision-pending",
+    "phase-4",
+    "legal",
+    "parameter-import"
+  ],
+  "title": "Decision: Legal source-acquisition (scrape vs vendor)",
+  "updatedDate": "2026-07-03"
+}

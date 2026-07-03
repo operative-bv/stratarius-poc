@@ -1,0 +1,15 @@
+{
+  "blockedBy": [
+    "T-028",
+    "T-021"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Archief 3-5 gepubliceerde voorbeeldberekeningen uit RSZ instructiegids (mix van werkgeverscat 1/2/3, voltijds/deeltijds/tijdskrediet, met/zonder bedrijfswagen) als input-fixtures in tests/fixtures/. Implement end-to-end integration tests die de complete cascade draaien tegen deze fixtures en asserten dat SUM(fact_loonkost.bedrag) matcht RSZ's gepubliceerde totaal binnen €0.01 tolerantie per kostenblok. Faalsignaal = regressie in cascade of parameters. Fixtures snapshot-pinned aan een parameterset (link naar param-snapshot uit T-021) voor reproduceerbaarheid over parameterwijzigingen heen.",
+  "id": "T-029",
+  "order": 80,
+  "phase": "calculation-cascade",
+  "status": "open",
+  "title": "Referentiescenario integration tests (RSZ-brochure voorbeelden)",
+  "type": "task"
+}

@@ -1,0 +1,42 @@
+{
+  "features": {
+    "handovers": true,
+    "issues": true,
+    "reviews": true,
+    "roadmap": true,
+    "tickets": true
+  },
+  "language": "typescript",
+  "project": "Stratarius",
+  "schemaVersion": 2,
+  "type": "npm",
+  "version": 2,
+  "recipeOverrides": {
+    "stages": {
+      "WRITE_TESTS": {
+        "command": "npm test",
+        "onExhaustion": "plan",
+        "enabled": true
+      },
+      "TEST": {
+        "command": "npm test",
+        "enabled": true
+      },
+      "VERIFY": {
+        "startCommand": "npm run dev",
+        "readinessUrl": "http://localhost:3000",
+        "enabled": true
+      }
+    },
+    "codexReviewBackends": [
+      "lenses",
+      "codex"
+    ],
+    "maxTicketsPerSession": 0,
+    "reviewBackends": [
+      "lenses",
+      "agent"
+    ],
+    "handoverInterval": 3
+  }
+}

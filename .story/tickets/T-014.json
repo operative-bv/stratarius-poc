@@ -1,0 +1,14 @@
+{
+  "blockedBy": [
+    "T-005"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Migration voor dim_scenario: scenario_id PK, name, description, kind enum (actual, what-if, forecast, baseline), legale_entiteit_id FK, geldig_van date, geldig_tot date NULL. Ondersteunt what-if forecasting op fact_looncomponent en fact_loonkost — dezelfde contract × periode kan meerdere scenario's dragen (bv \"actual 2024\", \"voorstel indexatie +2%\", \"wetsvoorstel doelgroep gehandicapt\"). Zonder deze tabel wijst fact_*.scenario in het niets. RLS tenant-scoped via legale_entiteit_id.",
+  "id": "T-014",
+  "order": 50,
+  "phase": "schema-componenten",
+  "status": "open",
+  "title": "Migration: dim_scenario reference table",
+  "type": "task"
+}

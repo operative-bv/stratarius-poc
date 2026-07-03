@@ -1,0 +1,14 @@
+{
+  "blockedBy": [
+    "T-026"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Stap 4: cascade_stap4_doelgroepverminderingen leest param_doelgroepvermindering (gewest × doelgroep × periode), past pro rata μ toe, evalueert voorwaarden_json (bv leeftijd 55+, arbeidsverleden). Stap 5: cascade_stap5_bijzondere_bijdragen (FSO, BEV, loonmatiging incl centenindex-bijdrage: helft van indexbesparing als de bruto boven €4000 uitkomt — kritische regel). Stap 6: cascade_stap6_provisies berekent vakantiegeld (arbeider: vakantiekas% × grondslag; bediende: enkel% + dubbel% × grondslag) en eindejaarspremie (met gelijkstellingen uit prestatiecodes). TDD per Principe V.",
+  "id": "T-027",
+  "order": 60,
+  "phase": "calculation-cascade",
+  "status": "open",
+  "title": "Rekencascade stap 4-6: doelgroepverminderingen → bijzondere bijdragen → provisies",
+  "type": "feature"
+}

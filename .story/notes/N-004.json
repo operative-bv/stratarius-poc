@@ -1,0 +1,13 @@
+{
+  "content": "**Question**: Hoeveel jaar terug moeten parameters geseed worden in T-018/T-019/T-020?\n\nImpact:\n- **Vanaf 2024**: minimaal voor huidige populatie-scenario's. Sizing: ~2000 param-rijen totaal.\n- **Vanaf 2020**: dekt COVID-tijdvakken (tijdelijke werkloosheid CORONA), belangrijk voor historische reconstructie. ~8000 rijen.\n- **Vanaf 2015**: volledige index-geschiedenis en werkgeverstax hervormingen 2016. ~20000 rijen.\n\n**Aanbevolen voor POC**: 2024-heden voldoende. Uitbreiden naar historische diepte na eerste customer-signal.\n\n**Bepaalt**: T-018/T-019/T-020 scope + T-034 GDPR-audit-log volume + integration test fixtures (T-029).",
+  "createdDate": "2026-07-03",
+  "id": "N-004",
+  "status": "active",
+  "tags": [
+    "decision-pending",
+    "phase-4",
+    "scope"
+  ],
+  "title": "Decision: Historische parameter-data volume (van welk jaar tot heden)",
+  "updatedDate": "2026-07-03"
+}

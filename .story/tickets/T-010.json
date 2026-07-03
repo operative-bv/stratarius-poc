@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Migration voor dim_sz_behandeling (sz_behandeling_id PK, regime_naam, grondslag_type enum, werkgevers_sz_pct numeric, cap_param_plafond_id FK NULL, bron_url). Belangrijke Principe III-eis: caps voor Gunstregime en VIN-varianten MOETEN via param_plafond FK, nooit als attribuut op deze tabel — anders leggen we bedragen buiten de parameterlaag. Seed van de 5 canonieke regimes uit PDF Laag 2 tabel: Normaal loon, VIN forfaitair, VIN bijzondere formule, Vrijgesteld van SZ, Gunstregime met cap. Elke rij bron_url naar RSZ instructiegids sectie.",
+  "id": "T-010",
+  "order": 10,
+  "phase": "schema-componenten",
+  "status": "open",
+  "title": "Migration: dim_sz_behandeling + seed 5 SZ-regimes",
+  "type": "task"
+}

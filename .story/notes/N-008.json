@@ -1,0 +1,14 @@
+{
+  "content": "**Question**: T-033 vraagt OLS regressie + Oaxaca-Blinder decompositie. Postgres heeft geen native ondersteuning.\n\nOpties:\n- **Pure SQL/Postgres**: implementeer OLS manueel via matrix operations (Cholesky decomposition). Beheersbaar voor 4 predictors (functieniveau, ancienniteit, geslacht, opleidingsniveau) maar wat write. Trage voor grote populaties (&gt;100k persoon-referentiedatum rijen).\n- **pl/R of pl/Python in Supabase**: Supabase ondersteunt geen out-of-the-box pl/R. plpython3u kan enabled via extension request. Full-featured (sklearn, statsmodels) maar dependency op Supabase feature support.\n- **Externe edge function**: Deno + JS-stat / simple-statistics. Adequaat voor OLS, Oaxaca-Blinder handmatig implementeren. Onafhankelijk van Postgres.\n- **Externe microservice** (Python/R): FastAPI + statsmodels of R plumber. Meest professioneel, maar aparte deployment.\n\n**Aanbevolen voor POC**: Externe edge function met simple-statistics + custom Oaxaca-Blinder implementatie. Test op sample data van 1000 persoon-quarters. Als performance/precisie tekortschieten → microservice.",
+  "createdDate": "2026-07-03",
+  "id": "N-008",
+  "status": "active",
+  "tags": [
+    "decision-pending",
+    "phase-6",
+    "analytics",
+    "infra"
+  ],
+  "title": "Decision: OLS + Oaxaca-Blinder tooling (Postgres extensions vs external service)",
+  "updatedDate": "2026-07-03"
+}

@@ -1,0 +1,62 @@
+{
+  "blockers": [],
+  "date": "2026-07-03",
+  "phases": [
+    {
+      "description": "Basejump baseline consolidatie: dual middleware smell wegwerken, demo marketing verwijderen, env compleetheid. Basejump-scaffolding (auth, teams, RLS-helpers, Stripe) blijft intact.",
+      "id": "foundation",
+      "label": "Phase 1",
+      "name": "Foundation",
+      "summary": "Basejump baseline consolideren voor domein-werk begint"
+    },
+    {
+      "description": "Ruggengraat van het datamodel per PDF Laag 1: dim_persoon (strict gescheiden van contract), dim_functie (met functieniveau + genderneutrale weging), dim_legale_entiteit (werkgeverscategorie 1/2/3), dim_land, dim_pc, dim_contract (effective-dated met vorige_contract_id-keten en reden), dim_org_unit + dim_hierarchie + bridge_hierarchie closure + named hierarchy views, map_entiteit_pc_competentie. RLS overneemt Basejump-patterns (has_role_on_account).",
+      "id": "schema-ruggengraat",
+      "label": "Phase 2",
+      "name": "Domain schema — Laag 1: Ruggengraat",
+      "summary": "Persoon, contract, hiërarchie — effective-dated ruggengraat"
+    },
+    {
+      "description": "Componentenlaag per PDF Laag 2: dim_sz_behandeling met seed van de 5 canonieke regimes (Normaal, VIN forfaitair, VIN bijzondere formule, Vrijgesteld, Gunstregime; caps altijd via param_plafond FK), dim_looncomponent met gedragstags (rsz_plichtig, is_werkgeverskost, telt_voor_vakantiegeld, telt_voor_mu, sz_behandeling_id), dim_prestatiecode met gedragstags (telt_voor_mu, gelijkgesteld_rsz, gelijkgesteld_vakantiegeld, betaalbron), dim_scenario voor what-if fact-partitionering. Seeds zijn voorbeelden van gedrag; rekencascade keys nooit op naam (Principe II).",
+      "id": "schema-componenten",
+      "label": "Phase 3",
+      "name": "Domain schema — Laag 2: Componenten & SZ",
+      "summary": "Componenten en prestatiecodes met gedragstags (Principe II)"
+    },
+    {
+      "description": "Effective-dated parameterlaag per PDF Laag 3: alle 11 param_* tabellen gesplitst in 3 migraties (rates+plafond, verminderingen, index/sector/extralegaal/bijzondere/wagen/arbeidsduur/vakantiegeld), met verplichte bron_url + UNIQUE(discriminatoren, geldig_van). Import-scripts vanaf officiële bronnen (RSZ instructiegids, gewest-KBs, FOD Economie, PC-CAOs), idempotent. Parameter-snapshot audit hook + reconciliation tests per Constitution Domain sectie.",
+      "id": "parameter-layer",
+      "label": "Phase 4",
+      "name": "Parameter layer — Laag 3",
+      "summary": "Alle param_* effective-dated + import + snapshot audit"
+    },
+    {
+      "description": "De 9-stappen rekencascade per PDF Laag 4 als pure functies, TDD-verplicht per Principe V. Feitenlaag inputs (fact_looncomponent, fact_prestatie, fact_wagen) + output (fact_loonkost per kostenblok). Eersteklas uurloon-derivation en μ = Q/S derivation als afzonderlijke pure functies (feeden zowel cascade als mart). Centrale round_final() functie als enige afrondingslocatie. Cascade stap 1-3, 4-6, 7-9 elk in eigen ticket met verplichte tests per (werkgeverscategorie, tijdvak, grensgeval) + brondocumenten citatie. Integration tests tegen gearchiveerde RSZ-brochure voorbeelden.",
+      "id": "calculation-cascade",
+      "label": "Phase 5",
+      "name": "Rekencascade — Laag 4",
+      "summary": "9-stappen cascade + uurloon/μ derivation, test-first per Principe V"
+    },
+    {
+      "description": "Loonkloof-analyse mart als afgeleide uitloper op dezelfde feiten. mart_loonkloof gesplitst in column design + materialized view, quarterly refresh cron, en manual refresh RPC. OLS regressie + Oaxaca-Blinder decompositie (verklaarbare vs onverklaarbare kloof). GDPR-audit-log dekt zowel dim_persoon reads als mart_loonkloof reads (met rechtsgrondslag per query) + negatieve test.",
+      "id": "loonkloof-mart",
+      "label": "Phase 6",
+      "name": "Loonkloof-mart",
+      "summary": "mart_loonkloof + OLS/Oaxaca-Blinder + GDPR-audit"
+    },
+    {
+      "description": "Enkelvoudige contract-simulator als MVP surface: legale entiteit + functie/PC/status/bruto/fte_breuk input, parameter-datum picker met forecasting (geldig_van > today), optionele wagen-toevoeging, TCO drill-down per kostenblok (bruto, werkgevers-RSZ na verminderingen, vakantiegeld, EJP, extralegaal, wagen-TCO, arbeidsongevallen). Gebruikt centralized round_final() voor presentatie. Basis voor toekomstige populatie-UI phase.",
+      "id": "simulator-ui",
+      "label": "Phase 7",
+      "name": "Simulator UI (MVP)",
+      "summary": "Enkelvoudige contract-simulator met TCO drill-down"
+    },
+    {
+      "description": "Initial project setup.",
+      "id": "p0",
+      "label": "PHASE 0",
+      "name": "Setup"
+    }
+  ],
+  "title": "Stratarius"
+}

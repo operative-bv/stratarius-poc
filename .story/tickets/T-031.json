@@ -1,0 +1,14 @@
+{
+  "blockedBy": [
+    "T-030"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Supabase scheduled edge function (pg_cron of Supabase Cron) die elk kwartaal (eerste dag na kwartaal-eind) de mart_loonkloof materialized view refresht. Refresh gebeurt CONCURRENTLY om read-locks te vermijden. Log elke refresh in mart_refresh_log tabel (start_at, end_at, rowcount_delta, source_parameter_snapshot_id). Retry-strategie bij falen: 3 pogingen met exponential backoff. Test: laat refresh draaien tegen kleine dataset in test-env, verifieer resulterende rowcount + geslacht/opleiding distributie tegen source facts.",
+  "id": "T-031",
+  "order": 20,
+  "phase": "loonkloof-mart",
+  "status": "open",
+  "title": "Quarterly refresh cron via Supabase edge function",
+  "type": "feature"
+}

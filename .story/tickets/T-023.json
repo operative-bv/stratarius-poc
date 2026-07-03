@@ -1,0 +1,15 @@
+{
+  "blockedBy": [
+    "T-022",
+    "T-019"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Eersteklas uurloon-derivation als PDF Laag 2 callout expliciet stelt: uurloon = afgeleide (maandloon → uurloon via gemiddelde wekelijkse arbeidsduur uit param_arbeidsduur, temporeel gejoind op contract.pc_id en periode). Pure functie zowel in Postgres (SQL function calc_uurloon(contract_id, periode)) als in TypeScript (parallel voor UI-simulator). Voedt zowel cascade stap 1 (overloon = overuren × uurloon × toeslag → RSZ-grondslag) als mart_loonkloof (uurbasis). TDD: tests per pc_id × periode × grensgeval (deeltijds, tijdskrediet).",
+  "id": "T-023",
+  "order": 20,
+  "phase": "calculation-cascade",
+  "status": "open",
+  "title": "Uurloon-derivation als pure functie (maandloon / gemiddelde wekelijkse arbeidsduur)",
+  "type": "feature"
+}

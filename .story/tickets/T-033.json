@@ -1,0 +1,14 @@
+{
+  "blockedBy": [
+    "T-030"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Implementeer OLS regressie log(uurloon_bruto) ~ functieniveau + ancienniteit + geslacht + opleidingsniveau als SQL function of Postgres extension (evt via madlib/pg_stat/plr). Output: coëfficiënten + p-values + R². Oaxaca-Blinder decompositie splitst de loonkloof tussen mannen en vrouwen in verklaarbare kloof (verschil in observables × mannelijke coëfficiënten) en onverklaarbare residual. Output naar mart_loonkloof_decomp view met confidence intervals. Als pure Postgres/SQL onhaalbaar → externe R/Python service via edge function (undecided decision in notes).",
+  "id": "T-033",
+  "order": 40,
+  "phase": "loonkloof-mart",
+  "status": "open",
+  "title": "OLS regressie + Oaxaca-Blinder decompositie",
+  "type": "feature"
+}
