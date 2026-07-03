@@ -1,0 +1,22 @@
+{
+  "components": [
+    "cascade",
+    "typescript"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-033",
+  "impact": "T-023 ticket description eist \"Pure functie zowel in Postgres (SQL function) als in TypeScript (parallel voor UI-simulator)\". T-023 SQL-side deel is gedelivered. TypeScript-parallel-versie deferred naar Phase 7 (Simulator UI MVP) omdat: (1) geen UI-consumer nog bestaat, (2) parallelle codepaden vragen om identieke test-suite in twee talen wat POC-scope overtreft, (3) alle rekencascade in Phase 5 draait server-side via SQL. Bij Phase 7 start: implementeer `uurloonVanMaandloon(maandloon, pcId, periode)` in `src/lib/cascade/` met parallelle Jest tests die dezelfde referentie-cases als 40-uurloon-function.sql produceren. Cross-implementation drift-detectie via een gedeeld JSON scenario-fixture.",
+  "location": [
+    "src/lib/cascade/ (future)",
+    "specs/001-rekencascade/contracts/uurloon_van_maandloon.md"
+  ],
+  "phase": null,
+  "relatedTickets": [
+    "T-023"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "low",
+  "status": "open",
+  "title": "TypeScript parallel uurloon_van_maandloon implementatie voor UI-simulator"
+}
