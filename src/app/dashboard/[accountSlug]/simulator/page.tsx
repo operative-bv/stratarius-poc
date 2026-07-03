@@ -4,6 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp } from "lucide-react";
 
 type CascadeResult = {
     stap2_basis_rsz: number | null;
@@ -58,11 +61,31 @@ export default async function SimulatorPage({
         result = await simulate(fd);
     }
 
+    const periodeDate = params.periode ? new Date(params.periode) : new Date("2024-01-01");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const isForecasting = periodeDate > today;
+
     return (
         <div className="mx-auto max-w-3xl py-8 space-y-6">
+            {isForecasting && (
+                <Alert>
+                    <TrendingUp className="h-4 w-4" />
+                    <AlertTitle className="flex items-center gap-2">
+                        Forecasting mode
+                        <Badge variant="secondary">{periodeDate.toISOString().slice(0, 10)}</Badge>
+                    </AlertTitle>
+                    <AlertDescription>
+                        Parameter-datum ligt in de toekomst. Cascade gebruikt aangekondigde tarieven (rijen met geldig_van ≤ {periodeDate.toISOString().slice(0, 10)}). Principe I: effective-dating ondersteunt dit natively.
+                    </AlertDescription>
+                </Alert>
+            )}
             <Card>
                 <CardHeader>
-                    <CardTitle>Werkgeverskost simulator</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        Werkgeverskost simulator
+                        {isForecasting && <Badge>Forecast</Badge>}
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form className="grid gap-4 md:grid-cols-2" action="/dashboard/simulator" method="get">
