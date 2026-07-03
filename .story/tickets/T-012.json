@@ -2,13 +2,14 @@
   "blockedBy": [
     "T-011"
   ],
-  "completedDate": null,
+  "claimedBySession": "9e129733-3b31-4e02-8cfd-7998301c79b2",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Seed dim_looncomponent voor de gebruikelijke families: basisloon, premie, bedrijfswagen-VAA (is_werkgeverskost=false), bedrijfswagen-TCO (is_werkgeverskost=true), CO2-solidariteitsbijdrage, GSM-privé, groepsverzekering, ecocheques, mobiliteitsbudget. Kritische assertion test: SELECT WHERE familie='bedrijfswagen-VAA' AND is_werkgeverskost=false — moet minstens 1 rij vinden. Analoge assertion voor bedrijfswagen-TCO=true. Dit vangt de \"VAA-valkuil\" die PDF Laag 2 expliciet noemt. Seeds zijn VOORBEELDEN van gedragstags; rekencascade keys nooit op naam (Principe II).",
   "id": "T-012",
   "order": 30,
   "phase": "schema-componenten",
-  "status": "open",
+  "status": "complete",
   "title": "Seed dim_looncomponent + VAA-valkuil test",
   "type": "task"
 }
