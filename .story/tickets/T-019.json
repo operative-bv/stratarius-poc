@@ -2,13 +2,14 @@
   "blockedBy": [
     "T-017"
   ],
-  "completedDate": null,
+  "claimedBySession": "53599d4c-ec8b-41a2-bb7a-1e3156c2cd58",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Import script dat: param_arbeidsduur (gemiddelde wekelijkse arbeidsduur per pc_id, per periode — S-referentie) vult uit PC-CAOs, param_vakantiegeld vult (arbeider = vakantiekas %, bediende = enkel+dubbel %) uit RJV/PC-CAO's, param_index vult (indexcoefficient + centenindex drempel min(bruto,€4000)) uit FOD Economie. De centenindex-loonmatigingsbijdrage (helft van indexbesparing) is een aparte rij in param_bijzondere_bijdragen — NIET in param_index (aparte concerns).",
   "id": "T-019",
   "order": 50,
   "phase": "parameter-layer",
-  "status": "open",
+  "status": "complete",
   "title": "Import: param_arbeidsduur + param_vakantiegeld + param_index",
   "type": "task"
 }
