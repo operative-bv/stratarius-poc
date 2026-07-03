@@ -5,13 +5,14 @@
     "T-022",
     "T-023"
   ],
-  "completedDate": null,
+  "claimedBySession": "1a67d051-ca13-4490-b8d1-726f058b16a8",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Materialized view mart_loonkloof met kolommen per PDF Laag 1 MART_LOONKLOOF definitie: persoon_id, referentiedatum (kwartaal-eind), uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren, kwartaal (YYYY-Q). Afgeleid uit fact_looncomponent + fact_prestatie + dim_contract + dim_persoon + dim_functie via temporele joins op referentiedatum. Basis_vte en variabele_vte apart gehouden (loonkloof-analyse eist splitsing van vaste vs variabele beloning). Uurloon_bruto komt uit uurloon-derivation (T-023) toegepast op de basis_vte. Materialized view is nog niet gerefresht in deze ticket; refresh cron in T-031.",
   "id": "T-030",
   "order": 10,
   "phase": "loonkloof-mart",
-  "status": "open",
+  "status": "complete",
   "title": "Migration: mart_loonkloof materialized view + column design",
   "type": "task"
 }
