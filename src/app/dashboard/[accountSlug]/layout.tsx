@@ -31,6 +31,10 @@ export default async function PersonalAccountDashboard({children, params: {accou
             href: `/dashboard/${accountSlug}/loonkloof`
         },
         {
+            name: 'Import',
+            href: `/dashboard/${accountSlug}/import`
+        },
+        {
             name: 'Simulator',
             href: `/dashboard/${accountSlug}/simulator`
         },
