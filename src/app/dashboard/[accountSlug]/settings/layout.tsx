@@ -6,7 +6,6 @@ export default function TeamSettingsPage({children, params: {accountSlug}}: {chi
     const items = [
         { name: "Account", href: `/dashboard/${accountSlug}/settings` },
         { name: "Members", href: `/dashboard/${accountSlug}/settings/members` },
-        { name: "Billing", href: `/dashboard/${accountSlug}/settings/billing` },
     ]
     return (
         <div className="hidden space-y-6 pb-16 md:block">

@@ -1,12 +1,13 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "claimedBySession": "aa7d8969-129e-43f2-9b13-a3d71d2dce06",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Follow-up op N-005 decision (behouden, disabled). Behoud billing-functions/, billing-webhooks/, migration 20240414162131_basejump-billing.sql, src/lib/actions/billing.ts, src/components/basejump/account-billing-status.tsx — code blijft. Verwijder ALLEEN UI-toegang: (1) settings-navigation.tsx — remove \"Billing\" menu items. (2) src/app/dashboard/[accountSlug]/settings/billing/page.tsx + src/app/dashboard/(personalAccount)/settings/billing/page.tsx — return 404 of redirect naar dashboard. (3) account-billing-status component niet renderen in dashboard-header. Env vars STRIPE_* blijven in supabase/functions/.env.example gedocumenteerd (met N-005 caveat). Bij add-back later: alleen UI-links teruzetten.",
   "id": "T-040",
   "order": 50,
   "phase": "foundation",
-  "status": "open",
+  "status": "complete",
   "title": "Disable Basejump billing UI + navigation links",
   "type": "task"
 }
