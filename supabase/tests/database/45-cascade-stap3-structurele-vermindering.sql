@@ -30,11 +30,11 @@ select has_function(
 -- Cat 1: F=0, α=0.14, δ=0 — alleen laag-lonencomponent
 ------------------------------------------------------------
 
--- T2: S=6000 (< S0), μ=1.0 → 0 + 0.14 × (7207.20-6000) + 0 = 168.9080
+-- T2: S=6000 (< S0), μ=1.0 → 0 + 0.14 × (7207.20-6000) + 0 = 169.0080
 select is(
     public.cascade_stap3_structurele_vermindering(6000.0000, 1.0000, 1::smallint, '2024-01-01'::date),
-    168.9080::numeric(18, 4),
-    'T2 cat 1 laag loon: S=6000 → 0 + 0.14 × 1207.20 = 168.9080'
+    169.0080::numeric(18, 4),
+    'T2 cat 1 laag loon: S=6000 → 0 + 0.14 × 1207.20 = 169.0080'
 );
 
 -- T3: S=8000 (tussen S0 en S1), μ=1.0 → 0 + 0 + 0 = 0 (deadband)
@@ -75,11 +75,11 @@ select is(
     'T6 cat 3 laag loon: 375 + 0.1714 × 1207.20 = 581.9141'
 );
 
--- T7: S=15000, μ=1.0 → 375 + 0 + 0.0686 × (15000-12435.31) = 375 + 175.93773 = 550.9378
+-- T7: S=15000, μ=1.0 → 375 + 0 + 0.0686 × (15000-12435.31) = 375 + 175.9377 = 550.9377
 select is(
     public.cascade_stap3_structurele_vermindering(15000.0000, 1.0000, 3::smallint, '2024-01-01'::date),
-    550.9378::numeric(18, 4),
-    'T7 cat 3 hoog loon: 375 + 0.0686 × 2564.69 = 550.9378'
+    550.9377::numeric(18, 4),
+    'T7 cat 3 hoog loon: 375 + 0.0686 × 2564.69 = 550.9377'
 );
 
 -- T8: S=10000 (deadband), μ=1.0 → 375 + 0 + 0 = 375 (alleen forfait)
@@ -96,8 +96,8 @@ select is(
 
 select is(
     public.cascade_stap3_structurele_vermindering(6000.0000, 0.5000, 1::smallint, '2024-01-01'::date),
-    84.4540::numeric(18, 4),
-    'T9 KEY Principe IV μ pro rata: cat 1 S=6000 met μ=0.5 → 168.9080 × 0.5 = 84.4540 (bewijst dat μ hele R schaalt, NIET alleen δ-term — expliciete haakjes werken)'
+    84.5040::numeric(18, 4),
+    'T9 KEY Principe IV μ pro rata: cat 1 S=6000 met μ=0.5 → 169.0080 × 0.5 = 84.5040 (bewijst dat μ hele R schaalt, NIET alleen δ-term — expliciete haakjes werken)'
 );
 
 
