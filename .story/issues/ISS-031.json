@@ -1,0 +1,21 @@
+{
+  "components": [
+    "schema",
+    "parameterlaag"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-031",
+  "impact": "param_plafond has land_id + FK to dim_land, but param_rsz has no country dimension. RSZ is BE-only per POC scope (Constitution + N-004 undecided), so no active bug. However, when N-004 is decided AND non-BE RSZ data is imported, the exclusion constraint (status, werkgeverscategorie, daterange) will incorrectly block cross-country rows with the same tuple. Fix requires: (a) add land_id NOT NULL column + FK to dim_land, (b) backfill 'BE' for existing rows, (c) extend exclusion key with land_id, (d) add pgTAP cross-country lives_ok. Deferred until N-004 resolution.",
+  "location": [
+    "supabase/migrations/20260703120000_param_rsz_and_plafond.sql"
+  ],
+  "phase": null,
+  "relatedTickets": [
+    "T-015"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "low",
+  "status": "open",
+  "title": "param_rsz has no land_id — asymmetric with param_plafond, blocks future multi-country RSZ"
+}

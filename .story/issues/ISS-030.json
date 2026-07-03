@@ -1,0 +1,22 @@
+{
+  "components": [
+    "supabase-tests",
+    "local-dev-env"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-030",
+  "impact": "Alle 25 pgTAP tests (01 t/m 32) falen lokaal met `extension \"basejump-supabase_test_helpers\" is not available` bij `supabase test db`. Extension is niet aanwezig in `/usr/share/postgresql/extension/` binnen de Postgres container. dbdev is ook niet geïnstalleerd. Effect: geen enkele pgTAP suite kan lokaal runnen — CI/local test coverage is 0 tot dit opgelost is. Verify path: manual SQL smoke via `docker exec supabase_db_basejump-next psql -U postgres -c ...` blijft mogelijk, maar dat is niet automatisch.",
+  "location": [
+    "supabase/tests/database/",
+    "supabase/config.toml"
+  ],
+  "phase": null,
+  "relatedTickets": [
+    "T-015"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "basejump-supabase_test_helpers extension missing from local Supabase Postgres"
+}
