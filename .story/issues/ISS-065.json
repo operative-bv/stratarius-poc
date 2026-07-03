@@ -1,0 +1,19 @@
+{
+  "components": [
+    "cascade",
+    "schema"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-065",
+  "impact": "T-044 delivert alleen vakantiegeld. Eindejaarspremie vereist: (1) nieuwe param_eindejaarspremie tabel (per PC/CAO), (2) gelijkstellingen berekening uit fact_prestatie via dim_prestatiecode.gelijkgesteld_vakantiegeld gedragstag. Filed vanuit T-044 scope-reductie.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-044"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Eindejaarspremie functie (param_eindejaarspremie tabel + gelijkstellingen)"
+}

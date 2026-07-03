@@ -1,0 +1,18 @@
+{
+  "blockedBy": [
+    "T-013",
+    "T-017",
+    "T-026",
+    "T-027"
+  ],
+  "claimedBySession": "e50a0e1d-d226-48be-90cc-28209deb38a7",
+  "completedDate": "2026-07-03",
+  "createdDate": "2026-07-03",
+  "description": "Pure functies voor stap 6: cascade_stap6_vakantiegeld en cascade_stap6_eindejaarspremie. Vakantiegeld: arbeider gebruikt vakantiekas% × grondslag (betaalbron=vakantiekas per T-013), bediende gebruikt enkel% × grondslag + dubbel% × grondslag (2 provisions). Eindejaarspremie: bedrag afhankelijk van CAO + gelijkstellingen uit fact_prestatie (dim_prestatiecode.gelijkgesteld_vakantiegeld gedragstag). Data-driven via betaalbron + gedragstags, geen hardcoded status-branching. Preemptief gesplit uit T-027 2026-07-03.",
+  "id": "T-044",
+  "order": 120,
+  "phase": "calculation-cascade",
+  "status": "complete",
+  "title": "Rekencascade stap 6: provisies (vakantiegeld arb/bed + eindejaarspremie)",
+  "type": "task"
+}
