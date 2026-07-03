@@ -17,9 +17,9 @@
     "T-004",
     "T-007"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "T-004 test 21-dim-persoon-en-functie.sql updated: broken cmp_ok(updated_at > created_at) assertion removed, plan(16) → plan(15), inline documentation notes the transaction-time limitation of basejump.trigger_set_timestamps and points back to ISS-012. T-007 test already omits the assertion. Trigger correctness itself verified by inspection; not a runtime bug, only a test-authoring pitfall. Upstream fix (clock_timestamp() in basejump migration) is out of scope for POC — would require a Basejump patch.</resolution>\n</invoke>\n<invoke name=\"Bash\">\n<parameter name=\"command\">npm run build 2>&1 | tail -3 && echo \"EXIT: $?\" && grep -c \"plan(\" supabase/tests/database/21-dim-persoon-en-functie.sql",
+  "resolvedDate": "2026-07-03",
   "severity": "low",
-  "status": "open",
+  "status": "resolved",
   "title": "basejump.trigger_set_timestamps uses now(), broken for same-tx updated_at tests"
 }
