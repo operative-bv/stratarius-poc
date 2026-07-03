@@ -42,7 +42,7 @@ alter table public.param_structurele_vermindering
 commit;
 
 comment on column public.param_structurele_vermindering.drempel_s0 is
-    'Drempel laag loon S0 (numeric(18,4) EUR per Constitution money precision). Formule R = F + α × GREATEST(0, S0-S) + δ × GREATEST(0, S-S1) × μ. RSZ 2024 = 7207.20 (bron socialsecurity.be).';
+    'Drempel laag loon S0 (numeric(18,4) EUR per Constitution money precision). Formule R = (F + alpha × GREATEST(0, S0-S) + delta × GREATEST(0, S-S1)) × mu — merk EXPLICIETE buitenste haakjes: mu schaalt HELE R (fold T-026 operator precedence). RSZ 2024 = 7207.20 (bron socialsecurity.be).';
 
 comment on column public.param_structurele_vermindering.drempel_s1 is
     'Drempel hoog loon S1 (numeric(18,4) EUR). RSZ 2024 = 12435.31. CHECK enforced: drempel_s0 <= drempel_s1.';
