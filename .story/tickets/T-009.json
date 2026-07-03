@@ -2,13 +2,14 @@
   "blockedBy": [
     "T-008"
   ],
-  "completedDate": null,
+  "claimedBySession": "bd773ebb-df1a-4082-8ea7-d220741a6641",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "SQL views over bridge_hierarchie die consumers een schone interface per hiërarchie-flavor geven: view_hierarchie_statutair, view_hierarchie_business, view_hierarchie_geografisch, view_hierarchie_kostenplaats. Elke view filtert bridge_hierarchie op hierarchie_id en projecteert org_unit-relaties zodat downstream queries niet direct tegen de raw bridge-tabel hoeven te joinen. Per PDF Laag 1 callout: \"één benoemde view: statutair, business, geografisch, kostenplaats\".",
   "id": "T-009",
   "order": 60,
   "phase": "schema-ruggengraat",
-  "status": "open",
+  "status": "complete",
   "title": "Named hierarchy views (statutair, business, geografisch, kostenplaats)",
   "type": "task"
 }
