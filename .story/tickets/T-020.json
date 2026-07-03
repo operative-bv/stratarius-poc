@@ -2,13 +2,14 @@
   "blockedBy": [
     "T-017"
   ],
-  "completedDate": null,
+  "claimedBySession": "53599d4c-ec8b-41a2-bb7a-1e3156c2cd58",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Import script voor de resterende parameter-families: param_wagen_mobiliteit (CO2-formule referentie 84g/km diesel, 91g/km benzine, minimumbijdrage jaarlijks geïndexeerd, VAA-coefficient) uit RSZ/FOD Financiën, param_bijzondere_bijdragen (FSO Fonds Sluiting Ondernemingen, BEV, loonmatiging incl centenindex-bijdrage, asbestfonds) uit KBs, param_extralegaal (chequegrenzen — max wg-bijdrage per cheque-type, groepsverzekeringstaks 8.86% + 4.4% RSZ) uit FOD Financiën, param_sectorbijdrage (per pc_id per fonds — bestaanszekerheid, vorming, risicogroepen, sectorale EJP-financiering) uit sector-CAOs.",
   "id": "T-020",
   "order": 60,
   "phase": "parameter-layer",
-  "status": "open",
+  "status": "complete",
   "title": "Import: param_wagen_mobiliteit + param_bijzondere_bijdragen + param_extralegaal + param_sectorbijdrage",
   "type": "task"
 }
