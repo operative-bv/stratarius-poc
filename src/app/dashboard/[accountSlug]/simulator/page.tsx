@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, ChevronDown } from "lucide-react";
 
 type CascadeResult = {
     stap2_basis_rsz: number | null;
@@ -16,6 +16,23 @@ type CascadeResult = {
     totaal_patronale_kost: number;
     error?: string;
 };
+
+// Banker's rounding mirror van server-side round_final('display').
+// Postgres round() = half-away-from-zero; banker's = half-to-even.
+// Voor display/report is banker's DMFA-conform per KB 28/11/1969 art. 34.
+function roundFinal(value: number | null): string {
+    if (value === null) return "—";
+    const scaled = value * 100;
+    const floor = Math.floor(scaled);
+    const remainder = scaled - floor;
+    let cents: number;
+    if (Math.abs(remainder - 0.5) < 1e-9) {
+        cents = floor % 2 === 0 ? floor : floor + 1;
+    } else {
+        cents = Math.round(scaled);
+    }
+    return (cents / 100).toFixed(2);
+}
 
 async function simulate(formData: FormData): Promise<CascadeResult> {
     "use server";
@@ -42,6 +59,33 @@ async function simulate(formData: FormData): Promise<CascadeResult> {
 
     return { stap2_basis_rsz: s2, stap3_vermindering: s3, stap5_bijzondere: s5, stap6_vakantiegeld: s6, totaal_patronale_kost: totaal };
 }
+
+const STAP_DETAILS = {
+    stap2: {
+        title: "Stap 2 — Basis patronale RSZ",
+        formule: "grondslag × basisbijdrage_pct × basisfactor_arbeider_pct",
+        bron: "https://www.socialsecurity.be/employer/instructions/",
+        toelichting: "Via param_rsz temporele join op (status, werkgeverscategorie, periode). Bediende basisfactor=1.0; arbeider=1.08 (108% arbeidersgrondslag).",
+    },
+    stap3: {
+        title: "Stap 3 — Structurele vermindering",
+        formule: "(F + α × max(0, S0-S) + δ × max(0, S-S1)) × μ",
+        bron: "https://www.socialsecurity.be/employer/instructions/",
+        toelichting: "Belgische KB structurele lage-lonen vermindering. S = kwartaalloon (bruto × 3). S0=7207.20, S1=12435.31 (2024). Wordt AFGETROKKEN van basis-RSZ.",
+    },
+    stap5: {
+        title: "Stap 5 — Bijzondere bijdragen",
+        formule: "grondslag × (fso + bev + asbest + loonmatiging tarieven)",
+        bron: "https://www.socialsecurity.be/employer/instructions/",
+        toelichting: "FSO 0.10% + BEV 0.16% + asbest 0.01% + loonmatiging 7.75% = 8.02% totaal (2024). POC skipt centenindex-bijdrage.",
+    },
+    stap6: {
+        title: "Stap 6 — Vakantiegeld provisie",
+        formule: "bruto × (enkel_pct + dubbel_pct)",
+        bron: "https://www.rjv.be/",
+        toelichting: "Arbeider 15.38% (vakantiekas dekt beide). Bediende 7.67% enkel doorbetaald + 92% dubbel provisie. POC skipt eindejaarspremie.",
+    },
+} as const;
 
 export default async function SimulatorPage({
     searchParams,
@@ -134,17 +178,19 @@ export default async function SimulatorPage({
                         {result.error ? (
                             <p className="text-red-500">{result.error}</p>
                         ) : (
-                            <div className="space-y-2">
-                                <BreakdownRow label="Stap 2: Basis patronale RSZ" value={result.stap2_basis_rsz} />
-                                <BreakdownRow label="Stap 3: Structurele vermindering" value={result.stap3_vermindering} negative />
-                                <BreakdownRow label="Stap 5: Bijzondere bijdragen" value={result.stap5_bijzondere} />
-                                <BreakdownRow label="Stap 6: Vakantiegeld provisie" value={result.stap6_vakantiegeld} />
-                                <div className="border-t pt-2 mt-2 flex justify-between font-semibold">
-                                    <span>Totaal patronale kost</span>
-                                    <span>€ {result.totaal_patronale_kost.toFixed(2)}</span>
+                            <div className="space-y-3">
+                                <div className="bg-secondary rounded-lg p-4 flex justify-between items-baseline">
+                                    <span className="text-sm text-muted-foreground">Totaal patronale kost</span>
+                                    <span className="text-2xl font-semibold tabular-nums">€ {roundFinal(result.totaal_patronale_kost)}</span>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-4">
-                                    POC: exclusief stap 1 (grondslag = bruto), stap 4 (doelgroepverminderingen), stap 7 (extralegaal), stap 8-9 (wagen, arbeidsongevallen).
+
+                                <DrillDown label={STAP_DETAILS.stap2.title} value={result.stap2_basis_rsz} details={STAP_DETAILS.stap2} />
+                                <DrillDown label={STAP_DETAILS.stap3.title} value={result.stap3_vermindering} negative details={STAP_DETAILS.stap3} />
+                                <DrillDown label={STAP_DETAILS.stap5.title} value={result.stap5_bijzondere} details={STAP_DETAILS.stap5} />
+                                <DrillDown label={STAP_DETAILS.stap6.title} value={result.stap6_vakantiegeld} details={STAP_DETAILS.stap6} />
+
+                                <p className="text-xs text-muted-foreground mt-4">
+                                    POC-scope: exclusief stap 1 (grondslag = bruto), stap 4 (doelgroepverminderingen), stap 7 (extralegaal), stap 8-9 (wagen, arbeidsongevallen). Bedragen gerenderd via <code>round_final(display)</code> banker&apos;s rounding — Principe III geen inline <code>.toFixed()</code>.
                                 </p>
                             </div>
                         )}
@@ -155,13 +201,42 @@ export default async function SimulatorPage({
     );
 }
 
-function BreakdownRow({ label, value, negative = false }: { label: string; value: number | null; negative?: boolean }) {
+function DrillDown({
+    label,
+    value,
+    negative = false,
+    details,
+}: {
+    label: string;
+    value: number | null;
+    negative?: boolean;
+    details: { formule: string; bron: string; toelichting: string };
+}) {
     return (
-        <div className="flex justify-between">
-            <span className="text-sm">{label}</span>
-            <span className={`text-sm tabular-nums ${negative ? "text-green-600" : ""}`}>
-                {value === null ? "—" : `${negative ? "−" : ""}€ ${value.toFixed(2)}`}
-            </span>
-        </div>
+        <details className="rounded-lg border p-3 [&_svg]:open:rotate-180">
+            <summary className="flex justify-between items-center cursor-pointer list-none">
+                <span className="flex items-center gap-2 text-sm font-medium">
+                    <ChevronDown className="h-4 w-4 transition-transform" />
+                    {label}
+                </span>
+                <span className={`text-sm tabular-nums ${negative ? "text-green-600" : ""}`}>
+                    {value === null ? "—" : `${negative ? "−" : ""}€ ${roundFinal(value)}`}
+                </span>
+            </summary>
+            <div className="mt-3 pt-3 border-t space-y-2 text-xs">
+                <div>
+                    <span className="text-muted-foreground">Formule: </span>
+                    <code className="font-mono">{details.formule}</code>
+                </div>
+                <div>
+                    <span className="text-muted-foreground">Uitleg: </span>
+                    <span>{details.toelichting}</span>
+                </div>
+                <div>
+                    <span className="text-muted-foreground">Bron: </span>
+                    <a href={details.bron} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">{details.bron}</a>
+                </div>
+            </div>
+        </details>
     );
 }
