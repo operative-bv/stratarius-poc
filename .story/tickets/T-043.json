@@ -1,0 +1,17 @@
+{
+  "blockedBy": [
+    "T-014",
+    "T-026",
+    "T-027"
+  ],
+  "claimedBySession": "a5eff32a-97a7-4e43-8a11-a5e2ac337fd9",
+  "completedDate": "2026-07-03",
+  "createdDate": "2026-07-03",
+  "description": "Pure functie cascade_stap5_bijzondere_bijdragen(rsz_grondslag, bruto, werkgeverscategorie, periode). Leest param_bijzondere_bijdragen. FSO (fonds sluiting ondernemingen), BEV (bijdrage economische veiligheid), loonmatigingsbijdrage. KRITIEKE regel: centenindex-bijdrage = helft van indexbesparing als bruto > €4000 (drempel_bruto uit param_index). Split test files, boundary tests op drempel. Preemptief gesplit uit T-027 2026-07-03.",
+  "id": "T-043",
+  "order": 110,
+  "phase": "calculation-cascade",
+  "status": "complete",
+  "title": "Rekencascade stap 5: bijzondere bijdragen (FSO, BEV, loonmatiging + centenindex)",
+  "type": "task"
+}

@@ -1,0 +1,19 @@
+{
+  "components": [
+    "cascade",
+    "domain-correctness"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-063",
+  "impact": "T-043 cascade_stap5 POC simpelweg somt tarief × grondslag. Productie moet: (1) formule_json.toepassing evalueren (bv FSO alleen bij werkgevers >= 20 werknemers — vereist employee count per legale_entiteit), (2) centenindex-bijdrage apart berekenen (50% × indexbesparing boven param_index.drempel_bruto 4000). Beide vereisen extra data/logic. Filed vanuit T-043 self-review.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-043"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Bijzondere bijdragen toepassing conditions + centenindex-berekening voor productie"
+}
