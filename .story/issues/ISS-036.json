@@ -1,0 +1,20 @@
+{
+  "components": [
+    "ui",
+    "simulator",
+    "phase-7"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-036",
+  "impact": "Phase 7 UI-simulator zal round_final in TS reimplementeren (banker's + half-away-from-zero) om server-round trips te vermijden bij interactieve what-if. Parallel implementatie vereist byte-voor-byte identieke uitkomst als SQL versie op alle boundary cases uit T-025 test suite. Zonder mirror: UI-preview en persisted amounts kunnen divergeren op 0.5-boundaries.",
+  "location": [],
+  "phase": "simulator-ui",
+  "relatedTickets": [
+    "T-025"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "TypeScript parallel round_final implementatie voor UI-simulator"
+}

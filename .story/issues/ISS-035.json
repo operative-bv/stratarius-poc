@@ -1,0 +1,20 @@
+{
+  "components": [
+    "ci",
+    "lint",
+    "quality"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-035",
+  "impact": "Constitution Principe III stelt round_final als ENIGE afrondingsplek. Zonder CI-check kan een future PR onbewust `round()`, `trunc()`, `.toFixed()`, `Math.round()` op geldbedragen introduceren. Voorstel: shell script dat grep uitvoert over SQL migrations en TS bronnen, excluderend round_final zelf en test-files. Faalt CI als forbidden pattern buiten allowlist gevonden wordt.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-025"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "CI-hook: verifieer round_final is ENIGE rounding call-site (grep-based lint)"
+}

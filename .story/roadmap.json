@@ -50,12 +50,6 @@
       "label": "Phase 7",
       "name": "Simulator UI (MVP)",
       "summary": "Enkelvoudige contract-simulator met TCO drill-down"
-    },
-    {
-      "description": "Initial project setup.",
-      "id": "p0",
-      "label": "PHASE 0",
-      "name": "Setup"
     }
   ],
   "title": "Stratarius"
