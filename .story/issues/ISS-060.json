@@ -1,0 +1,19 @@
+{
+  "components": [
+    "cascade",
+    "domain-correctness"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-060",
+  "impact": "T-027 cascade_stap4 sommeert alle matchende doelgroepverminderingen × μ (POC-simplificatie). Belgische wet verbiedt sommige cumulaties (bv. structurele vermindering en sommige gewest-specifieke doelgroepen kunnen niet samen). Productie moet non-cumulatie regels bevatten, ofwel als extra tabel dim_doelgroep_cumulatie of via voorwaarden_json extension. Filed vanuit T-027 self-review.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-027"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Cumulatie policy voor doelgroepverminderingen (Belgische wet non-cumulatie regels)"
+}
