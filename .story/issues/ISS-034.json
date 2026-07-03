@@ -1,0 +1,22 @@
+{
+  "components": [
+    "schema",
+    "cascade"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-034",
+  "impact": "T-022 fact tables migration definieerde `fact_prestatie.uren numeric(6,4)`. numeric(6,4) betekent max 99.9999 wat overflows bij realistische maandelijkse prestaties (164.67u voltijds bediende PC 200). Ontdekt tijdens T-024 mu_van_prestatie smoke test. Fix: ALTER TABLE naar numeric(10,4) (max 999999.9999 — ruim genoeg). Kolom `dagen` blijft numeric(6,4) OK (max 31 per maand). Data-model.md moet worden bijgewerkt. Inline hotfix in T-024 migration voor POC snelheid; volwaardige schema-migration bij gedegen refactor.",
+  "location": [
+    "supabase/migrations/20260703200000_fact_tables.sql"
+  ],
+  "phase": null,
+  "relatedTickets": [
+    "T-022",
+    "T-024"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "fact_prestatie.uren numeric(6,4) te krap — 99.9999 max, realistisch is 100-200 uren/maand"
+}

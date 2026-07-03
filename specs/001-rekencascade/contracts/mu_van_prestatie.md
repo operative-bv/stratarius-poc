@@ -20,7 +20,7 @@ as $$
     with q as (
         select coalesce(sum(fp.uren), 0::numeric(6,4)) as som_uren
         from public.fact_prestatie fp
-        join public.dim_prestatiecode dp on dp.prestatiecode_id = fp.prestatiecode_id
+        join public.dim_prestatiecode dp on dp.prestatiecode = fp.prestatiecode_id
         where fp.contract_id = p_contract_id
           and fp.periode = p_periode
           and dp.telt_voor_mu = true
@@ -71,7 +71,7 @@ $$;
 
 pgTAP tests EERST:
 - **Voltijds baseline**: contract PC 200, 164u gewerkt in maand (=38×52/12=164.67), verwachte μ ≈ 1.0000.
-- **Tijdelijke urenvermindering**: contract met 40u prestatie `normale_uren` + 20u prestatie `tijdelijke_urenvermindering` in dezelfde maand → Q = 40u (niet 60u!) → μ ≈ 0.2440 (40 / 164.67). Bewijst dat `telt_voor_mu` filter werkt.
+- **Tijdelijke urenvermindering**: contract met 40u prestatie `normaal_gewerkt` + 20u prestatie `tijdelijke_urenvermindering` in dezelfde maand → Q = 40u (niet 60u!) → μ ≈ 0.2440 (40 / 164.67). Bewijst dat `telt_voor_mu` filter werkt.
 - **Overuren**: 200u prestatie in maand van 164.67 ref-uren → μ ≈ 1.2145 > 1. Constitution Principe IV toestaat overuren via μ > 1.
 - **PC 124 outlier**: zelfde 164u prestatie voor PC 124 (40u/week = 173.33 ref-uren) → μ ≈ 0.9462 < 1.
 - **fte_breuk vs μ**: contract met `fte_breuk = 0.5` (deeltijds) MAAR 100u werkelijke prestatie → μ = 100 / 164.67 ≈ 0.6072 (NIET 0.5). Bewijst dat function μ berekent, niet fte_breuk gebruikt.

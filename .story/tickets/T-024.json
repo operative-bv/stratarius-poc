@@ -4,13 +4,14 @@
     "T-019",
     "T-013"
   ],
-  "completedDate": null,
+  "claimedBySession": "1297c12f-39ba-4e30-868d-b021b5a56c5c",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Pure functie calc_mu(contract_id, periode) die μ = Q/S berekent: Q = som van uren waar dim_prestatiecode.telt_voor_mu = true (Principe II data-driven), S = gemiddelde wekelijkse arbeidsduur uit param_arbeidsduur temporeel gejoind op contract.pc_id en periode, geconverteerd naar dezelfde periode-basis. Load-bearing voor Principe IV: μ &lt; fte_breuk bij tijdskrediet, μ = fte_breuk bij deeltijds. Drijft de RSZ-kost pro rata schaling in cascade stap 3-4. Uitgesplitst uit T-041 om onafhankelijk testbaar én herbruikbaar te zijn in mart_loonkloof-berekening.",
   "id": "T-024",
   "order": 30,
   "phase": "calculation-cascade",
-  "status": "open",
+  "status": "complete",
   "title": "μ = Q/S derivation (effectieve prestatiebreuk) als pure functie",
   "type": "feature"
 }
