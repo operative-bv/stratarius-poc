@@ -43,13 +43,11 @@ export default function AccountSelector({ className, accountId, onAccountSelecte
 
     const { data: accounts } = useAccounts();
 
-    const { teamAccounts, personalAccount, selectedAccount } = useMemo(() => {
-        const personalAccount = accounts?.find((account) => account.personal_account);
+    const { teamAccounts, selectedAccount } = useMemo(() => {
         const teamAccounts = accounts?.filter((account) => !account.personal_account);
         const selectedAccount = accounts?.find((account) => account.account_id === accountId);
 
         return {
-            personalAccount,
             teamAccounts,
             selectedAccount,
         }
@@ -75,28 +73,6 @@ export default function AccountSelector({ className, accountId, onAccountSelecte
                         <CommandList>
                             <CommandInput placeholder="Search account..." />
                             <CommandEmpty>No account found.</CommandEmpty>
-                            <CommandGroup heading="Personal Account">
-                                <CommandItem
-                                    key={personalAccount?.account_id}
-                                    onSelect={() => {
-                                        if (onAccountSelected) {
-                                            onAccountSelected(personalAccount!)
-                                        }
-                                        setOpen(false)
-                                    }}
-                                    className="text-sm"
-                                >
-                                    {personalAccount?.name}
-                                    <Check
-                                        className={cn(
-                                            "ml-auto h-4 w-4",
-                                            selectedAccount?.account_id === personalAccount?.account_id
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                        )}
-                                    />
-                                </CommandItem>
-                            </CommandGroup>
                             {Boolean(teamAccounts?.length) && (
                                 <CommandGroup heading="Teams">
                                     {teamAccounts?.map((team) => (
