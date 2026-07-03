@@ -66,36 +66,27 @@ create or replace function public.cascade_stap1_rsz_grondslag(
     set search_path = public, pg_temp
 as $$
     with
-    som_rsz_plichtige as (
-        select coalesce(sum(fl.bedrag), 0::numeric(18, 4))::numeric(18, 4) as bedrag
+    -- Single scan van fact_looncomponent via FILTER clauses: halveert I/O
+    -- t.o.v. twee aparte CTEs met identieke JOIN + WHERE (fold code review).
+    -- rsz_plichtig en is_basisloon zijn onafhankelijke gedragstags — een rij kan
+    -- in beide FILTERs voorkomen (bv. basisloon is beide true), FILTER behoudt dit.
+    lonen as (
+        select
+            coalesce(sum(fl.bedrag) filter (where dl.rsz_plichtig), 0)::numeric(18, 4)   as rsz_grondslag,
+            coalesce(sum(fl.bedrag) filter (where dl.is_basisloon), 0)::numeric(18, 4)   as maandloon
         from public.fact_looncomponent fl
         join public.dim_looncomponent dl on dl.component_id = fl.component_id
-        where fl.contract_id  = p_contract_id
-          and fl.periode      = p_periode
-          and fl.scenario_id  = p_scenario_id
-          and dl.rsz_plichtig = true
-    ),
-    maandloon as (
-        select coalesce(sum(fl.bedrag), 0::numeric(18, 4))::numeric(18, 4) as bedrag
-        from public.fact_looncomponent fl
-        join public.dim_looncomponent dl on dl.component_id = fl.component_id
-        where fl.contract_id   = p_contract_id
-          and fl.periode       = p_periode
-          and fl.scenario_id   = p_scenario_id
-          and dl.is_basisloon  = true
-    ),
-    contract_pc as (
-        select c.pc_id
-        from public.dim_contract c
-        where c.contract_id = p_contract_id
+        where fl.contract_id = p_contract_id
+          and fl.periode     = p_periode
+          and fl.scenario_id = p_scenario_id
     ),
     uurloon as (
         select public.uurloon_van_maandloon(
-            m.bedrag,
-            (select pc_id from contract_pc),
+            l.maandloon,
+            (select c.pc_id from public.dim_contract c where c.contract_id = p_contract_id),
             p_periode
         ) as bedrag
-        from maandloon m
+        from lonen l
     ),
     overloon as (
         -- Data-driven filter: toeslag_pct IS NOT NULL identificeert overuren-prestatiecodes.
@@ -103,8 +94,8 @@ as $$
         -- had_rows onderscheidt de twee gevallen zodat NULL alleen bij "overuren aanwezig
         -- maar uurloon-berekening faalde" propageert — geen silent 0 dus.
         select
-            sum(fp.uren::numeric(18, 4) * u.bedrag * dp.toeslag_pct::numeric(18, 4))::numeric(18, 4) as sum_bedrag,
-            count(*) > 0 as had_rows
+            sum(fp.uren * u.bedrag * dp.toeslag_pct)::numeric(18, 4) as bedrag,
+            count(*) > 0                                             as had_rows
         from public.fact_prestatie fp
         join public.dim_prestatiecode dp on dp.prestatiecode = fp.prestatiecode_id
         cross join uurloon u
@@ -113,11 +104,11 @@ as $$
           and dp.toeslag_pct is not null
     )
     select case
-        when o.had_rows and o.sum_bedrag is null
+        when o.had_rows and o.bedrag is null
             then null::numeric(18, 4)  -- overuren aanwezig maar uurloon niet te berekenen → propageer NULL
-        else (s.bedrag + coalesce(o.sum_bedrag, 0::numeric(18, 4)))::numeric(18, 4)
+        else (l.rsz_grondslag + coalesce(o.bedrag, 0::numeric(18, 4)))::numeric(18, 4)
     end
-    from som_rsz_plichtige s
+    from lonen l
     cross join overloon o;
 $$;
 
