@@ -1,7 +1,10 @@
 BEGIN;
+-- Depends on dim_pc seed rows: 111, 124, 200, 302 (see supabase/migrations/20260703020000_dim_pc.sql).
+-- Als dim_pc seed IDs herbenoemd worden, faalt deze test suite als indicator van cross-migration coupling.
+
 create extension "basejump-supabase_test_helpers" version '0.0.6';
 
-select plan(138);
+select plan(139);
 
 select tests.create_supabase_user('test_reader');
 
@@ -842,8 +845,11 @@ select throws_ok(
     '23P01'
 );
 
--- Two open-ended: seed one, then insert another open-ended → conflict
--- (need a clean slate for this test since single-key exclusion means any two open-ended will overlap)
+-- Two open-ended (geldig_tot NULL) op single-key exclusion — 23P01.
+-- Reset state met delete: single-key exclusion (alleen daterange, geen discriminator)
+-- betekent dat elke geldige eerder-geïnserte row ook 'infinity'-range zou raken. Principe I
+-- test is dat 2 open-ended rows onmogelijk zijn, niet dat delete er niet werkt — de delete
+-- staat binnen BEGIN/ROLLBACK van de test-transactie en heeft geen invloed op andere sessies.
 delete from public.param_wagen_mobiliteit;
 insert into public.param_wagen_mobiliteit (geldig_van, geldig_tot, referentie_co2, minimumbijdrage, vaa_coefficient, bron_url)
     values ('2020-01-01', null, 91, 31.9900, 1.00000000, 'x');
@@ -871,10 +877,16 @@ select is(
     'omitted co2_formule_json defaults to empty jsonb (DEFAULT contract for import scripts)'
 );
 
--- CO2 range CHECK negative (1 assertion) — waarde 40 < 50 → 23514
+-- CO2 range CHECK negative (2 assertions) — waarde 40 < 50 en 401 > 400 → 23514
 select throws_ok(
     $$ insert into public.param_wagen_mobiliteit (geldig_van, geldig_tot, referentie_co2, minimumbijdrage, vaa_coefficient, bron_url)
        values ('2029-06-01', '2030-01-01', 40, 31.9900, 1.00000000, 'x') $$,
+    '23514'
+);
+
+select throws_ok(
+    $$ insert into public.param_wagen_mobiliteit (geldig_van, geldig_tot, referentie_co2, minimumbijdrage, vaa_coefficient, bron_url)
+       values ('2029-06-01', '2030-01-01', 401, 31.9900, 1.00000000, 'x') $$,
     '23514'
 );
 
