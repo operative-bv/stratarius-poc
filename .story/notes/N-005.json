@@ -1,14 +1,13 @@
 {
-  "content": "**Question**: Basejump ships met Stripe billing scaffolding (billing-functions, billing-webhooks, migrations, account_billing_status component). T-002 verwijdert marketing pagina's maar niet billing.\n\nOpties:\n- **Keep billing scaffolding**: nuttig als de POC snel richting SaaS pricing moet. Complexiteit blijft voor onderhoud.\n- **Rip out billing**: schoner voor pure POC-fase; add-back als een expliciet ticket wanneer commerciëel model duidelijk is.\n\n**Aanbevolen voor POC**: Rip out (voor POC is billing afleider), add-back-ticket voorbereiden voor Phase 8+. Als billing wél wordt behouden, Constitution amendment nodig voor Stripe scope-uitbreiding.\n\n**Impact op tickets**: extra chore-ticket in Phase 1 (T-002 uitbreiden of nieuwe) om supabase/functions/billing-*, src/lib/actions/billing.ts, src/components/basejump/account-billing-status.tsx etc. te verwijderen.",
+  "content": "**DECIDED 2026-07-03**: Optie \"Behouden, disabled\" gekozen. Billing scaffolding blijft in codebase, maar wordt operationeel uitgeschakeld voor POC.\n\n**Beslissing**:\n- Stripe env-vars NIET zetten in productie (en `.env.example` blijft ze documenteren als \"may be removed if N-005 flips to rip-out\").\n- Billing UI-links verwijderen uit dashboard (Settings → Billing menu-items uit navigation).\n- billing-functions/, billing-webhooks/, migrations 20240414162131_basejump-billing.sql, src/lib/actions/billing.ts, src/components/basejump/account-billing-status.tsx BLIJVEN op disk. Als POC later commerciëel model verheldert, is add-back triviaal.\n\n**Impact op tickets**:\n- Nieuwe ticket T-040 (foundation): \"Disable billing UI + navigation links\". Behoudt code, verwijdert UI-toegang.\n- Basejump billing config check: `enable_team_account_billing` / `enable_personal_account_billing` op false in basejump.config.\n\n**Reasoning**: minder cleanup nu, meer complexity behouden. Verantwoordbaar voor POC-fase; volledige rip-out zou ook add-back later duurder maken.",
   "createdDate": "2026-07-03",
   "id": "N-005",
-  "status": "active",
+  "status": "archived",
   "tags": [
-    "decision-pending",
-    "phase-1",
-    "scope",
-    "basejump"
+    "decided",
+    "basejump",
+    "scope"
   ],
-  "title": "Decision: Basejump Stripe billing in POC scope of ripped out?",
+  "title": "DECIDED: Basejump billing scope — behouden, disabled",
   "updatedDate": "2026-07-03"
 }

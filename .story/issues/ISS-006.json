@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-006",
+  "impact": "createClient() fails if SUPABASE env missing; middleware fails same way. Env hardening out of T-002 scope.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[resilience] createClient() fails if SUPABASE env missing; middleware fails same way. Env har"
+}

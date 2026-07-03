@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Follow-up op N-007 decision (team-only tenant model). Migration: set enable_personal_account_billing = false in basejump.config table. UI: verwijder of redirect src/app/dashboard/(personalAccount)/ route-groep — leidt legacy links door naar team-selector /dashboard. Update src/components/dashboard/settings-navigation.tsx: verwijder personal-account menu-items. Test: nieuwe user-signup gaat direct naar team-creation flow. Bereidt T-005 voor: dim_legale_entiteit FK kan straight to accounts.id met CHECK personal_account = false.",
+  "id": "T-039",
+  "order": 40,
+  "phase": "foundation",
+  "status": "open",
+  "title": "Disable Basejump personal accounts + redirect legacy routes",
+  "type": "task"
+}

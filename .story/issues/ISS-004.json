@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-004",
+  "impact": "/ → 500 without Supabase env. Acceptable per plan; T-003 fixes .env.example completeness downstream.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[risk] / → 500 without Supabase env. Acceptable per plan; T-003 fixes .env.example comp"
+}

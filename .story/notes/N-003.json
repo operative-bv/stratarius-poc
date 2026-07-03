@@ -1,13 +1,13 @@
 {
-  "content": "**Constitution** legt `numeric(18,4)` vast voor geldbedragen. Onduidelijk voor niet-geld numerics:\n\n- `fte_breuk`: momenteel `numeric(6,4)` in T-006 — genoeg voor 0.0000-9.9999, praktisch 0.0000-1.0000. Prima.\n- `mu` (μ = Q/S): praktisch bereik 0.0000-1.5000 (overuren kunnen &gt;1 duwen). `numeric(6,4)` volstaat.\n- Structurele vermindering forfait: geld → `numeric(18,4)` (constitution).\n- Coefficient_a/b in param_structurele: dimensieloos, praktisch 0.0-9.9 met 6-8 significant digits. `numeric(12,8)` beter voor precisie.\n- Index_coefficient in param_index: rond 1.02 tot 1.10, 6 decimalen nodig. `numeric(10,6)`.\n\n**Aanbevolen policy**: geld = `numeric(18,4)`, breuken (0..&lt;2) = `numeric(6,4)`, coefficients = `numeric(12,8)`. Vastleggen in Constitution PATCH-bump wanneer bevestigd.",
+  "content": "**DECIDED 2026-07-03**: Gedifferentieerde policy aangenomen. Constitution bumped v1.0.0 → v1.0.1 (PATCH) met de precision tabel toegevoegd aan Schema Naming Conventions.\n\n**Beslissing**:\n- Geld: `numeric(18,4)` (constitution, ongewijzigd)\n- Breuken (0..2): `numeric(6,4)` — fte_breuk, mu\n- Dimensieloze coëfficiënten: `numeric(12,8)` — param_structurele coefficients\n- Indexcoëfficiënten: `numeric(10,6)` — param_index\n- Percentages als tarieven: `numeric(6,4)` — RSZ, VAA\n\n**Impact op tickets**:\n- T-006 (dim_contract.fte_breuk) — al numeric(6,4) in ticket description, aligned.\n- T-016 (param_structurele + doelgroepvermindering) — description updaten met coefficient precision.\n- T-017 (param_index + andere) — description updaten met index_coefficient numeric(10,6).\n- T-015 (param_rsz) — tarief numeric(6,4) toevoegen aan description.\n\nZie Constitution v1.0.1, Schema Naming Conventions sectie voor de bindende tabel.",
   "createdDate": "2026-07-03",
   "id": "N-003",
-  "status": "active",
+  "status": "archived",
   "tags": [
-    "decision-pending",
+    "decided",
     "constitution",
     "schema"
   ],
-  "title": "Decision: Non-money numeric precision (fte_breuk, μ, coefficients)",
+  "title": "DECIDED: Non-money numeric precision policy (gedifferentieerd)",
   "updatedDate": "2026-07-03"
 }

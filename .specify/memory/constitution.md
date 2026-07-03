@@ -2,17 +2,25 @@
 SYNC IMPACT REPORT
 ==================
 
-Version change: — → 1.0.0 (initial ratification)
-Bump rationale: Fresh adoption; no prior version to compare against.
+Version change: 1.0.0 → 1.0.1 (2026-07-03 amendment)
+Bump rationale: PATCH — adds a non-money numeric precision policy to
+Schema Naming Conventions. Codifies existing implied practice; does not
+introduce new principles or change existing ones. Resolves decision N-003.
 
-Principles added (all NEW):
+Amendment history:
+  - 1.0.1 (2026-07-03): added "Non-money numeric precision" subsection
+    under Schema Naming Conventions. No principle changes.
+  - 1.0.0 (2026-07-03): initial ratification. See original bump rationale
+    at bottom of this SIR.
+
+Principles (unchanged from 1.0.0):
   I.   Effective-Dating Everywhere (NON-NEGOTIABLE)
   II.  Data-Driven Behavior, No Hardcoded Logic
   III. Strict Separation of Parameters, Facts, and Logic
   IV.  Two Fractions, Never Conflated
   V.   Test-First for the Calculation Cascade (NON-NEGOTIABLE)
 
-Sections added:
+Sections (unchanged headings; content added under Schema Naming):
   - Schema Naming Conventions
   - Domain, Compliance & Sources
   - Development Workflow & Quality Gates
@@ -206,6 +214,20 @@ feature_flags) volgt dezelfde Engelse conventie.
 `rsz`, `pc`, `kbo`, `bv`, `riziv`, `rva`, `vte`, `fod`, `cao`, `sz`, `vaa`, `fso`,
 `bev`.
 
+**Non-money numeric precision** (vastgelegd in v1.0.1, ratificeert N-003):
+
+| Semantiek | Postgres type | Rationale |
+|---|---|---|
+| Geldbedragen | `numeric(18,4)` | Constitution Domain sectie — centsprecisie in cascade-tussenberekeningen, afronding pas bij eindpresentatie. |
+| Breuken (0 ≤ x ≤ 2) | `numeric(6,4)` | `fte_breuk`, `mu`, andere breuk-achtige verhoudingen. 4 decimalen dekt praktische precisie; overuren-scenario's kunnen μ > 1 pushen dus bereik 0-9.9999. |
+| Dimensieloze coëfficiënten | `numeric(12,8)` | `param_structurele_vermindering.coefficient_a`/`_b`, coefficiënt-parameters uit officiële formules. 8 decimalen voor precisie in vermenigvuldigingsketens. |
+| Indexcoëfficiënten | `numeric(10,6)` | `param_index.index_coefficient` — praktisch bereik 0.95-1.15, 6 decimalen matcht FOD Economie publicaties. |
+| Percentages als tarieven | `numeric(6,4)` | RSZ-tarieven, VAA-coëfficiënten. Opgeslagen als decimaal (bv 0.2540 voor 25.40%), niet als integer basispunten. |
+
+**MUST NOT**: `float`, `double precision`, of JavaScript `number` voor iets in deze
+lijst. `integer` voor cent-basispunten is ook verboden (verliest precisie in de
+cascade).
+
 ## Domain, Compliance & Sources
 
 **Bron-hiërarchie voor parameters**: elke rij in de parameterlaag MOET een `bron_url`
@@ -299,4 +321,4 @@ getoetst en, waar relevant, naar welke testcases die verifiëren.
 - Per-feature: `.specify/specs/NNN-slug/plan.md` bevat de concrete Constitution
   Check-antwoorden voor die feature.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-03 | **Last Amended**: 2026-07-03
+**Version**: 1.0.1 | **Ratified**: 2026-07-03 | **Last Amended**: 2026-07-03

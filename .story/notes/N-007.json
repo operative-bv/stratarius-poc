@@ -1,14 +1,13 @@
 {
-  "content": "**Question**: Basejump biedt zowel personal accounts (per user) als team accounts (multi-user). Stratarius' customers zijn accountantskantoren / HR-adviseurs — dat zijn teams.\n\nOpties:\n- **Team-only**: `enable_personal_account_billing = false` in Basejump config, redirect personal account routes naar team-selector. Simpeler mentaal model.\n- **Beide**: personal accounts voor solo-adviseurs, team accounts voor kantoren. Complexer maar breder addressable market.\n\n**Aanbevolen voor POC**: Team-only. Personal accounts uitschakelen in Basejump config, dashboard/(personalAccount)/ routes redirecten naar team-selector. Vermijdt dubbele RLS-paden en confusie in dim_legale_entiteit ownership.\n\n**Bepaalt**: T-005 (dim_legale_entiteit tenant-scoping) + T-002 UI-cleanup scope.",
+  "content": "**DECIDED 2026-07-03**: Team-only aangenomen. Personal accounts worden uitgeschakeld voor Stratarius' tenant model.\n\n**Beslissing**:\n- `enable_personal_account_billing = false` in Basejump config (SQL migration).\n- `src/app/dashboard/(personalAccount)/` route-groep verwijderen of redirecten naar team-selector.\n- Team accounts zijn de ENIGE workspaces waar `dim_legale_entiteit` aan koppelt.\n\n**Impact op tickets**:\n- Nieuwe ticket T-039 (foundation): \"Disable personal accounts + redirect legacy routes\".\n- T-005 (dim_legale_entiteit.basejump_account_id): FK MOET wijzen naar accounts.id WHERE personal_account = false. Add CHECK constraint of RLS policy die dit bewaakt.\n- T-005 description updaten: expliciet \"team accounts only\" vermelden.\n\n**Reasoning**: Stratarius customers zijn accountantskantoren/HR-adviseurs — dat zijn teams. Solo-adviseurs kunnen sowieso een team met 1 lid aanmaken. Simpeler mentaal model, één RLS-pad in dim_legale_entiteit.",
   "createdDate": "2026-07-03",
   "id": "N-007",
-  "status": "active",
+  "status": "archived",
   "tags": [
-    "decision-pending",
-    "phase-1",
+    "decided",
     "basejump",
-    "auth"
+    "tenant-model"
   ],
-  "title": "Decision: Basejump personal_account voor tenant workspaces",
+  "title": "DECIDED: Basejump — team-only voor tenant workspaces",
   "updatedDate": "2026-07-03"
 }

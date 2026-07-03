@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-003",
+  "impact": "Login page Back-link may cause guest bounce loop. Noted as out-of-scope cosmetic follow-up.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[scope] Login page Back-link may cause guest bounce loop. Noted as out-of-scope cosmetic"
+}

@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-005",
+  "impact": "Wordmark Link could add focus-visible ring for keyboard users. Deferred as UI polish; deleted BasejumpLogo had no special conventions to preserve.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[a11y] Wordmark Link could add focus-visible ring for keyboard users. Deferred as UI po"
+}
