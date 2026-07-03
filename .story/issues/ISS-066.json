@@ -1,0 +1,19 @@
+{
+  "components": [
+    "cascade",
+    "wagen"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-066",
+  "impact": "Cascade stap 8 wagen/mobiliteit. param_wagen_mobiliteit heeft co2_formule_json + vaa_coefficient + minimumbijdrage. fact_wagen bestaat. Complex CO2-based berekening: max(minimumbijdrage, vaa_coefficient × (CO2 - referentie_co2)). Filed vanuit T-028 scope-reductie 2026-07-03.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-028"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Cascade stap 8: wagen/mobiliteit (CO2-formule + VAA + minimumbijdrage)"
+}

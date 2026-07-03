@@ -1,0 +1,20 @@
+{
+  "components": [
+    "cascade",
+    "arbeidsongevallen",
+    "schema"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-067",
+  "impact": "Cascade stap 9 vereist nieuwe param_arbeidsongevallen tabel (per sector/PC, verzekeringstarief). Bestaat niet in huidige schema. Filed vanuit T-028 scope-reductie.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-028"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Cascade stap 9: arbeidsongevallenverzekering (param_arbeidsongevallen tabel + PC rates)"
+}

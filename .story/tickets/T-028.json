@@ -3,13 +3,14 @@
     "T-027",
     "T-020"
   ],
-  "completedDate": null,
+  "claimedBySession": "401b3dc0-c369-4457-8576-cd11f5eff223",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
-  "description": "Stap 7: cascade_stap7_extralegaal per SZ-behandeling gedrag (Normaal loon regime = gewone bijdrage; VIN = aparte bijdrage; Vrijgesteld = geen SZ maar wel plafond op forfait). Rekent werkgeverskost incl gekoppelde bijkosten (uitgiftekost cheques, groepsverzekeringstaks 8.86+4.4%). Stap 8: cascade_stap8_wagen berekent TCO (afschrijving + brandstof + verzekering + onderhoud) + CO2-solidariteitsbijdrage; VAA is expliciet EXCLUDED (Principe II: dim_looncomponent.is_werkgeverskost=false voor VAA). Stap 9: cascade_stap9_arbeidsongevallen (premie op basis van pc_id × sector-risicocategorie × grondslag). Eindaggregatie schrijft fact_loonkost decomposed per kostenblok.",
+  "description": "Pure functie cascade_stap7_extralegaal(contract_id, periode, scenario_id). Somt extralegaal-componenten uit fact_looncomponent × taks_pct uit param_extralegaal met voordeeltype match. Scope-reduced 2026-07-03: stap 8 wagen/mobiliteit (CO2 formule) en stap 9 arbeidsongevallen (geen param) verplaatsen naar ISS follow-ups.",
   "id": "T-028",
   "order": 70,
   "phase": "calculation-cascade",
-  "status": "open",
-  "title": "Rekencascade stap 7-9: extralegaal → wagen & mobiliteit → arbeidsongevallen",
+  "status": "complete",
+  "title": "Rekencascade stap 7: extralegaal (scope-reduced)",
   "type": "feature"
 }
