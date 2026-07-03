@@ -1,12 +1,13 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "claimedBySession": "7405e6af-a391-45e2-8b3d-f9ce92b91fe4",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Migration voor param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url NOT NULL) en param_doelgroepvermindering (gewest enum vlaanderen|wallonie|brussel, doelgroep, geldig_van, geldig_tot, forfait, coefficient, voorwaarden_json, bron_url NOT NULL). Losgetrokken van elkaar per PDF Laag 3: structurele is per categorie, doelgroep is per gewest × doelgroep. Beide pro rata μ in de rekencascade. Exclusion constraint tegen overlappende tijdvakken idem.",
   "id": "T-016",
   "order": 20,
   "phase": "parameter-layer",
-  "status": "open",
+  "status": "complete",
   "title": "Migration: param_structurele_vermindering + param_doelgroepvermindering",
   "type": "task"
 }
