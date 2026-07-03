@@ -1,0 +1,19 @@
+{
+  "components": [
+    "ui",
+    "cascade"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-073",
+  "impact": "T-035 MVP simulator gebruikt direct RPC calls (skip synthetic contract creation). Volledig scenario per ticket description: server action moet dim_contract insert + fact_prestatie + fact_looncomponent onder what-if scenario, cascade run, fact_loonkost persist, redirect naar /simulator/[scenario_id] result page. Filed vanuit T-035 push-through.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-035"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Simulator MVP: synthetic contract flow (dim_contract + fact_* + fact_loonkost write)"
+}
