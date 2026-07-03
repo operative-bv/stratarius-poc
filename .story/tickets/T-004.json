@@ -1,12 +1,13 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "claimedBySession": "bd976f57-9f92-4185-805a-1c651cf65920",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Migration voor dim_persoon (persoon_id PK, geslacht, geboortedatum, opleidingsniveau) en dim_functie (functie_id PK, functieniveau, genderneutrale_weging). Persoon-attributen strict gescheiden van dim_contract per Principe IV — beschermde/verklarende kenmerken horen op persoon, nooit op contract. RLS: read-restricted to tenant; SELECT op geslacht + opleidingsniveau vereist elevated policy (feed voor mart_loonkloof en Oaxaca-controls). dim_functie.functieniveau + genderneutrale_weging feeden T-051 Oaxaca-decompositie.",
   "id": "T-004",
   "order": 10,
   "phase": "schema-ruggengraat",
-  "status": "open",
+  "status": "complete",
   "title": "Migration: dim_persoon + dim_functie",
   "type": "task"
 }
