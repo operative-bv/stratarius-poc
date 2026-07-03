@@ -1,0 +1,23 @@
+{
+  "components": [
+    "tsconfig.json",
+    "supabase/functions",
+    "basejump"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-002",
+  "impact": "Basejump's tsconfig doesn't exclude `supabase/**`, so Next.js's type checker attempts to compile edge functions that use Deno URL imports (https://deno.land/...). Fails hard. Blocks `npm run build` end-to-end. Fix is one line in tsconfig.exclude. Was masked by stale .next cache before T-001. Not caused by T-001 changes.",
+  "location": [
+    "tsconfig.json",
+    "supabase/functions/billing-functions/index.ts:1"
+  ],
+  "phase": null,
+  "relatedTickets": [
+    "T-001"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "tsconfig includes Supabase edge functions (Deno) causing Next.js build to fail"
+}

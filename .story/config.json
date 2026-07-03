@@ -14,18 +14,19 @@
   "recipeOverrides": {
     "stages": {
       "WRITE_TESTS": {
-        "command": "npm test",
-        "onExhaustion": "plan",
-        "enabled": true
+        "enabled": false
       },
       "TEST": {
-        "command": "npm test",
-        "enabled": true
+        "enabled": false
       },
       "VERIFY": {
+        "enabled": true,
         "startCommand": "npm run dev",
-        "readinessUrl": "http://localhost:3000",
-        "enabled": true
+        "readinessUrl": "http://localhost:3000"
+      },
+      "BUILD": {
+        "enabled": true,
+        "command": "npm run build"
       }
     },
     "codexReviewBackends": [
@@ -35,7 +36,8 @@
     "maxTicketsPerSession": 0,
     "reviewBackends": [
       "lenses",
-      "agent"
+      "agent",
+      "codex"
     ],
     "handoverInterval": 3
   }

@@ -1,0 +1,18 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-001",
+  "impact": "Blocks `npm run build` on strict TypeScript. Pre-existing Basejump v0.0.3 bug — was masked by stale `.next` cache. Now exposed after T-001 purged .next during dead-code cleanup. Every subsequent BUILD verification in autonomous mode will fail until fixed. Similar untyped-children pattern may exist in sibling Basejump components (settings/layout.tsx sibling files).</impact>\n<parameter name=\"components\">[\"src/app/dashboard/(personalAccount)/settings/layout.tsx\", \"basejump\"]",
+  "location": [
+    "src/app/dashboard/(personalAccount)/settings/layout.tsx:5"
+  ],
+  "phase": null,
+  "relatedTickets": [
+    "T-001"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Basejump boilerplate: implicit any type in PersonalAccountSettingsPage children param"
+}

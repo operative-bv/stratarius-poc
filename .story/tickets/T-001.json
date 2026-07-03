@@ -1,12 +1,13 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "claimedBySession": "db889388-0f9c-4af7-b5d6-aecf6e942da1",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Basejump levert zowel een root proxy.ts als src/middleware.ts, beide roepen updateSession aan via @/lib/supabase/proxy. Kies één (bij voorkeur src/middleware.ts per Next.js App Router-conventie) en verwijder de andere. Behoud de matcher config die _next/static, _next/image, favicon en image extensions uitsluit. Verifieer dat SSR-sessie-refresh nog werkt door end-to-end login → dashboard flow.",
   "id": "T-001",
   "order": 10,
   "phase": "foundation",
-  "status": "open",
+  "status": "complete",
   "title": "Consolideer proxy.ts + src/middleware.ts",
   "type": "task"
 }
