@@ -4,13 +4,14 @@
     "T-005",
     "T-007"
   ],
-  "completedDate": null,
+  "claimedBySession": "dcdd7eb8-ba67-4d5d-b3fd-ff58527512b4",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
   "description": "Migration voor dim_contract: contract_id PK, persoon_id FK, functie_id FK, legale_entiteit_id FK, pc_id FK, status enum (arbeider|bediende), fte_breuk numeric(6,4) check 0<=x<=1 (per Constitution v1.0.1 non-money precision policy: breuken = numeric(6,4)), geldig_van date NOT NULL, geldig_tot date NULL (open einde), vorige_contract_id self-FK (opvolgingsketen voor indexering/opslag/promotie), reden text (versioning audit trail — welke gebeurtenis creëerde deze versie). Check constraint: geldig_van < geldig_tot when geldig_tot IS NOT NULL. Principe I: geen UPDATE op contract-rijen buiten typo-fixes; wijziging = nieuwe rij met vorige_contract_id link.",
   "id": "T-006",
   "order": 30,
   "phase": "schema-ruggengraat",
-  "status": "open",
+  "status": "complete",
   "title": "Migration: dim_contract (ruggengraat, effective-dated)",
   "type": "task"
 }
