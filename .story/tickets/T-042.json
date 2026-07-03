@@ -1,0 +1,17 @@
+{
+  "blockedBy": [
+    "T-016",
+    "T-024",
+    "T-026",
+    "T-041"
+  ],
+  "completedDate": null,
+  "createdDate": "2026-07-03",
+  "description": "Pure functie cascade_stap3_structurele_vermindering(rsz_grondslag, mu, werkgeverscategorie, periode). Vereist HOTFIX: drempel_s0/drempel_s1 numeric(18,4) NOT NULL toevoegen aan param_structurele_vermindering met CHECK (drempel_s0 <= drempel_s1) + backfill 2024 waardes (S0=7207.20, S1=12435.31). Formule met EXPLICIETE haakjes: R = (F + α × GREATEST(0, S0-S) + δ × GREATEST(0, S-S1)) × μ. Principe IV: μ (NIET fte_breuk) drijft pro rata. Boundary tests S=S0 exact, S=S1 exact. Add SET search_path=public,pg_temp. Overweeg fail-fast RAISE op temporele join miss ipv silent NULL. Split test files 4-way. Filed vanuit T-026 plan-review 2026-07-03.",
+  "id": "T-042",
+  "order": 100,
+  "phase": "calculation-cascade",
+  "status": "open",
+  "title": "Rekencascade stap 3: structurele vermindering (F + α×max(0,S0-S) + δ×max(0,S-S1)) × μ",
+  "type": "task"
+}

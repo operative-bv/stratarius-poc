@@ -1,0 +1,22 @@
+{
+  "components": [
+    "cascade",
+    "performance",
+    "phase-5"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-042",
+  "impact": "cascade_stap1_rsz_grondslag (en toekomstige stap2/3) is scalar per (contract, periode, scenario). T-029 orchestrator zal loopen over N contracts × M periodes × S scenarios → N×M×S function invocations, elk met eigen planner + index probes. Op productieschaal dominant runtime. Voorstel: batch-variant cascade_stap1_rsz_grondslag_batch(periode, scenario) RETURNS TABLE(contract_id uuid, grondslag numeric) die één scan doet per (periode, scenario) en GROUP BY contract_id. Filed vanuit T-026 code-review performance lens.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-026",
+    "T-041",
+    "T-042"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "Cascade orchestrator T-029 needs batch-variant of stap1-3 functions (N+1 risk)"
+}

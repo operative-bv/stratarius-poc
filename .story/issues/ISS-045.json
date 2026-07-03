@@ -1,0 +1,20 @@
+{
+  "components": [
+    "cascade",
+    "schema",
+    "data-integrity"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-045",
+  "impact": "T-026 HOTFIX voegde is_basisloon boolean toe met default false, en set alleen 'basisloon' component op true. Elke toekomstige basisloon-variant (bv. basisloon_gedetacheerd, basisloon_flexbonus) moet expliciet is_basisloon=true krijgen — anders komt maandloon voor cascade_stap1 uurloon-berekening op 0 (silent bug: overloon = 0 zonder waarschuwing). Voorstel: (a) documentatie in dim_looncomponent seed migration + PR-template checklist, (b) test die verifieert alle 'basisloon'-familie componenten is_basisloon=true hebben.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [
+    "T-026"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "is_basisloon seed audit — voeg seed toe voor nieuwe basisloon-varianten wanneer die aan dim_looncomponent worden toegevoegd"
+}

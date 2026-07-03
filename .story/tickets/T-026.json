@@ -7,13 +7,14 @@
     "T-021",
     "T-025"
   ],
-  "completedDate": null,
+  "claimedBySession": "bc69540b-4df2-4753-ae30-6c2fcd435f34",
+  "completedDate": "2026-07-03",
   "createdDate": "2026-07-03",
-  "description": "Pure functies voor de eerste 3 cascade-stappen. Stap 1: cascade_stap1_rsz_grondslag(contract, periode, scenario) = geïndexeerd bruto basisloon + overloon (overuren × uurloon × toeslag). Stap 2: cascade_stap2_basis_patronale_rsz leest param_rsz keyed on (status, werkgeverscategorie, periode) via temporele join — Principe II: nooit hardcoded 25%. Stap 3: cascade_stap3_structurele_vermindering leest param_structurele_vermindering en past pro rata μ toe. TDD verplicht per Principe V: tests per werkgeverscategorie (1/2/3) × per tijdvak waar tarief wijzigt × per grensgeval (deeltijds, tijdskrediet, moederschap). Testnaam citeert bron (RSZ-brochure sectie).",
+  "description": "Pure functie cascade_stap1_rsz_grondslag(contract, periode, scenario) = som(rsz_plichtige fact_looncomponent.bedrag) + overloon. Overloon = SUM(over_uren × uurloon × toeslag_pct) via dim_prestatiecode.toeslag_pct filter (Principe II). Uurloon uit T-023 uurloon_van_maandloon(basisloon, pc_id, periode). Vereist HOTFIX: is_basisloon boolean toevoegen aan dim_looncomponent zodat \"wat is maandloon voor uurloon\" data-driven bepaald wordt (Principe II compliant). SCOPE REDUCTIE 2026-07-03: origineel T-026 was stap 1-3 in één ticket — plan-review vond 4 critical blockers waaronder unresolved basisloon design. Stap 2 → T-026b, stap 3 (met S0/S1 hotfix) → T-026c.",
   "id": "T-026",
   "order": 50,
   "phase": "calculation-cascade",
-  "status": "open",
-  "title": "Rekencascade stap 1-3: bruto+overloon → RSZ-grondslag → basis patronale RSZ → structurele vermindering",
+  "status": "complete",
+  "title": "Rekencascade stap 1: bruto+overloon → RSZ-grondslag (scope-reduced)",
   "type": "feature"
 }
