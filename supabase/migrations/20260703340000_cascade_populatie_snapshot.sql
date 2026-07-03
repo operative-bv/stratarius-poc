@@ -5,7 +5,8 @@
 
 create or replace function public.cascade_populatie_snapshot(
     p_periode date,
-    p_scenario_id uuid default null
+    p_scenario_id uuid default null,
+    p_functie_id uuid default null
 )
     returns table (
         contract_id uuid,
@@ -13,6 +14,7 @@ create or replace function public.cascade_populatie_snapshot(
         pc_id text,
         status text,
         werkgeverscategorie smallint,
+        functienaam text,
         bruto numeric(18, 4),
         stap2_basis_rsz numeric(18, 4),
         stap3_vermindering numeric(18, 4),
@@ -32,6 +34,7 @@ as $$
             c.pc_id,
             c.status,
             le.werkgeverscategorie,
+            f.functienaam,
             -- Bruto per contract per periode (basisloon)
             coalesce((
                 select sum(fl.bedrag)
@@ -44,8 +47,10 @@ as $$
             ), 0)::numeric(18, 4) as bruto
         from public.dim_contract c
         join public.dim_legale_entiteit le on le.legale_entiteit_id = c.legale_entiteit_id
+        join public.dim_functie f on f.functie_id = c.functie_id
         where c.geldig_van <= p_periode
           and (c.geldig_tot is null or c.geldig_tot > p_periode)
+          and (p_functie_id is null or c.functie_id = p_functie_id)
     )
     select
         c.contract_id,
@@ -53,6 +58,7 @@ as $$
         c.pc_id,
         c.status,
         c.werkgeverscategorie,
+        c.functienaam,
         c.bruto,
         coalesce(public.cascade_stap2_basis_patronale_rsz(c.bruto, c.status, c.werkgeverscategorie, p_periode), 0)::numeric(18, 4) as stap2_basis_rsz,
         coalesce(public.cascade_stap3_structurele_vermindering(c.bruto * 3, 1.0000, c.werkgeverscategorie, p_periode), 0)::numeric(18, 4) as stap3_vermindering,
@@ -88,7 +94,7 @@ as $$
     from contracten c;
 $$;
 
-comment on function public.cascade_populatie_snapshot(date, uuid) is
+comment on function public.cascade_populatie_snapshot(date, uuid, uuid) is
     'Populatie-snapshot: alle contracten in tenant + cascade output. RLS filtert via dim_contract / dim_legale_entiteit tenant-scoping.';
 
-grant execute on function public.cascade_populatie_snapshot(date, uuid) to authenticated;
+grant execute on function public.cascade_populatie_snapshot(date, uuid, uuid) to authenticated;

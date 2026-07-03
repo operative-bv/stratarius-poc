@@ -13,6 +13,7 @@ type PopRow = {
     pc_id: string;
     status: string;
     werkgeverscategorie: number;
+    functienaam: string;
     bruto: number;
     stap2_basis_rsz: number;
     stap3_vermindering: number;
@@ -24,6 +25,7 @@ type PopRow = {
 };
 
 type Scenario = { scenario_id: string; naam: string; kind: string };
+type Functie = { functie_id: string; functienaam: string };
 
 function roundFinal(value: number): string {
     const scaled = value * 100;
@@ -45,13 +47,13 @@ function sum(rows: PopRow[], key: keyof PopRow): number {
 export default async function PopulatiePage({
     searchParams,
 }: {
-    searchParams: Promise<{ periode?: string; scenario?: string; compare?: string }>;
+    searchParams: Promise<{ periode?: string; scenario?: string; team?: string; compare?: string }>;
 }) {
     const params = await searchParams;
     const periode = params.periode ?? "2024-06-01";
     const supabase = await createClient();
 
-    // Load scenarios list voor dropdown
+    // Load scenarios + teams (functies) voor dropdowns
     const { data: scenariosData } = await supabase
         .from("dim_scenario")
         .select("scenario_id, naam, kind")
@@ -61,19 +63,29 @@ export default async function PopulatiePage({
     const scenarioId = params.scenario ?? baseline?.scenario_id ?? null;
     const activeScenario = scenarios.find((s) => s.scenario_id === scenarioId);
 
-    // Load populatie snapshot voor actief scenario
+    const { data: functiesData } = await supabase
+        .from("dim_functie")
+        .select("functie_id, functienaam")
+        .order("functienaam", { ascending: true });
+    const functies = (functiesData ?? []) as Functie[];
+    const teamId = params.team && params.team !== "all" ? params.team : null;
+    const activeTeam = functies.find((f) => f.functie_id === teamId);
+
+    // Load populatie snapshot voor actief scenario + team
     const { data, error } = await supabase.rpc("cascade_populatie_snapshot", {
         p_periode: periode,
         p_scenario_id: scenarioId,
+        p_functie_id: teamId,
     });
     const rows = (data ?? []) as PopRow[];
 
-    // Optional compare-baseline
+    // Optional compare-baseline (zelfde team filter)
     let compareRows: PopRow[] = [];
     if (params.compare === "1" && baseline && scenarioId !== baseline.scenario_id) {
         const { data: compData } = await supabase.rpc("cascade_populatie_snapshot", {
             p_periode: periode,
             p_scenario_id: baseline.scenario_id,
+            p_functie_id: teamId,
         });
         compareRows = (compData ?? []) as PopRow[];
     }
@@ -105,6 +117,9 @@ export default async function PopulatiePage({
                                 {activeScenario.naam}
                             </Badge>
                         )}
+                        {activeTeam && (
+                            <Badge variant="outline">Team: {activeTeam.functienaam}</Badge>
+                        )}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -117,6 +132,20 @@ export default async function PopulatiePage({
                                     {scenarios.map((s) => (
                                         <SelectItem key={s.scenario_id} value={s.scenario_id}>
                                             {s.naam} <span className="text-xs text-muted-foreground">({s.kind})</span>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2 min-w-[160px]">
+                            <Label htmlFor="team">Team</Label>
+                            <Select name="team" defaultValue={teamId ?? "all"}>
+                                <SelectTrigger id="team"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Alle teams</SelectItem>
+                                    {functies.map((f) => (
+                                        <SelectItem key={f.functie_id} value={f.functie_id}>
+                                            {f.functienaam}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -163,6 +192,7 @@ export default async function PopulatiePage({
                             <thead>
                                 <tr className="border-b text-left text-xs text-muted-foreground">
                                     <th className="pb-2 pr-3">Contract</th>
+                                    <th className="pb-2 pr-3">Team</th>
                                     <th className="pb-2 pr-3">Status</th>
                                     <th className="pb-2 pr-3">PC</th>
                                     <th className="pb-2 pr-3 text-right">Bruto</th>
@@ -179,6 +209,7 @@ export default async function PopulatiePage({
                                 {rows.map((r) => (
                                     <tr key={r.contract_id} className="border-b hover:bg-muted/40">
                                         <td className="py-2 pr-3 font-mono text-xs">{r.contract_id.slice(0, 8)}</td>
+                                        <td className="py-2 pr-3 text-xs">{r.functienaam}</td>
                                         <td className="py-2 pr-3">
                                             <Badge variant={r.status === "arbeider" ? "outline" : "secondary"}>{r.status}</Badge>
                                         </td>
@@ -196,7 +227,7 @@ export default async function PopulatiePage({
                             </tbody>
                             <tfoot>
                                 <tr className="border-t-2 font-semibold bg-muted/40">
-                                    <td className="py-3 pr-3" colSpan={3}>Totaal populatie ({rows.length})</td>
+                                    <td className="py-3 pr-3" colSpan={4}>Totaal populatie ({rows.length})</td>
                                     <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.bruto)}</td>
                                     <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.rsz)}</td>
                                     <td className="py-3 pr-3 text-right tabular-nums text-green-600">−€ {roundFinal(totals.verm)}</td>
