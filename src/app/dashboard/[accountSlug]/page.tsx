@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Euro, TrendingUp, BarChart3, ArrowRight, GraduationCap, Wrench, Briefcase, Crown } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 type PopRow = {
     contract_id: string;
@@ -40,6 +41,19 @@ export default async function TeamDashboardPage({
 }) {
     const { accountSlug } = await params;
     const supabase = await createClient();
+
+    // Onboarding gate: geen dim_legale_entiteit → naar setup-wizard
+    const { data: accountData } = await supabase.rpc("get_account_by_slug", { slug: accountSlug });
+    if (accountData?.account_id) {
+        const { data: entiteitData } = await supabase
+            .from("dim_legale_entiteit")
+            .select("legale_entiteit_id")
+            .eq("basejump_account_id", accountData.account_id)
+            .limit(1);
+        if (!entiteitData || entiteitData.length === 0) {
+            redirect(`/dashboard/${accountSlug}/setup`);
+        }
+    }
 
     // Get scenarios voor default baseline
     const { data: scenariosData } = await supabase

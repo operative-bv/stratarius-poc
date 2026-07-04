@@ -1,0 +1,28 @@
+naam,geslacht,geboortedatum,opleidingsniveau,team,status,pc,bruto
+Bram De Vries,m,1976-01-01,middel_geschoold,Sales,bediende,200,3350
+Eva Janssens,v,1977-01-01,middel_geschoold,Sales,bediende,200,3500
+Kevin Peeters,m,1978-01-01,middel_geschoold,Sales,bediende,200,3650
+Sofie Willems,v,1979-01-01,middel_geschoold,Sales,bediende,200,3800
+Michiel Van Damme,m,1980-01-01,middel_geschoold,Sales,bediende,200,3950
+Karen Vermeulen,v,1981-01-01,middel_geschoold,Sales,bediende,200,4100
+Bart Coppens,m,1982-01-01,middel_geschoold,Sales,bediende,200,4250
+Anke De Ridder,v,1983-01-01,middel_geschoold,Sales,bediende,200,4400
+Sven Maes,m,1984-01-01,middel_geschoold,Sales,bediende,200,4550
+Tine Verhoeven,v,1985-01-01,middel_geschoold,Sales,bediende,200,4700
+Jonas De Bock,m,1976-01-01,hooggeschoold,Engineering,bediende,200,4650
+Katrien De Wit,v,1977-01-01,hooggeschoold,Engineering,bediende,200,4800
+Wouter Segers,m,1978-01-01,hooggeschoold,Engineering,bediende,200,4950
+Ellen Van Camp,v,1979-01-01,hooggeschoold,Engineering,bediende,200,5100
+Nils Verbeeck,m,1980-01-01,hooggeschoold,Engineering,bediende,200,5250
+Charlotte Goossens,v,1981-01-01,hooggeschoold,Engineering,bediende,200,5400
+Bram Claes,m,1982-01-01,hooggeschoold,Engineering,bediende,200,5550
+Sarah Michiels,v,1983-01-01,hooggeschoold,Engineering,bediende,200,5700
+Dirk Aerts,m,1976-01-01,middel_geschoold,Operations,bediende,200,3050
+Ann Willems,v,1977-01-01,middel_geschoold,Operations,arbeider,124,3200
+Peter De Meester,m,1978-01-01,middel_geschoold,Operations,bediende,200,3350
+Inge Van Loo,v,1979-01-01,middel_geschoold,Operations,arbeider,124,3500
+Marc Smets,m,1980-01-01,middel_geschoold,Operations,bediende,200,3650
+Els Van Rijckeghem,v,1981-01-01,middel_geschoold,Operations,arbeider,124,3800
+Geert Verlinden,m,1976-01-01,hooggeschoold,Management,bediende,200,6650
+Ilse Vandenberghe,v,1977-01-01,hooggeschoold,Management,bediende,200,6800
+Herman De Clercq,m,1978-01-01,hooggeschoold,Management,bediende,200,6950
