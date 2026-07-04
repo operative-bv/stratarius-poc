@@ -12,9 +12,9 @@
   "relatedTickets": [
     "T-025"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Fixed: scripts/check-round-final.sh grep-based lint dat cascade_stap*, cascade_populatie_snapshot, create_populatie_loonkost, create_simulator_scenario migrations checkt op non-round_final round() calls. Wrapper `npm run lint:sql-round`. Mart_loonkloof display-rounds zijn expliciet toegestaan (niet feedback naar cascade). Momenteel 0 violations.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "CI-hook: verifieer round_final is ENIGE rounding call-site (grep-based lint)"
 }

@@ -15,9 +15,9 @@
   "relatedTickets": [
     "T-001"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Al opgelost: tsconfig.json bevat `\"exclude\": [\"node_modules\", \"supabase/functions/**\"]` — Deno edge functions worden nu netjes uitgesloten. `npx tsc --noEmit` passeert clean. Marker gesloten 2026-07-04.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "tsconfig includes Supabase edge functions (Deno) causing Next.js build to fail"
 }

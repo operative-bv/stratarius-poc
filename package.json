@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint:sql-round": "bash scripts/check-round-final.sh"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.15",
