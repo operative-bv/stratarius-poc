@@ -38,12 +38,18 @@ export async function callOaxacaService(
     rows: OaxacaRow[],
     rechtsgrondslag: string,
 ): Promise<OaxacaResult> {
-    // Bepaal base URL via de huidige request-headers — werkt in dev + preview + prod
-    // zonder afhankelijk te zijn van VERCEL_URL (die niet altijd naar dezelfde deploy wijst).
-    const h = requestHeaders();
-    const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-    const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${proto}://${host}`;
+    // Base URL prioriteit:
+    //   1. PYTHON_SERVICE_URL env var — voor lokale dev die tegen prod-Python praat
+    //      (vercel dev serveert Python endpoints niet lokaal in Next.js projecten)
+    //   2. NEXT_PUBLIC_APP_URL env var — expliciete override
+    //   3. Huidige request headers — normaal gedrag in prod (self-call)
+    let baseUrl = process.env.PYTHON_SERVICE_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl) {
+        const h = requestHeaders();
+        const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+        const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+        baseUrl = `${proto}://${host}`;
+    }
 
     const body = JSON.stringify({ rows, rechtsgrondslag });
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -59,16 +65,23 @@ export async function callOaxacaService(
         headers["x-stats-signature"] = signature;
     }
 
-    const res = await fetch(`${baseUrl}/api/oaxaca`, {
+    const url = `${baseUrl}/api/oaxaca`;
+    const res = await fetch(url, {
         method: "POST",
         headers,
         body,
         cache: "no-store",
+        redirect: "manual",  // volg redirects NIET — help diagnostics als iets ons naar HTML stuurt
     });
 
-    if (!res.ok) {
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!res.ok || res.status >= 300) {
         const errBody = await res.text();
-        throw new Error(`oaxaca service ${res.status}: ${errBody.slice(0, 200)}`);
+        throw new Error(`oaxaca service ${res.status} at ${url} (${contentType}): ${errBody.slice(0, 200)}`);
+    }
+    if (!contentType.includes("application/json")) {
+        const errBody = await res.text();
+        throw new Error(`oaxaca service returned non-JSON at ${url} (${contentType}, status ${res.status}): ${errBody.slice(0, 200)}`);
     }
 
     return (await res.json()) as OaxacaResult;

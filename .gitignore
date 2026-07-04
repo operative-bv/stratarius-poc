@@ -45,3 +45,4 @@ next-env.d.ts
 .story/snapshots/
 .story/sessions/
 .story/status.json
+.env*

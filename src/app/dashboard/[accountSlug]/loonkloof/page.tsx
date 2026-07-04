@@ -84,14 +84,16 @@ export default async function LoonkloofPage({
             opleidingsniveau: opleidingMap.get(r.persoon_id) ?? "onbekend",
         }));
 
+        let redirectUrl: string;
         try {
             const result = await callOaxacaService(rows, "loonkloof analyse Q2 2024 via dashboard");
             const encoded = encodeURIComponent(JSON.stringify(result));
-            redirect(`/dashboard/${accountSlug}/loonkloof?oaxaca=${encoded}`);
+            redirectUrl = `/dashboard/${accountSlug}/loonkloof?oaxaca=${encoded}`;
         } catch (e) {
             const msg = e instanceof Error ? e.message : "unknown error";
-            redirect(`/dashboard/${accountSlug}/loonkloof?oaxaca_error=${encodeURIComponent(msg)}`);
+            redirectUrl = `/dashboard/${accountSlug}/loonkloof?oaxaca_error=${encodeURIComponent(msg)}`;
         }
+        redirect(redirectUrl);
     }
 
     let oaxacaResult: OaxacaResult | null = null;

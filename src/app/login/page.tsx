@@ -23,10 +23,16 @@ export default function Login({
     });
 
     if (error) {
-      return redirect(`/login?message=Could not authenticate user&returnUrl=${searchParams.returnUrl}`);
+      console.error("[signIn] Supabase auth error:", error.status, error.code, error.message);
+      const detail = `${error.status ?? "?"} ${error.code ?? "?"}: ${error.message}`;
+      const returnUrlParam = searchParams.returnUrl && searchParams.returnUrl !== "undefined"
+        ? `&returnUrl=${searchParams.returnUrl}` : "";
+      return redirect(`/login?message=${encodeURIComponent(detail)}${returnUrlParam}`);
     }
 
-    return redirect(searchParams.returnUrl || "/dashboard");
+    const target = searchParams.returnUrl && searchParams.returnUrl !== "undefined"
+      ? searchParams.returnUrl : "/dashboard";
+    return redirect(target);
   };
 
   const signUp = async (_prevState: any, formData: FormData) => {
