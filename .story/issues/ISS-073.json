@@ -11,9 +11,9 @@
   "relatedTickets": [
     "T-035"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Promoted to T-051 in fase 'Laag 4b: Productie' 2026-07-04. Substance bewaard in ticket description. Zie [[L-004]].",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "Simulator MVP: synthetic contract flow (dim_contract + fact_* + fact_loonkost write)"
 }

@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Accepted-for-poc: round_final client-side utility (exact banker's match met server) acceptabel — RPC-per-bedrag geoptimaliseerd naar client. Principe III behouden via twee-implementaties in sync. Zie [[L-001]]. 2026-07-04 triage.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[principle-iii] round_final RPC per bedrag = N RPC calls. Client-side utility acceptabel voor PO"
 }

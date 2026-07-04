@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Marker-issue. Substance verhuisd naar T-041 ticket description (input-validation via p_status). T-041 is complete.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[input-validation] Verplaatst naar T-041 (stap 2 gebruikt p_status)."
 }

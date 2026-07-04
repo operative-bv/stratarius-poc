@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Accepted-for-poc: Schema-review bewuste deferral / nice-to-have voor POC (convention-only, out-of-scope, of future ticket). Zie [[L-001]]. 2026-07-04 triage.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[historical-pcs] Deprecated PC seed deferred to future ticket when historical dim_contract data i"
 }

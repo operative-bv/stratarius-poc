@@ -1,0 +1,14 @@
+{
+  "content": "In dagelijkse taal spreken we van 'medewerker' waar het schema 'contract' zegt. Een medewerker kan meerdere contract-versies hebben (promotie, indexering, urenwijziging → nieuwe rij met vorige_contract_id). Huidige model heeft geen expliciet dim_medewerker; UI toont dim_contract-rijen direct wat verwarring veroorzaakt.\n\nOpties:\n1. UI-only fix: labels 'contract' → 'medewerker' in de UI, schema onaangeraakt. Voeg 'contract-versie' toe waar we specifiek de versie bedoelen (bv historie-view).\n2. View-based: `dim_medewerker` view die contract-chains groepeert (persoon_id + legale_entiteit_id + eerste geldig_van → current versie). RLS erft via dim_contract.\n3. Schema-refactor: dim_contract → dim_medewerker + dim_medewerker_versie. Zwaar want RLS + cascade functies raken.\n\nOverweeg 1+2: UI-terminologie fix + view voor 'huidige medewerker per tenant' queries. Filed 2026-07-04 na user-observatie tijdens strategische analyse-sessie.",
+  "createdDate": "2026-07-04",
+  "id": "N-010",
+  "status": "active",
+  "tags": [
+    "naming",
+    "ux",
+    "domain-model",
+    "terminologie"
+  ],
+  "title": "Terminologie-drift: contract ↔ medewerker",
+  "updatedDate": "2026-07-04"
+}

@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Duplicaat van ISS-073 (canonical simulator synthetic contract flow).",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[scope] Skip synthetic contract flow. MVP direct RPC calls."
 }

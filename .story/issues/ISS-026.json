@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Accepted-for-poc: Schema-review nice-to-have (toeslag_pct NULL test). Zie [[L-001]]. 2026-07-04 triage.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[test coverage] No test asserts toeslag_pct IS NULL for non-overuren rows. Nice-to-have; deferre"
 }

@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Accepted-for-poc: Schema-review nice-to-have (documentation rationale). Zie [[L-001]]. 2026-07-04 triage.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[documentation] toeslag_pct upper bound 2 (200%) is generous but harmless — could document ratio"
 }

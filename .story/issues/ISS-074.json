@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Accepted-for-poc: Radix Popover/Calendar deferred — native HTML5 date input volstaat voor POC. Zie [[L-001]]. 2026-07-04 triage.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[scope] Radix Popover/Calendar deferred. Native HTML5 date input volstaat voor POC."
 }

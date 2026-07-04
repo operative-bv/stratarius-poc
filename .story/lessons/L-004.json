@@ -1,0 +1,18 @@
+{
+  "content": "Wanneer een review-lens bevinding wordt verplaatst naar een ticket description of gefiled als een aparte canonical issue, sluit de originele marker in dezelfde sessie met resolution die naar de canonical wijst. Beide open laten creëert dubbel werk en inflateert issue-debt.",
+  "context": "14 marker-issues gevonden tijdens 2026-07-04 triage: ISS-037–041 (Verplaatst naar T-041/T-042), ISS-043 (→ ISS-042), ISS-057, 058, 059 (→ ISS-060/042), ISS-061, 062 (→ ISS-063), ISS-064 (→ ISS-065), ISS-070 (→ ISS-071), ISS-072 (→ ISS-073). Directe-close policy had +14 op tracker voorkomen. Zie [[poc-scope-decisions-not-in-tracker]].",
+  "createdDate": "2026-07-04",
+  "id": "L-004",
+  "lastValidated": "2026-07-04",
+  "reinforcements": 0,
+  "source": "postmortem",
+  "status": "active",
+  "supersedes": null,
+  "tags": [
+    "triage",
+    "issue-hygiene",
+    "review-lenses"
+  ],
+  "title": "Sluit 'Verplaatst naar' en 'Filed als' markers direct bij creatie canonical",
+  "updatedDate": "2026-07-04"
+}

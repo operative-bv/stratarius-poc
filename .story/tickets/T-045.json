@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-04",
+  "description": "T-027 cascade_stap4 POC sommeert alle matchende doelgroepverminderingen × μ. Productie moet Belgische non-cumulatie regels afdwingen (bv. structurele vermindering en bepaalde gewest-specifieke doelgroepen kunnen niet samen). Twee opties: (a) nieuwe dim_doelgroep_cumulatie tabel met verboden/toegestane combinaties, (b) voorwaarden_json extension in param_doelgroepvermindering met exclusion rules. Kies op basis van maintainability. Uitbreiding van cascade_stap4 met cumulatie-filter tussen \"matching\" en \"sommeren\". Behoud pure-function contract. Test met ≥3 real-world combinaties (bv. structurele + Vlaamse doelgroep). Gepromoot uit ISS-060 (T-027 self-review 2026-07-03).",
+  "id": "T-045",
+  "order": 10,
+  "phase": "productie",
+  "status": "open",
+  "title": "Doelgroepverminderingen: non-cumulatie policy (Belgische wet)",
+  "type": "task"
+}

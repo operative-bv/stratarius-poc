@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-04",
+  "description": "Cascade stap 8. Formule: kost = max(minimumbijdrage, vaa_coefficient × GREATEST(0, co2 - referentie_co2)). Alle data bestaat: param_wagen_mobiliteit (co2_formule_json + vaa_coefficient + minimumbijdrage) + fact_wagen (cataloguswaarde, co2, brandstoftype). Pure functie cascade_stap8_wagen_mobiliteit(fact_wagen_id, periode). Temporele join op param_wagen_mobiliteit (brandstoftype, periode). Test: diesel/benzine/hybride op verschillende CO2-niveaus + minimum-bijdrage floor. Add SET search_path=public,pg_temp. Gepromoot uit ISS-066 (T-028 scope-reductie 2026-07-03).",
+  "id": "T-048",
+  "order": 40,
+  "phase": "productie",
+  "status": "inprogress",
+  "title": "Cascade stap 8: wagen/mobiliteit (CO2-VAA + minimumbijdrage)",
+  "type": "task"
+}

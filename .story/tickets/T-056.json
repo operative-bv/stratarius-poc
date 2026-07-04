@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-04",
+  "description": "cascade_populatie_snapshot + /populatie UI filteren nu alleen op functie_id. Productie use-cases vereisen bredere subsetting. Toevoegen: pc_id (paritair comité), status (arbeider/bediende), gewest (via legale_entiteit.gewest — al kolom aanwezig in dim_legale_entiteit_gewest migration), ancienniteit_min/max_jaren (via dim_contract.geldig_van diff met p_periode), leeftijdscategorie_min/max (via dim_persoon.geboortedatum, GDPR-gate). Signature-optie: cascade_populatie_snapshot(periode, scenario_id?, filters jsonb) met filter-schema {pc_ids: text[], statussen: text[], gewesten: text[], ancienniteit_min: numeric, ancienniteit_max: numeric, leeftijd_min: int, leeftijd_max: int, functie_ids: uuid[]}. Backward compat via defaults. UI: filter-panel in /populatie met opslaan als preset (dim_populatie_filter tabel — POC-schaal ok, of skip). Ontdekt tijdens simulatie-analyse 2026-07-04.",
+  "id": "T-056",
+  "order": 120,
+  "phase": "productie",
+  "status": "open",
+  "title": "Subset-selectie uitbreiding: pc_id, status, gewest, ancienniteit-range",
+  "type": "feature"
+}

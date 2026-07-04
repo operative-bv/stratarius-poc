@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-04",
+  "description": "Alle 11 param_* tabellen zijn globaal (REVOKE INSERT from authenticated). Tenants kunnen dus geen eigen sectorbijdrage of extralegaal-tarief definiëren dat de globale waarde overrijdt. Design-opties: (a) nieuwe param_*_override tabel per relevant param-type met basejump_account_id + zelfde effective-dating als origineel + zelfde exclusion constraint uitgebreid met tenant, (b) param_* uitbreiden met nullable basejump_account_id (NULL = globaal, gevuld = tenant-override). Voorkeur (a) omdat het schema-symmetrie behoudt en overrides expliciet zichtbaar zijn. Cascade lookup wordt: eerst tenant-override, fallback naar globaal via COALESCE-select. Impact: cascade functie-signatures moeten p_legale_entiteit_id accepteren om tenant te resolven — breaking change. Design-beslissing per tabel: RSZ/plafond blijven globaal (wettelijk), sectorbijdrage/extralegaal/wagen_mobiliteit kunnen tenant-override hebben. Ontdekt tijdens multi-tenancy analyse 2026-07-04.",
+  "id": "T-053",
+  "order": 90,
+  "phase": "productie",
+  "status": "open",
+  "title": "Tenant-scoped parameter overrides (CAO-specifieke afwijkingen)",
+  "type": "feature"
+}

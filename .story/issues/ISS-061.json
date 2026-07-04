@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Duplicaat van ISS-063 (canonical bijzondere bijdragen productie: formule_json.toepassing wg-count is onderdeel van die scope).",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[domain-simplification] formule_json.toepassing (wg employee count) skipped voor POC. Filed als ISS."
 }

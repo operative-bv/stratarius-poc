@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Duplicaat van ISS-042 (canonical batch-variant / N+1 follow-up voor T-029 orchestrator; JSONB key checks vallen onder dezelfde batch-scope).",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[performance] JSONB key checks per row × 6 kandidaten × N contracten in T-029 orchestrator = N"
 }

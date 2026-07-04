@@ -13,9 +13,9 @@
     "T-032",
     "T-034"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Promoted to T-050 in fase 'Laag 4b: Productie' 2026-07-04. Substance bewaard in ticket description. Zie [[L-004]].",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "Persistent audit_log tabel voor mart_loonkloof refresh + GDPR reads"
 }

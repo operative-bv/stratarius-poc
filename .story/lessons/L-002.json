@@ -1,0 +1,19 @@
+{
+  "content": "Cascade-functies (T-023, T-024, T-026, T-041–T-044) propageren bewust NULL wanneer een verplichte input NULL is, in plaats van RAISE. Detectie van invalid contract_id, ontbrekende PC of ontbrekende periode is caller-side (T-029 orchestrator) verantwoordelijkheid. `silent-failure` en `input-validation` lens-bevindingen op individuele stap-functies zijn non-blocking.",
+  "context": "Pattern vastgesteld over T-023–T-044 cascade tickets. Consistent bevestigd door review lenses op ISS-044, ISS-047, ISS-048, ISS-051, ISS-052, ISS-054, ISS-055 — allen gesloten als accepted-for-poc 2026-07-04. Zie [[poc-scope-decisions-not-in-tracker]].",
+  "createdDate": "2026-07-04",
+  "id": "L-002",
+  "lastValidated": "2026-07-04",
+  "reinforcements": 0,
+  "source": "postmortem",
+  "status": "active",
+  "supersedes": null,
+  "tags": [
+    "cascade",
+    "sql",
+    "principe-v",
+    "contract"
+  ],
+  "title": "Cascade-functies: SQL NULL propagation is intentioneel contract",
+  "updatedDate": "2026-07-04"
+}

@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-04",
+  "description": "T-044 delivert alleen vakantiegeld provisie. Eindejaarspremie vereist: (1) nieuwe param_eindejaarspremie tabel per PC/CAO (effective-dated, standaard patronen), (2) gelijkstellingen berekening uit fact_prestatie via dim_prestatiecode.gelijkgesteld_eindejaarspremie gedragstag (mogelijk nieuwe tag toevoegen — check T-013). Formule: gelijkgestelde uren × basisloon × PC-coefficient. Uitbreiding cascade_stap6 (of aparte stap) — pure functie. Test: PC 200 (bediende), PC 124 (bouw) referentiescenarios. Gepromoot uit ISS-065 (T-044 scope-reductie 2026-07-03).",
+  "id": "T-047",
+  "order": 30,
+  "phase": "productie",
+  "status": "open",
+  "title": "Eindejaarspremie functie + param_eindejaarspremie tabel",
+  "type": "task"
+}

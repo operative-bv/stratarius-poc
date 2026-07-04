@@ -12,9 +12,9 @@
   "relatedTickets": [
     "T-028"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Promoted to T-049 in fase 'Laag 4b: Productie' 2026-07-04. Substance bewaard in ticket description. Zie [[L-004]].",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "Cascade stap 9: arbeidsongevallenverzekering (param_arbeidsongevallen tabel + PC rates)"
 }

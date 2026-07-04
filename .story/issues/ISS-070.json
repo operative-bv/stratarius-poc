@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Duplicaat van ISS-071 (canonical persistent audit_log tabel voor mart_loonkloof refresh + GDPR reads).",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[scope] Persistent audit_log tabel ISS follow-up."
 }

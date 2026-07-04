@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-04",
+  "description": "T-035 MVP simulator gebruikt direct RPC calls (skip synthetic contract). v1 volledige flow: server action doet in transactie (1) dim_contract insert onder scenario_id, (2) fact_prestatie insert (maandelijkse uren o.b.v. arbeidsduur), (3) fact_looncomponent insert (basisloon + eventueel toeslagen), (4) cascade run, (5) fact_loonkost persist met scenario_id label, (6) redirect naar /simulator/[scenario_id] result page. Scenario_id in URL zodat what-if resultaten deelbaar/vergelijkbaar zijn. Rollback strategy voor test/discard scenarios. UI: form → creating spinner → result page met TCO drill-down (T-038 patroon). Gepromoot uit ISS-073 (T-035 push-through 2026-07-03).",
+  "id": "T-051",
+  "order": 70,
+  "phase": "productie",
+  "status": "open",
+  "title": "Simulator v1: synthetic contract flow (dim_contract + facts + fact_loonkost persist)",
+  "type": "task"
+}

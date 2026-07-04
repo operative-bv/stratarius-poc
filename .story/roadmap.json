@@ -50,6 +50,13 @@
       "label": "Phase 7",
       "name": "Simulator UI (MVP)",
       "summary": "Enkelvoudige contract-simulator met TCO drill-down"
+    },
+    {
+      "description": "Cascade-completion voor productie (stap 8-9 + non-cumulatie policy + eindejaarspremie + bijzondere bijdragen productie-conditions), persistent audit-log tabel voor mart_loonkloof/GDPR, en simulator v1 synthetic contract flow. Alle 7 tickets zijn gepromoot uit POC-tijd follow-up issues (ISS-060, 063, 065, 066, 067, 071, 073) tijdens tracker-triage 2026-07-04. Vereist geen nieuwe cascade-architectuur — bouwt uit op bestaande T-023..T-044 patronen. Zie [[L-002]] voor SQL NULL propagation contract.",
+      "id": "productie",
+      "label": "LAAG 4B",
+      "name": "Laag 4b: Productie",
+      "summary": "Cascade productie-completion + audit-log + simulator v1 (7 tickets)"
     }
   ],
   "title": "Stratarius"

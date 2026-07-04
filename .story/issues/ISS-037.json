@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Marker-issue. Substance verhuisd naar T-041 ticket description (basis patronale RSZ, stap 2 scope). T-041 is complete — coupling-fix landde daarin.",
+  "resolvedDate": "2026-07-04",
   "severity": "high",
-  "status": "open",
+  "status": "resolved",
   "title": "[coupling] Verplaatst naar T-041 ticket description (stap 2 scope)."
 }

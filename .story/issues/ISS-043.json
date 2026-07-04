@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Duplicaat van ISS-042 (canonical N+1 perf follow-up voor T-029 cascade orchestrator batch-variant). Marker gesloten 2026-07-04 tijdens tracker-triage.",
+  "resolvedDate": "2026-07-04",
   "severity": "high",
-  "status": "open",
+  "status": "resolved",
   "title": "[performance] Performance MAJOR: N+1 pattern voor T-029 orchestrator. Filed als ISS-042 voor b"
 }

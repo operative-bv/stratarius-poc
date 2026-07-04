@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Duplicaat van ISS-065 (canonical eindejaarspremie functie + gelijkstellingen).",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[scope] Eindejaarspremie deferred (aparte tabel + gelijkstellingen). ISS follow-up."
 }

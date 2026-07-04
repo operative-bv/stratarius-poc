@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Marker-issue. Substance verhuisd naar T-042 test scope (edge cases in structurele vermindering). T-042 is complete.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[edge-case] Verplaatst naar T-042 test scope."
 }

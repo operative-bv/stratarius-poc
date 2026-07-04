@@ -1,0 +1,18 @@
+{
+  "content": "Als een review-bevinding bewust wordt geaccepteerd als POC scope-tradeoff (deferred, nice-to-have, out-of-scope, convention-only), sluit de issue direct met resolution `accepted-for-poc` en link naar de relevante lesson. Langlopende open issues met 'deferred'-body ondermijnen tracker signal-to-noise en verstoppen echte follow-ups.",
+  "context": "Ontdekt 2026-07-04 tijdens tracker-triage van Stratarius: 40 van 74 open issues waren 'non-blocking' review-beslissingen. Bucket-close als accepted-for-poc; kennis bewaard via deze en gerelateerde lessons. Zie [[cascade-null-propagation-is-intentional]] en [[t029-owns-cross-function-validation]].",
+  "createdDate": "2026-07-04",
+  "id": "L-001",
+  "lastValidated": "2026-07-04",
+  "reinforcements": 0,
+  "source": "postmortem",
+  "status": "active",
+  "supersedes": null,
+  "tags": [
+    "scope",
+    "triage",
+    "issue-hygiene"
+  ],
+  "title": "POC scope-beslissingen horen niet in de issue tracker",
+  "updatedDate": "2026-07-04"
+}

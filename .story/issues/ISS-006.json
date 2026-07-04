@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Accepted-for-poc: Basejump/Foundation review-bevinding, expliciet gemarkeerd als scope-tradeoff. Zie [[L-001]]. 2026-07-04 triage.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[resilience] createClient() fails if SUPABASE env missing; middleware fails same way. Env har"
 }

@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Accepted-for-poc: Boundary-coverage non-blocking (GREATEST semantiek is transparant, S=S0/S=S1 exact tests bestaan). Zie [[L-001]]. 2026-07-04 triage.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "[boundary-coverage] S=S0-epsilon en S=S1+epsilon tests non-blocking; GREATEST semantiek is transpare"
 }

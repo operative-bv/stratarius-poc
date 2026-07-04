@@ -8,9 +8,9 @@
   "location": [],
   "phase": null,
   "relatedTickets": [],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Marker-issue. Substance verhuisd naar T-042 ticket description (drempel_s0/drempel_s1 naming + schema). T-042 is complete.",
+  "resolvedDate": "2026-07-04",
   "severity": "high",
-  "status": "open",
+  "status": "resolved",
   "title": "[naming] Verplaatst naar T-042: drempel_s0/drempel_s1 vernoemd in ticket description."
 }

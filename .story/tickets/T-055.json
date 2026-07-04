@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-04",
+  "description": "cascade_populatie_snapshot berekent output ad-hoc via functie-calls in de query. Geen persistence → geen historische vergelijkbaarheid en cascade wordt elke keer opnieuw uitgevoerd. Fix: nieuwe RPC create_populatie_loonkost(p_periode, p_scenario_id, p_filters jsonb?) die (a) alle tenant contracten pakt via RLS, (b) per contract volledige cascade draait (via T-058-updated cascade functies), (c) rijen in fact_loonkost schrijft met scenario_id label + snapshot_batch_id (via T-054), (d) idempotent via ON CONFLICT DO UPDATE (contract_id, periode, kostenblok, scenario_id) unique constraint, (e) returnt {rowcount, snapshot_batch_id, run_at}. Vereist SECURITY DEFINER (fact_loonkost writes REVOKED van authenticated). Bestaande cascade_populatie_snapshot blijft voor ad-hoc/preview queries; nieuwe RPC is canonieke schrijfroute. Blocked by: T-058 (voor volledige cascade), T-054 (voor snapshot ref). Ontdekt tijdens simulatie-analyse 2026-07-04.",
+  "id": "T-055",
+  "order": 110,
+  "phase": "productie",
+  "status": "open",
+  "title": "Populatie-cascade write path: persist naar fact_loonkost per scenario",
+  "type": "feature"
+}

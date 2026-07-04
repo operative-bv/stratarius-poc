@@ -1,0 +1,12 @@
+{
+  "blockedBy": [],
+  "completedDate": null,
+  "createdDate": "2026-07-04",
+  "description": "T-032 RPC returnt JSON audit metadata (in-memory). Productie: (1) nieuwe audit_log tabel met kolommen (id serial, event_type text, initiator_user_id uuid, target_resource text, rechtsgrondslag text, timestamp timestamptz default now(), metadata jsonb) + RLS. (2) refactor mart_loonkloof refresh RPC om naar audit_log te schrijven ipv return. (3) instrumenteer dim_persoon read paths (server actions + Supabase policies waar mogelijk). GDPR-vereisten: rechtsgrondslag verplicht, retention policy (documenteer, geen auto-delete). Gepromoot uit ISS-071 (T-032 + T-034 push-through 2026-07-03).",
+  "id": "T-050",
+  "order": 60,
+  "phase": "productie",
+  "status": "open",
+  "title": "Persistent audit_log tabel + instrumentatie mart_loonkloof + GDPR reads",
+  "type": "task"
+}

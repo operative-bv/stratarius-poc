@@ -1,0 +1,18 @@
+{
+  "content": "Missing-test-bevindingen op individuele cascade-stap functies voor invalid inputs, NULL propagation chains, en cross-function boundary edge cases vallen onder T-029 orchestrator scope, niet per-functie. Individuele stap-tests dekken happy-path + eigen boundaries; orchestrator dekt end-to-end referentiescenario's (RSZ-brochure) en input-validation.",
+  "context": "Bevestigd 2026-07-04 tijdens triage van ISS-047, ISS-048, ISS-051, ISS-056. T-029 (referentiescenario integration tests) is expliciet gepositioneerd voor deze verantwoordelijkheid. Zie [[cascade-null-propagation-is-intentional]].",
+  "createdDate": "2026-07-04",
+  "id": "L-003",
+  "lastValidated": "2026-07-04",
+  "reinforcements": 0,
+  "source": "postmortem",
+  "status": "active",
+  "supersedes": null,
+  "tags": [
+    "cascade",
+    "testing",
+    "orchestrator"
+  ],
+  "title": "T-029 orchestrator owns cross-function validation & test-coverage",
+  "updatedDate": "2026-07-04"
+}
