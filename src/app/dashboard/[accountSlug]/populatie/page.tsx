@@ -63,10 +63,11 @@ export default async function PopulatiePage({
     const activeTeam = functies.find((f) => f.functie_id === teamId);
 
     // Load populatie snapshot voor actief scenario + team
+    const filters = teamId ? { functie_ids: [teamId] } : {};
     const { data, error } = await supabase.rpc("cascade_populatie_snapshot", {
         p_periode: periode,
         p_scenario_id: scenarioId,
-        p_functie_id: teamId,
+        p_filters: filters,
     });
     const rows = (data ?? []) as PopRow[];
 
@@ -122,7 +123,7 @@ export default async function PopulatiePage({
         const { data: compData } = await supabase.rpc("cascade_populatie_snapshot", {
             p_periode: periode,
             p_scenario_id: baseline.scenario_id,
-            p_functie_id: teamId,
+            p_filters: filters,
         });
         compareRows = (compData ?? []) as PopRow[];
     }
