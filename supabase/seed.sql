@@ -1,7 +1,8 @@
 -- Demo seed: user + tenant + 4 teams × 5-10 mensen elk
 -- Login: test@stratarius.local / test1234
-INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, is_super_admin)
-VALUES ('00000000-0000-0000-0000-000000000000', 'a0000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'test@stratarius.local', crypt('test1234', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{}', now(), now(), FALSE)
+-- Auth service (GoTrue) scan-t NULL string cols niet — expliciet lege strings zetten.
+INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, is_super_admin, confirmation_token, email_change, email_change_token_new, recovery_token)
+VALUES ('00000000-0000-0000-0000-000000000000', 'a0000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'test@stratarius.local', crypt('test1234', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{}', now(), now(), FALSE, '', '', '', '')
 ON CONFLICT (id) DO NOTHING;
 
 -- auth.identities row is verplicht voor password-login (anders 'could not authenticate user')

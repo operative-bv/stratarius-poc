@@ -69,6 +69,8 @@ create policy param_extralegaal_override_tenant on public.param_extralegaal_over
 -- Writes REVOKED — configuration change gaat via admin RPC of migration.
 revoke insert, update, delete on public.param_extralegaal_override from authenticated, public, anon;
 
+grant select on public.param_extralegaal_override to authenticated;
+
 create index param_extralegaal_override_tenant_voordeel_idx
     on public.param_extralegaal_override (owning_account_id, voordeeltype);
 

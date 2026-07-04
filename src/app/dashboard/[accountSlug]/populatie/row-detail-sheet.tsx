@@ -284,7 +284,7 @@ export function RowDetailSheet({
                     </div>
 
                     <p className="text-xs text-muted-foreground">
-                        POC-subset: exclusief stap 4 (doelgroepverminderingen), stap 8 (wagen VAA behalve via scenario), stap 9 (arbeidsongevallen). Cijfers via banker&apos;s rounding.
+                        Cascade 9 stappen actief inclusief stap 4 doelgroepverminderingen, stap 8 wagen solidariteitsbijdrage, stap 9 arbeidsongevallen. Cijfers via banker&apos;s rounding.
                     </p>
                 </div>
             </SheetContent>

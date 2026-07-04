@@ -71,6 +71,8 @@ create policy param_eindejaarspremie_read_all on public.param_eindejaarspremie
 
 revoke insert, update, delete on public.param_eindejaarspremie from authenticated, public, anon;
 
+grant select on public.param_eindejaarspremie to authenticated;
+
 create trigger param_eindejaarspremie_set_timestamps
     before insert or update on public.param_eindejaarspremie
     for each row execute function basejump.trigger_set_timestamps();

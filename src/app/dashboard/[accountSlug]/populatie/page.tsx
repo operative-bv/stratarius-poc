@@ -279,7 +279,7 @@ export default async function PopulatiePage({
                             </TableFooter>
                         </Table>
                         <p className="text-xs text-muted-foreground mt-4">
-                            POC subset: exclusief stap 4 (doelgroepverminderingen), stap 8-9 (wagen, arbeidsongevallen). Bedragen via banker&apos;s rounding. RLS filtert automatisch op tenant.
+                            Cascade 9 stappen actief inclusief stap 4 doelgroepverminderingen (non-cumulatie), stap 8 wagen CO2-solidariteitsbijdrage, stap 9 arbeidsongevallen. Bedragen via banker&apos;s rounding. RLS filtert automatisch op tenant.
                         </p>
                     </CardContent>
                 </Card>

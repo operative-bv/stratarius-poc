@@ -148,7 +148,7 @@ export default async function TeamDashboardPage({
             </div>
 
             <div className="text-xs text-muted-foreground">
-                Cascade Phase 5 stap 1-7 actief · Loonkloof-mart Phase 6 · UI Phase 7 · POC subset (exclusief stap 4 doelgroepverminderingen op dashboard-niveau, stap 8-9 wagen + arbeidsongevallen)
+                Cascade Laag 4b compleet · 9 cascade-stappen + eindejaarspremie + non-cumulatie · Loonkloof-mart + Simulator v1 · Multi-tenant met tenant-overridable extralegaal · POC_UNVERIFIED tarieven vereisen domain-expert cross-check vóór productie
             </div>
         </div>
     );

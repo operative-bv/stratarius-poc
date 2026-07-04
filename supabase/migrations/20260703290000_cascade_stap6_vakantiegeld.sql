@@ -10,7 +10,9 @@ create or replace function public.cascade_stap6_vakantiegeld(
     language sql stable parallel safe
     set search_path = public, pg_temp
 as $$
-    select (p_bruto * (pv.enkel_pct + pv.dubbel_pct))::numeric(18, 4)
+    -- param_vakantiegeld bevat JAARLIJKSE rates (enkel + dubbel als deel van jaarloon).
+    -- Cascade output is maandelijkse provisie → deel door 12.
+    select (p_bruto * (pv.enkel_pct + pv.dubbel_pct) / 12)::numeric(18, 4)
     from public.param_vakantiegeld pv
     where pv.regime = p_status
       and p_periode >= pv.geldig_van
@@ -18,6 +20,6 @@ as $$
 $$;
 
 comment on function public.cascade_stap6_vakantiegeld(numeric, text, date) is
-    'Cascade stap 6 vakantiegeld provisie = bruto × (enkel_pct + dubbel_pct) via param_vakantiegeld temporele join. Arbeider 2024: 15.38% (vakantiekas dekt enkel+dubbel). Bediende 2024: 7.67% enkel + 92% dubbel via werkgever provisie.';
+    'Cascade stap 6 vakantiegeld maandelijkse provisie = bruto × (enkel_pct + dubbel_pct) / 12. Param bevat jaarlijkse rates: arbeider 15.38% via vakantiekas, bediende 7.67% enkel + 92% dubbel via werkgever provisie. Cascade divide-door-12 voor maand-accrual.';
 
 grant execute on function public.cascade_stap6_vakantiegeld(numeric, text, date) to authenticated;

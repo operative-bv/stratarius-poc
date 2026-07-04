@@ -71,6 +71,8 @@ create policy param_arbeidsongevallen_read_all on public.param_arbeidsongevallen
 
 revoke insert, update, delete on public.param_arbeidsongevallen from authenticated, public, anon;
 
+grant select on public.param_arbeidsongevallen to authenticated;
+
 create trigger param_arbeidsongevallen_set_timestamps
     before insert or update on public.param_arbeidsongevallen
     for each row execute function basejump.trigger_set_timestamps();
