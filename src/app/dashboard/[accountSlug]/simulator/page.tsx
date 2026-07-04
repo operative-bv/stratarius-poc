@@ -82,16 +82,18 @@ async function simulate(formData: FormData): Promise<CascadeResult> {
     if (!bruto || bruto <= 0) return { stap2_basis_rsz: null, stap3_vermindering: null, stap5_bijzondere: null, stap6_vakantiegeld: null, totaal_patronale_kost: 0, error: "Bruto moet > 0 zijn" };
 
     const [stap2, stap3, stap5, stap6] = await Promise.all([
-        supabase.rpc("cascade_stap2_basis_patronale_rsz", { p_grondslag: bruto, p_status: status, p_werkgeverscategorie: cat, p_periode: periode }),
+        supabase.rpc("cascade_stap2_basis_patronale_rsz", { p_rsz_grondslag: bruto, p_status: status, p_werkgeverscategorie: cat, p_periode: periode }),
         supabase.rpc("cascade_stap3_structurele_vermindering", { p_rsz_grondslag: bruto * 3, p_mu: 1.0, p_werkgeverscategorie: cat, p_periode: periode }),
         supabase.rpc("cascade_stap5_bijzondere_bijdragen", { p_grondslag: bruto, p_periode: periode }),
         supabase.rpc("cascade_stap6_vakantiegeld", { p_bruto: bruto, p_status: status, p_periode: periode }),
     ]);
 
-    const s2 = stap2.data ? Number(stap2.data) : null;
-    const s3 = stap3.data ? Number(stap3.data) : null;
-    const s5 = stap5.data ? Number(stap5.data) : null;
-    const s6 = stap6.data ? Number(stap6.data) : null;
+    // Belangrijk: stap.data === 0 is een geldig cascade-antwoord (bv. stap 3 zonder vermindering).
+    // Alleen null/undefined mag "—" tonen; 0 hoort als € 0,00 weergegeven te worden.
+    const s2 = stap2.data != null ? Number(stap2.data) : null;
+    const s3 = stap3.data != null ? Number(stap3.data) : null;
+    const s5 = stap5.data != null ? Number(stap5.data) : null;
+    const s6 = stap6.data != null ? Number(stap6.data) : null;
     const cascadeTotaal = (s2 ?? 0) - (s3 ?? 0) + (s5 ?? 0) + (s6 ?? 0);
 
     // Optionele wagen
@@ -342,7 +344,7 @@ export default async function SimulatorPage({
                                 )}
 
                                 <p className="text-xs text-muted-foreground mt-4">
-                                    POC-scope: exclusief stap 4 (doelgroepverminderingen), stap 7 (extralegaal componenten, wel via scenario), stap 9 (arbeidsongevallen). Stap 8 wagen: lease patronaal + VAA gescheiden zoals boven. Bedragen via <code>round_final(display)</code> banker&apos;s rounding.
+                                    Simulator toont stap 2, 3, 5 en 6 (ad-hoc scenario zonder tenant-context). Stap 4 doelgroep, stap 7 extralegaal, stap 8 wagen-solidariteit en stap 9 arbeidsongevallen worden getoond in /populatie waar tenant-context beschikbaar is. Bedragen via <code>round_final(display)</code> banker&apos;s rounding.
                                 </p>
                             </div>
                         )}

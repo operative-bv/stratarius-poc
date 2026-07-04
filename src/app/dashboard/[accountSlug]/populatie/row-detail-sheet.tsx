@@ -35,6 +35,8 @@ export type StructureleParam = {
     forfait: number;
     coefficient_a: number;
     coefficient_b: number;
+    drempel_s0: number;
+    drempel_s1: number;
     bron_url: string;
 };
 
@@ -53,8 +55,10 @@ function pct(n: number): string {
     return (n * 100).toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 }
 
-const S0 = 7207.20;
-const S1 = 12435.31;
+// S0 en S1 komen uit param_structurele_vermindering (per werkgeverscategorie,
+// effective-dated). Hardcoded fallbacks alleen wanneer DB-lookup faalt.
+const S0_FALLBACK = 10797.67;
+const S1_FALLBACK = 6807.18;
 
 export function RowDetailSheet({
     row,
@@ -82,26 +86,30 @@ export function RowDetailSheet({
     const basisbijdrage = Number(rsz?.basisbijdrage_pct ?? 0.2507);
     const stap2Recon = grondslag * basisbijdrage;
 
-    // Reconstructie stap 3 (structurele vermindering)
+    // Reconstructie stap 3 (structurele vermindering) — RSZ 1 april 2024 formule.
+    // Beide componenten zijn low-side kickers (S onder drempel geeft vermindering).
+    // Voorheen: β × max(0, S-S1) hoge-lonen — verwijderd voor cat 1 in 2024.
     const S = row.bruto * 3; // kwartaalloon
     const F = Number(structureel?.forfait ?? 0);
     const a = Number(structureel?.coefficient_a ?? 0.14);
     const b = Number(structureel?.coefficient_b ?? 0);
+    const S0 = Number(structureel?.drempel_s0 ?? S0_FALLBACK);
+    const S1 = Number(structureel?.drempel_s1 ?? S1_FALLBACK);
     const lageDeel = Math.max(0, S0 - S);
-    const hogeDeel = Math.max(0, S - S1);
-    const stap3ReconMaand = (F + a * lageDeel + b * hogeDeel) / 3;
+    const zeerLageDeel = Math.max(0, S1 - S);
+    const stap3ReconMaand = (F + a * lageDeel + b * zeerLageDeel) / 3;
 
-    // Stap 5 tariefopsplitsing
+    // Stap 5 tariefopsplitsing — loonmatiging op 0 (al in stap 2 basisbijdrage 25%)
     const FSO = 0.001;
     const BEV = 0.0016;
     const asbest = 0.0001;
-    const loonmatiging = 0.0775;
+    const loonmatiging = 0.0000;
     const stap5Pct = FSO + BEV + asbest + loonmatiging;
 
-    // Stap 6 tarieven
-    const vakEnkel = row.status === "arbeider" ? 0.1538 : 0.0767;
-    const vakDubbelProvisie = row.status === "arbeider" ? 0 : 0.08;
-    const stap6Pct = vakEnkel + vakDubbelProvisie;
+    // Stap 6 tarieven — jaarlijkse rates gedeeld door 12 voor maand-accrual
+    const vakEnkelJaar = row.status === "arbeider" ? 0.1538 : 0.0767;
+    const vakDubbelJaar = row.status === "arbeider" ? 0 : 0.92;
+    const stap6Pct = (vakEnkelJaar + vakDubbelJaar) / 12;
 
     // Patronale % voor sanity-check badge
     const patronalePct = row.bruto > 0 ? (row.totaal_patronale_kost / row.bruto) * 100 : 0;
@@ -181,11 +189,11 @@ export function RowDetailSheet({
                     <Step
                         num="3"
                         title="Structurele vermindering (kwartaal → maand)"
-                        formula="R_kwartaal = F + α · max(0, S0-S) + β · max(0, S-S1)"
+                        formula="R_kwartaal = F + α · max(0, S0-S) + γ · max(0, S1-S)"
                         substitution={
-                            `S=${fmt(S)} (bruto×3)  ·  S0=${fmt(S0)}  ·  S1=${fmt(S1)}\n` +
-                            `= ${fmt(F)} + ${a.toFixed(4)}·max(0, ${fmt(S0 - S)}) + ${b.toFixed(4)}·max(0, ${fmt(S - S1)})\n` +
-                            `= ${fmt(F)} + ${fmt(a * lageDeel)} + ${fmt(b * hogeDeel)}\n` +
+                            `S=${fmt(S)} (bruto×3)  ·  S0=${fmt(S0)} (lage lonen)  ·  S1=${fmt(S1)} (zeer lage lonen)\n` +
+                            `= ${fmt(F)} + ${a.toFixed(4)}·max(0, ${fmt(S0 - S)}) + ${b.toFixed(4)}·max(0, ${fmt(S1 - S)})\n` +
+                            `= ${fmt(F)} + ${fmt(a * lageDeel)} + ${fmt(b * zeerLageDeel)}\n` +
                             `→ /3 voor maand: € ${fmt(stap3ReconMaand)}`
                         }
                         result={stap3ReconMaand}
@@ -213,13 +221,13 @@ export function RowDetailSheet({
                     {/* STAP 6 */}
                     <Step
                         num="6"
-                        title="Vakantiegeld provisie"
+                        title="Vakantiegeld maand-provisie (jaarrate / 12)"
                         formula={row.status === "arbeider"
-                            ? "bruto × 15,38% (arbeider, vakantiekas)"
-                            : "bruto × (enkel_pct + dubbel_provisie)"}
+                            ? "bruto × 15,38% / 12 (arbeider, vakantiekas jaartarief)"
+                            : "bruto × (enkel_jaar + dubbel_jaar) / 12"}
                         substitution={row.status === "arbeider"
-                            ? `${fmt(row.bruto)} × ${pct(vakEnkel)}%`
-                            : `${fmt(row.bruto)} × (${pct(vakEnkel)}% + ${pct(vakDubbelProvisie)}%) = ${fmt(row.bruto)} × ${pct(stap6Pct)}%`}
+                            ? `${fmt(row.bruto)} × ${pct(vakEnkelJaar)}% / 12 = ${fmt(row.bruto)} × ${pct(stap6Pct)}%`
+                            : `${fmt(row.bruto)} × (${pct(vakEnkelJaar)}% + ${pct(vakDubbelJaar)}%) / 12 = ${fmt(row.bruto)} × ${pct(stap6Pct)}%`}
                         result={row.bruto * stap6Pct}
                         actual={row.stap6_vakantiegeld}
                         bron="https://www.rjv.be/"

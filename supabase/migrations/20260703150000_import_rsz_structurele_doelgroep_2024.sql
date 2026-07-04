@@ -59,8 +59,11 @@ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_v
 select v.werkgeverscategorie, v.geldig_van, v.geldig_tot, v.forfait, v.coefficient_a, v.coefficient_b, v.bron_url, v.bron_document
 from (values
     (1::smallint, '2024-01-01'::date, '2025-01-01'::date, 0.0000::numeric(18,4), 0.14000000::numeric(12,8), 0.40000000::numeric(12,8), 'https://www.socialsecurity.be/employer/instructions/'::text, 'RSZ instructiegids 1 april 2024 — cat 1 algemeen/prive: R = 0.14 × max(0, 10797.67 - S) + 0.40 × max(0, 6807.18 - S). Cross-checked easypay-group.com.'::text),
-    (2::smallint, '2024-01-01'::date, '2025-01-01'::date, 49.0000::numeric(18,4), 0.26410000::numeric(12,8), 0.00000000::numeric(12,8), 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ 2024 — cat 2 social profit: forfait + lage-lonencomponent'::text),
-    (3::smallint, '2024-01-01'::date, '2025-01-01'::date, 375.0000::numeric(18,4), 0.17140000::numeric(12,8), 0.06860000::numeric(12,8), 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ 2024 — cat 3 beschutte werkplaats: forfait + dubbele component'::text)
+    (2::smallint, '2024-01-01'::date, '2025-01-01'::date, 49.0000::numeric(18,4), 0.26410000::numeric(12,8), 0.00000000::numeric(12,8), 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ 2024 — cat 2 social profit: forfait + lage-lonencomponent alleen. γ zeer-lage-lonen coefficient op 0 tot cross-check.'::text),
+    -- Cat 3 (beschutte werkplaats): coefficient_b was 0.0686 als δ hoge-lonen kicker;
+    -- kolom is nu γ zeer-lage-lonen kicker via semantiek-shift T-042. Reset naar 0 tot
+    -- correct 2024 γ waarde bekend is — voorkomt actieve mis-interpretatie op lage lonen.
+    (3::smallint, '2024-01-01'::date, '2025-01-01'::date, 375.0000::numeric(18,4), 0.17140000::numeric(12,8), 0.00000000::numeric(12,8), 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ 2024 — cat 3 beschutte werkplaats: forfait + lage-lonencomponent. γ zeer-lage-lonen coefficient RESET naar 0 (was 0.0686 als δ pre-2024 semantiek).'::text)
 ) as v(werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url, bron_document)
 where not exists (
     select 1 from public.param_structurele_vermindering t

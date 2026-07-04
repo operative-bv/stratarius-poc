@@ -70,7 +70,7 @@ export default async function PopulatiePage({
             .or(`geldig_tot.is.null,geldig_tot.gt.${periode}`),
         supabase
             .from("param_structurele_vermindering")
-            .select("werkgeverscategorie, forfait, coefficient_a, coefficient_b, bron_url, geldig_van, geldig_tot")
+            .select("werkgeverscategorie, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url, geldig_van, geldig_tot")
             .lte("geldig_van", periode)
             .or(`geldig_tot.is.null,geldig_tot.gt.${periode}`),
     ]);

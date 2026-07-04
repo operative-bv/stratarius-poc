@@ -51,7 +51,11 @@ from (values
     ('fso'::text, '2024-01-01'::date, '2025-01-01'::date, 0.0010::numeric(6,4), '{"basis":"brutoloon_108","toepassing":"wg >= 20 wn"}'::jsonb, 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ 2024 — FSO Fonds Sluiting Ondernemingen basisbijdrage 0.10%'::text),
     ('bev'::text, '2024-01-01'::date, '2025-01-01'::date, 0.0016::numeric(6,4), '{"basis":"brutoloon_108","toepassing":"wg >= 10 wn"}'::jsonb, 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ 2024 — BEV Bijzondere bijdrage werkloosheid 0.16%'::text),
     ('asbest'::text, '2024-01-01'::date, '2025-01-01'::date, 0.0001::numeric(6,4), '{"basis":"brutoloon_108"}'::jsonb, 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ 2024 — Asbestfonds 0.01%'::text),
-    ('loonmatiging'::text, '2024-01-01'::date, '2025-01-01'::date, 0.0775::numeric(6,4), '{"formule":"0.5 * indexbesparing","cap":"drempel_bruto_uit_param_index","basis_rsz":"brutoloon_108","toelichting":"Centenindex loonmatigingsbijdrage = 50% van indexbesparing boven drempel; koppel naar param_index.drempel_bruto (T-019 = 4000)"}'::jsonb, 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ 2024 — Loonmatigingsbijdrage (patronaal component 7.75%); centenindex-berekening via formule_json'::text)
+    -- Loonmatiging: tarief RESET naar 0. RSZ post-tax-shift 2018 heeft
+    -- loonmatiging (5.12%) al VERWERKT in basisbijdrage 25% (stap 2). Dubbelrekening
+    -- geeft ~7.5% te veel patronale kost. Row houden voor centenindex-berekening
+    -- die conditioneel is op loonmatiging-aanwezigheid in stap 5 productie-variant.
+    ('loonmatiging'::text, '2024-01-01'::date, '2025-01-01'::date, 0.0000::numeric(6,4), '{"formule":"0.5 * indexbesparing","cap":"drempel_bruto_uit_param_index","basis_rsz":"brutoloon_108","toelichting":"Centenindex loonmatigingsbijdrage = 50% van indexbesparing boven drempel. Basistarief 0 omdat loonmatiging al in stap 2 basisbijdrage 25% (post-tax-shift 2018 architecture)."}'::jsonb, 'https://www.socialsecurity.be/employer/instructions/'::text, 'RSZ 2024 post-tax-shift — Loonmatigingsbijdrage patronaal 5.12% al opgenomen in stap 2 basisbijdrage 25.07%. Tarief hier op 0 voor dubbelrekening-preventie. Bron VBO-FEB Q1 2024.'::text)
 ) as v(type, geldig_van, geldig_tot, tarief, formule_json, bron_url, bron_document)
 where not exists (
     select 1 from public.param_bijzondere_bijdragen t
