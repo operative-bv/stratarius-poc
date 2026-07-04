@@ -2,8 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Scale, TrendingUp, TrendingDown, Minus, RefreshCw, SplitSquareHorizontal } from "lucide-react";
+import { Scale, TrendingUp, TrendingDown, Minus, RefreshCw, SplitSquareHorizontal, Sigma } from "lucide-react";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { callOaxacaService, type OaxacaResult, type OaxacaRow } from "@/lib/oaxaca-client";
 
 type MartRow = {
     persoon_id: string;
@@ -43,10 +45,13 @@ function avgOr(arr: number[], fallback = 0): number {
 
 export default async function LoonkloofPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ accountSlug: string }>;
+    searchParams: Promise<{ oaxaca?: string; oaxaca_error?: string }>;
 }) {
     const { accountSlug } = await params;
+    const sp = await searchParams;
     const supabase = await createClient();
 
     async function refreshMart() {
@@ -56,6 +61,46 @@ export default async function LoonkloofPage({
             p_rechtsgrondslag: "manual refresh via dashboard loonkloof page",
         });
         revalidatePath(`/dashboard/${accountSlug}/loonkloof`);
+    }
+
+    async function runOaxaca() {
+        "use server";
+        const supabase = await createClient();
+        // Fetch mart rows + opleidingsniveau join voor OLS-input
+        const { data: martRows } = await supabase
+            .from("mart_loonkloof")
+            .select("persoon_id, uurloon_bruto, geslacht, functieniveau, ancienniteit_jaren")
+            .eq("referentiedatum", "2024-06-30");
+        const { data: personen } = await supabase.from("dim_persoon").select("persoon_id, opleidingsniveau");
+        const opleidingMap = new Map((personen ?? []).map((p: { persoon_id: string; opleidingsniveau: string }) => [p.persoon_id, p.opleidingsniveau]));
+
+        const rows: OaxacaRow[] = (martRows ?? []).map((r: {
+            persoon_id: string; uurloon_bruto: number; geslacht: string; functieniveau: number; ancienniteit_jaren: number;
+        }) => ({
+            uurloon: Number(r.uurloon_bruto),
+            geslacht: r.geslacht,
+            functieniveau: Number(r.functieniveau),
+            ancienniteit: Number(r.ancienniteit_jaren),
+            opleidingsniveau: opleidingMap.get(r.persoon_id) ?? "onbekend",
+        }));
+
+        try {
+            const result = await callOaxacaService(rows, "loonkloof analyse Q2 2024 via dashboard");
+            const encoded = encodeURIComponent(JSON.stringify(result));
+            redirect(`/dashboard/${accountSlug}/loonkloof?oaxaca=${encoded}`);
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : "unknown error";
+            redirect(`/dashboard/${accountSlug}/loonkloof?oaxaca_error=${encodeURIComponent(msg)}`);
+        }
+    }
+
+    let oaxacaResult: OaxacaResult | null = null;
+    if (sp.oaxaca) {
+        try {
+            oaxacaResult = JSON.parse(decodeURIComponent(sp.oaxaca)) as OaxacaResult;
+        } catch {
+            oaxacaResult = null;
+        }
     }
 
     // Load mart_loonkloof gefilterd op laatste kwartaal + join met functie
@@ -180,6 +225,43 @@ export default async function LoonkloofPage({
                     </CardContent>
                 </Card>
             )}
+
+            {/* Volwaardige Oaxaca-Blinder via Python edge — mock stage */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Sigma className="h-5 w-5" />
+                        Oaxaca-Blinder regressie
+                        <Badge variant="outline" className="text-xs font-normal">Python /api/oaxaca · {oaxacaResult?.runtime ?? "mock"}</Badge>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {!oaxacaResult && !sp.oaxaca_error && (
+                        <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                Volwaardige decompositie via externe Python-service met OLS-coëfficiënten per variabele + p-values. Draait op Vercel Python Serverless (Frankfurt region, GDPR-safe).
+                            </p>
+                            <form action={runOaxaca}>
+                                <Button type="submit" variant="default">
+                                    <Sigma className="h-4 w-4 mr-2" />
+                                    Run Oaxaca-Blinder
+                                </Button>
+                            </form>
+                        </div>
+                    )}
+                    {sp.oaxaca_error && (
+                        <div className="rounded-lg border border-red-500/40 bg-red-50 dark:bg-red-950/20 p-4">
+                            <div className="text-sm font-semibold text-red-700 dark:text-red-400">Service error</div>
+                            <p className="text-xs mt-1 font-mono">{sp.oaxaca_error}</p>
+                            <form action={runOaxaca} className="mt-3">
+                                <Button type="submit" variant="outline" size="sm">Opnieuw proberen</Button>
+                            </form>
+                        </div>
+                    )}
+                    {oaxacaResult && <OaxacaCard result={oaxacaResult} onRerun={runOaxaca} />}
+                </CardContent>
+            </Card>
+
 
             {/* Uurloon basis vs variabele split */}
             <Card>
@@ -331,6 +413,91 @@ function DecompositionCard({ decomp }: { decomp: DecompRow }) {
                 <p>
                     <strong>Beperking</strong>: geen individuele coëfficiënten of p-values per variabele — dit vereist multivariate OLS (post-POC via externe R/Python service). CI via normale benadering (mag afwijken bij kleine n).
                 </p>
+            </div>
+        </div>
+    );
+}
+
+function OaxacaCard({ result, onRerun }: { result: OaxacaResult; onRerun: () => Promise<void> }) {
+    const rawGap = Number(result.raw_gap);
+    const endowment = Number(result.endowment_gap);
+    const coefficient = Number(result.coefficient_gap);
+    const totalAbs = Math.abs(endowment) + Math.abs(coefficient);
+    const endowmentShare = totalAbs > 0 ? Math.abs(endowment) / totalAbs : 0;
+    const coefficientShare = totalAbs > 0 ? Math.abs(coefficient) / totalAbs : 0;
+
+    return (
+        <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-lg border p-4 space-y-1">
+                    <div className="text-xs uppercase text-muted-foreground">Ruwe kloof</div>
+                    <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(rawGap))}</div>
+                    <div className="text-xs text-muted-foreground">
+                        n_M = {result.n_m} · n_V = {result.n_v}
+                    </div>
+                </div>
+                <div className="rounded-lg border p-4 bg-blue-50 dark:bg-blue-950/20 space-y-1">
+                    <div className="text-xs uppercase text-muted-foreground">Endowment</div>
+                    <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(endowment))}</div>
+                    <div className="text-xs text-muted-foreground">{(endowmentShare * 100).toFixed(0)}% via observables</div>
+                </div>
+                <div className="rounded-lg border p-4 bg-orange-50 dark:bg-orange-950/20 space-y-1">
+                    <div className="text-xs uppercase text-muted-foreground">Coefficient (residual)</div>
+                    <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(coefficient))}</div>
+                    <div className="text-xs text-muted-foreground">{(coefficientShare * 100).toFixed(0)}% onverklaard door beloningsverschil</div>
+                </div>
+            </div>
+
+            {/* Coefficient tabel */}
+            <div>
+                <div className="text-sm font-medium mb-2">Coëfficiënten per variabele</div>
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr className="border-b text-left text-xs text-muted-foreground">
+                            <th className="pb-2 pr-3">Variabele</th>
+                            <th className="pb-2 pr-3 text-right">β mannen</th>
+                            <th className="pb-2 pr-3 text-right">β vrouwen</th>
+                            <th className="pb-2 pr-3 text-right">p-value</th>
+                            <th className="pb-2 pr-3 text-right">Bijdrage kloof</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {result.coefficients.map((c) => {
+                            const significant = c.p_value < 0.05;
+                            return (
+                                <tr key={c.variabele} className="border-b hover:bg-muted/40">
+                                    <td className="py-2 pr-3 font-medium">{c.variabele}</td>
+                                    <td className="py-2 pr-3 text-right tabular-nums">{c.beta_m.toFixed(3)}</td>
+                                    <td className="py-2 pr-3 text-right tabular-nums">{c.beta_v.toFixed(3)}</td>
+                                    <td className={`py-2 pr-3 text-right tabular-nums ${significant ? "font-semibold" : "text-muted-foreground"}`}>
+                                        {c.p_value.toFixed(3)}
+                                        {significant && " *"}
+                                    </td>
+                                    <td className="py-2 pr-3 text-right tabular-nums">€ {fmtEur(Math.abs(c.kloof_bijdrage))}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+                <p className="text-xs text-muted-foreground mt-2">
+                    * p &lt; 0.05 = statistisch significant. R² mannen = {result.r_squared_m.toFixed(2)} · R² vrouwen = {result.r_squared_v.toFixed(2)}.
+                </p>
+            </div>
+
+            {result.note && (
+                <div className="rounded-lg border border-orange-500/40 bg-orange-50 dark:bg-orange-950/20 p-3 text-xs">
+                    <strong>⚠ Runtime notice:</strong> {result.note}
+                </div>
+            )}
+
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div>Rechtsgrondslag: {result.rechtsgrondslag ?? "—"}</div>
+                <form action={onRerun}>
+                    <Button type="submit" variant="ghost" size="sm">
+                        <RefreshCw className="h-3 w-3 mr-2" />
+                        Herbereken
+                    </Button>
+                </form>
             </div>
         </div>
     );
