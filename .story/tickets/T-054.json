@@ -1,12 +1,12 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "completedDate": "2026-07-04",
   "createdDate": "2026-07-04",
   "description": "Reproducibility gap: fact_loonkost.snapshot_batch_id linkt naar audit_parameter_snapshot maar dim_scenario heeft geen link. Wanneer je een scenario 3 maanden later opnieuw draait krijg je huidige formules/params ipv historisch consistent resultaat. Fix: (1) ALTER TABLE dim_scenario ADD COLUMN param_snapshot_batch_id uuid NULL (nullable want oude scenarios hebben er geen, en \"current\" is default). (2) cascade_populatie_snapshot + T-055 nieuwe RPC accepteren snapshot_batch_id parameter. Wanneer gezet, alle param_* queries filteren op snapshot_batch_id via join met audit_parameter_snapshot (materialized view of computed table). (3) UI toont \"gebaseerd op parameterset X (2024-Q1 snapshot)\" per scenario. Extra open vraag: formule-versioning zelf — cascade_stap_2 vs cascade_stap_2_v2 tracking. Nu impliciet via functie-naam in de RPC-call site, geen historisch record. Aparte discussie. Ontdekt tijdens parameter-evolutie analyse 2026-07-04.",
   "id": "T-054",
   "order": 100,
   "phase": "productie",
-  "status": "open",
+  "status": "complete",
   "title": "Scenario reproducibility: param_snapshot_batch_id op dim_scenario",
   "type": "feature"
 }
