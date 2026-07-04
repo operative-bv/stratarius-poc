@@ -12,9 +12,9 @@
   "relatedTickets": [
     "T-026"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Documented via lesson L-005 (is_basisloon invariant). Nieuwe basisloon-varianten toegevoegd aan dim_looncomponent moeten expliciet is_basisloon=true zetten, anders wordt bruto stilzwijgend 0 in cascade_populatie_snapshot. Toekomstige tenant/CAO onboarding heeft dit als checklist item.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "is_basisloon seed audit — voeg seed toe voor nieuwe basisloon-varianten wanneer die aan dim_looncomponent worden toegevoegd"
 }

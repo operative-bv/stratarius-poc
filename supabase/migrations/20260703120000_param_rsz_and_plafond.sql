@@ -82,6 +82,7 @@ create trigger param_plafond_set_timestamps
 
 create table public.param_rsz (
     param_rsz_id uuid primary key default gen_random_uuid(),
+    land_id text not null default 'BE' references public.dim_land (land_id) on delete restrict,
     status text not null check (status in ('arbeider', 'bediende')),
     werkgeverscategorie smallint not null check (werkgeverscategorie in (1, 2, 3)),
     geldig_van date not null,
@@ -98,6 +99,7 @@ create table public.param_rsz (
         or (status = 'arbeider' and basisfactor_pct is not null)
     ),
     exclude using gist (
+        land_id with =,
         status with =,
         werkgeverscategorie with =,
         daterange(geldig_van, coalesce(geldig_tot, 'infinity'::date), '[)') with &&
@@ -105,7 +107,9 @@ create table public.param_rsz (
 );
 
 comment on table public.param_rsz is
-    'Effective-dated RSZ basisbijdrage per (status, werkgeverscategorie). Global reference. Principe I: exclusion constraint voorkomt overlap op DB-niveau.';
+    'Effective-dated RSZ basisbijdrage per (land, status, werkgeverscategorie). Global reference. Principe I: exclusion constraint voorkomt overlap op DB-niveau. land_id default BE voor backward-compat na ISS-031 (multi-country ready).';
+comment on column public.param_rsz.land_id is
+    'ISO 3166-1 alpha-2 country code. FK naar dim_land. Default BE voor bestaande seed rows (ISS-031). Nieuwe multi-country RSZ imports gebruiken explicit land_id.';
 comment on column public.param_rsz.param_rsz_id is
     'UUID surrogate PK: composite (status, werkgeverscategorie, geldig_van) is uniek maar onhandig om overal door te geven.';
 comment on column public.param_rsz.basisbijdrage_pct is

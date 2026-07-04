@@ -13,9 +13,9 @@
   "relatedTickets": [
     "T-015"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Fixed via edit-in-place: param_rsz.land_id text NOT NULL DEFAULT 'BE' toegevoegd + FK naar dim_land. Exclusion constraint uitgebreid met land_id (voorkomt cross-country overlap op DB-niveau). Backward-compat via default. Multi-country RSZ imports kunnen nu explicit land_id gebruiken. DB reset gevalideerd.",
+  "resolvedDate": "2026-07-04",
   "severity": "low",
-  "status": "open",
+  "status": "resolved",
   "title": "param_rsz has no land_id — asymmetric with param_plafond, blocks future multi-country RSZ"
 }

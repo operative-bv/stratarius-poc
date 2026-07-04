@@ -1,0 +1,19 @@
+{
+  "content": "Wanneer een nieuw basisloon-variant looncomponent aan dim_looncomponent wordt toegevoegd (bv. 'basisloon_arbeider', 'basisloon_deeltijd'), MOET de seed migration expliciet is_basisloon=true zetten. Anders wordt de nieuwe component niet meegenomen in bruto-berekening van cascade_populatie_snapshot (die filtert op dl.is_basisloon).",
+  "context": "Filed als ISS-045 door tenant-onboarding zorg: als een nieuwe CAO nieuwe basisloon-varianten introduceert (bv. bouwsector heeft aparte overuren-tarief) en de seed vergeet is_basisloon=true te zetten, wordt de contract-bruto stilzwijgend 0 → cascade output onvolledig zonder compilation error. Ontdekt tijdens issue cleanup 2026-07-04.",
+  "createdDate": "2026-07-04",
+  "id": "L-005",
+  "lastValidated": "2026-07-04",
+  "reinforcements": 0,
+  "source": "correction",
+  "status": "active",
+  "supersedes": null,
+  "tags": [
+    "seed",
+    "invariant",
+    "cascade",
+    "principe-ii"
+  ],
+  "title": "is_basisloon invariant: nieuwe basisloon-varianten vereisen expliciete seed flag",
+  "updatedDate": "2026-07-04"
+}
