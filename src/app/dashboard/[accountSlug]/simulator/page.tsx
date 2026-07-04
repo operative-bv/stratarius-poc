@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { roundFinal } from "@/lib/cascade-mirror";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,23 +69,6 @@ function berekenVAA(cataloguswaarde: number, co2: number, brandstof: string, aan
         minimum_toegepast: vaa_jaar_raw < VAA_MIN_JAAR_2024,
         brandstof,
     };
-}
-
-// Banker's rounding mirror van server-side round_final('display').
-// Postgres round() = half-away-from-zero; banker's = half-to-even.
-// Voor display/report is banker's DMFA-conform per KB 28/11/1969 art. 34.
-function roundFinal(value: number | null): string {
-    if (value === null) return "—";
-    const scaled = value * 100;
-    const floor = Math.floor(scaled);
-    const remainder = scaled - floor;
-    let cents: number;
-    if (Math.abs(remainder - 0.5) < 1e-9) {
-        cents = floor % 2 === 0 ? floor : floor + 1;
-    } else {
-        cents = Math.round(scaled);
-    }
-    return (cents / 100).toFixed(2);
 }
 
 async function simulate(formData: FormData): Promise<CascadeResult> {

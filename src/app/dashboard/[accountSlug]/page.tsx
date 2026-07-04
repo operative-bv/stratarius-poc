@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { roundFinal as roundFinalMirror } from "@/lib/cascade-mirror";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Euro, TrendingUp, BarChart3, ArrowRight, GraduationCap, Wrench, Briefcase, Crown } from "lucide-react";
@@ -14,18 +15,8 @@ type PopRow = {
     tco: number;
 };
 
-function roundFinal(value: number): string {
-    const scaled = value * 100;
-    const floor = Math.floor(scaled);
-    const remainder = scaled - floor;
-    let cents: number;
-    if (Math.abs(remainder - 0.5) < 1e-9) {
-        cents = floor % 2 === 0 ? floor : floor + 1;
-    } else {
-        cents = Math.round(scaled);
-    }
-    return (cents / 100).toLocaleString("nl-BE", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
+// Whole-EUR display (aggregate view) via shared cascade-mirror.
+const roundFinal = (value: number): string => roundFinalMirror(value, { digits: 0 });
 
 const TEAM_ICONS: Record<string, typeof Users> = {
     Sales: Briefcase,

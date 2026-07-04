@@ -10,9 +10,9 @@
   "relatedTickets": [
     "T-001"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Al opgelost: src/app/dashboard/(personalAccount)/settings/layout.tsx heeft `{children}: {children: React.ReactNode}` typing. `npx tsc --noEmit` passeert zonder implicit any errors. Marker gesloten 2026-07-04.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "Basejump boilerplate: implicit any type in PersonalAccountSettingsPage children param"
 }

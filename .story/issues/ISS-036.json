@@ -12,9 +12,9 @@
   "relatedTickets": [
     "T-025"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Fixed via src/lib/cascade-mirror.ts. roundFinal met options {placeholder, digits: 0|2} — banker's rounding op cent-precision (default) of Math.round op EUR-precision (aggregates). 3 pagina's (dashboard, populatie, simulator) migreren van eigen duplicates naar shared mirror.</resolution>\n",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "TypeScript parallel round_final implementatie voor UI-simulator"
 }

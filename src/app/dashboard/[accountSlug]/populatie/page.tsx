@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { roundFinal as roundFinalMirror } from "@/lib/cascade-mirror";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,18 +19,7 @@ import {
 type Scenario = { scenario_id: string; naam: string; kind: string };
 type Functie = { functie_id: string; functienaam: string };
 
-function roundFinal(value: number): string {
-    const scaled = value * 100;
-    const floor = Math.floor(scaled);
-    const remainder = scaled - floor;
-    let cents: number;
-    if (Math.abs(remainder - 0.5) < 1e-9) {
-        cents = floor % 2 === 0 ? floor : floor + 1;
-    } else {
-        cents = Math.round(scaled);
-    }
-    return (cents / 100).toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+const roundFinal = (value: number): string => roundFinalMirror(value);
 
 function sum(rows: PopRow[], key: keyof PopRow): number {
     return rows.reduce((s, r) => s + Number(r[key]), 0);

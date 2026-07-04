@@ -14,9 +14,9 @@
   "relatedTickets": [
     "T-023"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Fixed via src/lib/cascade-mirror.ts. uurloonVanMaandloon(maandloon, gemiddeldeWekelijkseUren) is een pure numerieke functie die byte-identical output geeft met public.uurloon_van_maandloon(). PC/periode lookup naar param_arbeidsduur.gemiddelde_wekelijkse_uren gebeurt caller-side voor testability.</resolution>\n",
+  "resolvedDate": "2026-07-04",
   "severity": "low",
-  "status": "open",
+  "status": "resolved",
   "title": "TypeScript parallel uurloon_van_maandloon implementatie voor UI-simulator"
 }
