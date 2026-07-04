@@ -88,13 +88,24 @@ def prepare_arrays(rows: list[dict]):
 
 
 def ols_fit(X_features: np.ndarray, y: np.ndarray) -> dict:
-    """OLS met handmatige constante. Retourneert betas, p-values, R², X̄ (incl. constante)."""
-    n = X_features.shape[0]
-    X = np.column_stack([np.ones(n), X_features])
-    k = X.shape[1]
+    """OLS met handmatige constante.
 
-    beta, *_ = np.linalg.lstsq(X, y, rcond=None)
-    residuals = y - X @ beta
+    Dropt kolommen met (bijna) nul variantie in de subset om rank-deficiëntie te vermijden.
+    Voor gedropte kolommen wordt β=0 en p=NaN teruggegeven zodat de output shape stabiel is.
+    """
+    n, k_full = X_features.shape
+
+    # Detect constante kolommen -> rank-deficiëntie voorkomen
+    col_std = X_features.std(axis=0)
+    active_mask = col_std > 1e-10
+    X_active = X_features[:, active_mask]
+    k_active = X_active.shape[1]
+
+    X = np.column_stack([np.ones(n), X_active])
+    k = X.shape[1]  # k_active + 1 voor constante
+
+    beta_active, *_ = np.linalg.lstsq(X, y, rcond=None)
+    residuals = y - X @ beta_active
     ss_res = float(np.sum(residuals ** 2))
     ss_tot = float(np.sum((y - y.mean()) ** 2))
     r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
@@ -104,21 +115,31 @@ def ols_fit(X_features: np.ndarray, y: np.ndarray) -> dict:
 
     try:
         cov = sigma2 * np.linalg.inv(X.T @ X)
-        se = np.sqrt(np.maximum(np.diag(cov), 0.0))
+        se_active = np.sqrt(np.maximum(np.diag(cov), 0.0))
     except np.linalg.LinAlgError:
-        se = np.full(k, np.inf)
+        se_active = np.full(k, np.inf)
 
     with np.errstate(divide="ignore", invalid="ignore"):
-        t_stats = np.where(se > 0, beta / se, 0.0)
-    pvals = 2.0 * stats.t.sf(np.abs(t_stats), df=dof)
+        t_stats_active = np.where(se_active > 0, beta_active / se_active, 0.0)
+    pvals_active = 2.0 * stats.t.sf(np.abs(t_stats_active), df=dof)
+
+    # Expand terug naar volledige feature-ruimte (constante + k_full features)
+    beta_full = np.zeros(k_full + 1)
+    pvals_full = np.full(k_full + 1, np.nan)
+    beta_full[0] = beta_active[0]
+    pvals_full[0] = pvals_active[0]
+    beta_full[1:][active_mask] = beta_active[1:]
+    pvals_full[1:][active_mask] = pvals_active[1:]
 
     x_bar = np.concatenate([[1.0], X_features.mean(axis=0)])
+    dropped = [bool(x) for x in ~active_mask]
 
     return {
-        "beta": beta,
-        "pvalues": pvals,
+        "beta": beta_full,
+        "pvalues": pvals_full,
         "rsquared": r_squared,
         "x_bar": x_bar,
+        "dropped": dropped,  # per feature (excl constante), True = geen variatie in subset
     }
 
 
@@ -147,20 +168,30 @@ def oaxaca_blinder(rows: list[dict]) -> dict:
     mean_uurloon = float(uurloon.mean())
 
     coeffs = []
-    for i, name in enumerate(colnames, start=1):  # skip constante (index 0)
-        beta_m = float(m["beta"][i])
-        beta_v = float(v["beta"][i])
-        p_m = float(m["pvalues"][i])
-        p_v = float(v["pvalues"][i])
-        diff_var = float(m["x_bar"][i] - v["x_bar"][i])
-        beta_pooled = float(pooled["beta"][i])
+    for i, name in enumerate(colnames):  # i = index in feature-ruimte, +1 in beta/pvals
+        beta_m = float(m["beta"][i + 1])
+        beta_v = float(v["beta"][i + 1])
+        p_m = m["pvalues"][i + 1]
+        p_v = v["pvalues"][i + 1]
+        diff_var = float(m["x_bar"][i + 1] - v["x_bar"][i + 1])
+        beta_pooled = float(pooled["beta"][i + 1])
         contribution_eur = diff_var * beta_pooled * mean_uurloon
+
+        dropped_m = m["dropped"][i]
+        dropped_v = v["dropped"][i]
+        dropped_pooled = pooled["dropped"][i]
+
+        # Kies laagste p-value uit M/V; als beide NaN → variabele had geen variatie
+        pvals_valid = [p for p in (p_m, p_v) if not np.isnan(p)]
+        p_value = float(min(pvals_valid)) if pvals_valid else None
+
         coeffs.append({
             "variabele": name,
             "beta_m": round(beta_m, 4),
             "beta_v": round(beta_v, 4),
-            "p_value": round(min(p_m, p_v), 4),
+            "p_value": round(p_value, 4) if p_value is not None else None,
             "kloof_bijdrage": round(contribution_eur, 4),
+            "dropped": bool(dropped_pooled or (dropped_m and dropped_v)),
         })
 
     return {

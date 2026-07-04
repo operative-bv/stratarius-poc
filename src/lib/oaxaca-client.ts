@@ -13,8 +13,9 @@ export type OaxacaCoefficient = {
     variabele: string;
     beta_m: number;
     beta_v: number;
-    p_value: number;
+    p_value: number | null;
     kloof_bijdrage: number;
+    dropped?: boolean;
 };
 
 export type OaxacaResult = {
