@@ -63,7 +63,7 @@ as $$
             c.status,
             le.werkgeverscategorie,
             f.functienaam,
-            coalesce(public.mu_van_prestatie(c.contract_id, p_periode), 1.0000)::numeric(6, 4) as mu,
+            coalesce(nullif(public.mu_van_prestatie(c.contract_id, p_periode), 0), 1.0000)::numeric(6, 4) as mu,
             coalesce((
                 select sum(fl.bedrag)
                 from public.fact_looncomponent fl

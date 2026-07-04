@@ -69,7 +69,12 @@ as $$
             f.functienaam,
             p.geboortedatum,
             c.geldig_van as dienstverband_van,
-            coalesce(public.mu_van_prestatie(c.contract_id, p_periode), 1.0000)::numeric(6, 4) as mu,
+            -- mu_van_prestatie geeft 0 (niet NULL) wanneer contract geen fact_prestatie
+            -- rijen heeft (som_uren = 0 / ref_uren = 0). nullif() converteert die 0
+            -- naar NULL zodat coalesce naar 1.0000 valt (voltijd-aanname bij ontbrekende
+            -- prestatie-data). Zonder deze fix zouden stap 3 + stap 4 altijd 0 zijn
+            -- voor tenants zonder fact_prestatie seed.
+            coalesce(nullif(public.mu_van_prestatie(c.contract_id, p_periode), 0), 1.0000)::numeric(6, 4) as mu,
             coalesce((
                 select sum(fl.bedrag)
                 from public.fact_looncomponent fl
