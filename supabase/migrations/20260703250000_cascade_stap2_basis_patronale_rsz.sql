@@ -15,10 +15,10 @@
 -- Principe V TDD 2-commit: test-commit 2d280e2 (43a + 44) is EERDER dan deze migration.
 --
 -- Depends: T-041 HOTFIX (20260703249000_param_rsz_basisfactor_notnull.sql) —
---   basisfactor_arbeider_pct is NOT NULL en bediende rows hebben 1.0000.
+--   basisfactor_pct is NOT NULL en bediende rows hebben 1.0000.
 --
 -- Formule:
---   basis_patronale_rsz = p_rsz_grondslag × pr.basisbijdrage_pct × pr.basisfactor_arbeider_pct
+--   basis_patronale_rsz = p_rsz_grondslag × pr.basisbijdrage_pct × pr.basisfactor_pct
 --
 -- NULL contract (consistent met T-023/T-024/T-026):
 --   Temporele join miss (onbekende status/categorie/periode) → NULL.
@@ -47,7 +47,7 @@ as $$
     select (
         p_rsz_grondslag
       * pr.basisbijdrage_pct
-      * pr.basisfactor_arbeider_pct
+      * pr.basisfactor_pct
     )::numeric(18, 4)
     from public.param_rsz pr
     where pr.status               = p_status
@@ -57,6 +57,6 @@ as $$
 $$;
 
 comment on function public.cascade_stap2_basis_patronale_rsz(numeric, text, smallint, date) is
-    'Cascade stap 2: basis patronale RSZ = grondslag x basisbijdrage_pct x basisfactor_arbeider_pct via temporele join op param_rsz. Principe II data-driven (tarief + factor uit param_rsz, geen hardcoded 25%). Principe I half-open interval [geldig_van, geldig_tot). NULL contract: temporele miss (onbekende status/categorie/periode) -> NULL; cascade orchestrator T-029 detecteert. LANGUAGE SQL STABLE PARALLEL SAFE met pinned search_path.';
+    'Cascade stap 2: basis patronale RSZ = grondslag x basisbijdrage_pct x basisfactor_pct via temporele join op param_rsz. Principe II data-driven (tarief + factor uit param_rsz, geen hardcoded 25%). Principe I half-open interval [geldig_van, geldig_tot). NULL contract: temporele miss (onbekende status/categorie/periode) -> NULL; cascade orchestrator T-029 detecteert. LANGUAGE SQL STABLE PARALLEL SAFE met pinned search_path.';
 
 grant execute on function public.cascade_stap2_basis_patronale_rsz(numeric, text, smallint, date) to authenticated;

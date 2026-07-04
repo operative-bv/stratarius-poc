@@ -131,7 +131,7 @@ async function simulate(formData: FormData): Promise<CascadeResult> {
 const STAP_DETAILS = {
     stap2: {
         title: "Stap 2 — Basis patronale RSZ",
-        formule: "grondslag × basisbijdrage_pct × basisfactor_arbeider_pct",
+        formule: "grondslag × basisbijdrage_pct × basisfactor_pct",
         bron: "https://www.socialsecurity.be/employer/instructions/",
         toelichting: "Via param_rsz temporele join op (status, werkgeverscategorie, periode). Bediende basisfactor=1.0; arbeider=1.08 (108% arbeidersgrondslag).",
     },

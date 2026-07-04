@@ -87,15 +87,15 @@ create table public.param_rsz (
     geldig_van date not null,
     geldig_tot date null,
     basisbijdrage_pct numeric(6, 4) not null,
-    basisfactor_arbeider_pct numeric(6, 4) null,
+    basisfactor_pct numeric(6, 4) null,
     bron_url text not null,
     bron_document text null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
     check (geldig_tot is null or geldig_van < geldig_tot),
     check (
-        (status = 'bediende' and basisfactor_arbeider_pct is null)
-        or (status = 'arbeider' and basisfactor_arbeider_pct is not null)
+        (status = 'bediende' and basisfactor_pct is null)
+        or (status = 'arbeider' and basisfactor_pct is not null)
     ),
     exclude using gist (
         status with =,
@@ -110,7 +110,7 @@ comment on column public.param_rsz.param_rsz_id is
     'UUID surrogate PK: composite (status, werkgeverscategorie, geldig_van) is uniek maar onhandig om overal door te geven.';
 comment on column public.param_rsz.basisbijdrage_pct is
     'RSZ-tarief als rate (bv 0.2540 = 25.40%). numeric(6,4) per Constitution v1.0.1 non-money precision.';
-comment on column public.param_rsz.basisfactor_arbeider_pct is
+comment on column public.param_rsz.basisfactor_pct is
     'Multiplicatieve factor voor arbeider-grondslag (bv 1.08 = 108% loonverhoging voor vakantiegeld). NIET dezelfde semantiek als basisbijdrage_pct (rate vs factor). NULL voor bediende-rijen (biconditional CHECK).';
 
 alter table public.param_rsz enable row level security;

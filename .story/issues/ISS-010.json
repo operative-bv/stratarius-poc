@@ -14,9 +14,9 @@
   "relatedTickets": [
     "T-002"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Fixed: title \"Basejump starter kit\" → \"Stratarius\", description Belgische loonkost-cascade taalig gemaakt. src/app/layout.tsx aangepast.",
+  "resolvedDate": "2026-07-04",
   "severity": "low",
-  "status": "open",
+  "status": "resolved",
   "title": "Root layout metadata still shows \"Basejump starter kit\""
 }

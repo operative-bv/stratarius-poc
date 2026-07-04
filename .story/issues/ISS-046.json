@@ -11,9 +11,9 @@
   "relatedTickets": [
     "T-041"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Fixed via edit-in-place: 51 occurrences in 11 files gerenamed basisfactor_arbeider_pct → basisfactor_pct. DB reset gevalideerd. Kolom draagt nu betekenis voor beide status waarden (arbeider 1.0800, bediende 1.0000 uit T-041 hotfix).",
+  "resolvedDate": "2026-07-04",
   "severity": "low",
-  "status": "open",
+  "status": "resolved",
   "title": "Rename param_rsz.basisfactor_arbeider_pct → basisfactor_pct (kolom draagt nu betekenis voor beide status waarden)"
 }

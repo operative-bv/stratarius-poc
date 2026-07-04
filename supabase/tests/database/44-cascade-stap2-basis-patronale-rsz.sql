@@ -10,8 +10,8 @@ BEGIN;
 -- temporele join — GEEN hardcoded 25.07% of 1.08 in function-body.
 --
 -- Formule:
---   basis_patronale_rsz = rsz_grondslag × basisbijdrage_pct × basisfactor_arbeider_pct
---   waar (basisbijdrage_pct, basisfactor_arbeider_pct) via temporele join op param_rsz
+--   basis_patronale_rsz = rsz_grondslag × basisbijdrage_pct × basisfactor_pct
+--   waar (basisbijdrage_pct, basisfactor_pct) via temporele join op param_rsz
 --   met p_periode >= geldig_van AND (geldig_tot IS NULL OR p_periode < geldig_tot).
 --
 -- NULL contract: temporele join miss → NULL. Documented behavior, cascade orchestrator

@@ -16,8 +16,8 @@ select col_is_pk('public', 'param_plafond', 'param_plafond_id', 'param_plafond_i
 select col_is_pk('public', 'param_rsz', 'param_rsz_id', 'param_rsz_id is PK');
 select col_type_is('public', 'param_rsz', 'basisbijdrage_pct', 'numeric(6,4)',
     'basisbijdrage_pct is numeric(6,4) per Constitution v1.0.1');
-select col_type_is('public', 'param_rsz', 'basisfactor_arbeider_pct', 'numeric(6,4)',
-    'basisfactor_arbeider_pct is numeric(6,4) per Constitution v1.0.1 (EE2)');
+select col_type_is('public', 'param_rsz', 'basisfactor_pct', 'numeric(6,4)',
+    'basisfactor_pct is numeric(6,4) per Constitution v1.0.1 (EE2)');
 select col_type_is('public', 'param_plafond', 'jaarplafond', 'numeric(18,4)',
     'jaarplafond is numeric(18,4) per Constitution v1.0.1 money precision (EE2)');
 select col_type_is('public', 'param_plafond', 'kwartaalplafond', 'numeric(18,4)',
@@ -44,7 +44,7 @@ set local role service_role;
 insert into public.param_plafond (param_plafond_id, land_id, bijdragetype, geldig_van, geldig_tot, jaarplafond, bron_url) values
     ('cao90_jaar_2024', 'BE', 'cao90', '2024-01-01', '2025-01-01', 4020.0000, 'https://www.socialsecurity.be/');
 
-insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url) values
+insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url) values
     ('bediende', 1, '2024-01-01', '2025-01-01', 0.2540, null, 'https://www.socialsecurity.be/');
 
 reset role;
@@ -107,7 +107,7 @@ select throws_ok(
 
 
 ------------------------------------------------------------
--- Biconditional CHECK on param_rsz.basisfactor_arbeider_pct (4 assertions — E3)
+-- Biconditional CHECK on param_rsz.basisfactor_pct (4 assertions — E3)
 -- Runs as service_role so REVOKE + RLS don't mask the CHECK.
 ------------------------------------------------------------
 
@@ -116,28 +116,28 @@ set local role service_role;
 
 -- Failure paths: (bediende + factor) and (arbeider + NULL)
 select throws_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url)
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_pct, bron_url)
        values ('bediende', 2, '2024-01-01', 0.2540, 1.0800, 'x') $$,
     '23514'
 );
 
 select throws_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url)
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_pct, bron_url)
        values ('arbeider', 2, '2024-01-01', 0.2540, null, 'x') $$,
     '23514'
 );
 
 -- Success paths: (bediende + NULL) and (arbeider + factor)
 select lives_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url)
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_pct, bron_url)
        values ('bediende', 3, '2024-01-01', 0.2540, null, 'x') $$,
-    'bediende met basisfactor_arbeider_pct NULL is toegestaan (biconditional success)'
+    'bediende met basisfactor_pct NULL is toegestaan (biconditional success)'
 );
 
 select lives_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url)
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_pct, bron_url)
        values ('arbeider', 3, '2024-01-01', 0.2540, 1.0800, 'x') $$,
-    'arbeider met basisfactor_arbeider_pct 1.08 is toegestaan (biconditional success)'
+    'arbeider met basisfactor_pct 1.08 is toegestaan (biconditional success)'
 );
 
 
@@ -245,7 +245,7 @@ select throws_ok(
 
 -- 3) Same period, different status — allowed (cross-status disambiguation E1)
 select lives_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url)
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url)
        values ('arbeider', 1, '2024-01-01', '2025-01-01', 0.2540, 1.0800, 'x') $$,
     'zelfde periode + categorie maar arbeider ipv bediende: allowed (cross-status E1)'
 );

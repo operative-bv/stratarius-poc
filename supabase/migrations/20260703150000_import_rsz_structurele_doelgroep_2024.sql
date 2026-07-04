@@ -32,8 +32,8 @@
 -- 1) param_rsz — 6 rijen (2 status × 3 werkgeverscategorie), geldig 2024-01-01 → 2025-01-01
 -- ================================================================
 
-insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url, bron_document)
-select v.status, v.werkgeverscategorie, v.geldig_van, v.geldig_tot, v.basisbijdrage_pct, v.basisfactor_arbeider_pct, v.bron_url, v.bron_document
+insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url, bron_document)
+select v.status, v.werkgeverscategorie, v.geldig_van, v.geldig_tot, v.basisbijdrage_pct, v.basisfactor_pct, v.bron_url, v.bron_document
 from (values
     ('bediende'::text, 1::smallint, '2024-01-01'::date, '2025-01-01'::date, 0.2507::numeric(6,4), null::numeric(6,4), 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ instructiegids 2024/1 — basisbijdrage cat 1 (25,07% incl. loonmatiging)'::text),
     ('bediende'::text, 2::smallint, '2024-01-01'::date, '2025-01-01'::date, 0.2432::numeric(6,4), null::numeric(6,4), 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ instructiegids 2024/1 — social profit cat 2 (24,32%)'::text),
@@ -41,7 +41,7 @@ from (values
     ('arbeider'::text, 1::smallint, '2024-01-01'::date, '2025-01-01'::date, 0.2507::numeric(6,4), 1.0800::numeric(6,4), 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ instructiegids 2024/1 — arbeider cat 1 + 108% arbeidersgrondslag'::text),
     ('arbeider'::text, 2::smallint, '2024-01-01'::date, '2025-01-01'::date, 0.2432::numeric(6,4), 1.0800::numeric(6,4), 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ instructiegids 2024/1 — arbeider social profit + 108%'::text),
     ('arbeider'::text, 3::smallint, '2024-01-01'::date, '2025-01-01'::date, 0.1707::numeric(6,4), 1.0800::numeric(6,4), 'https://www.socialsecurity.be/employer/instructions/'::text, '[POC_UNVERIFIED_2024] RSZ instructiegids 2024/1 — arbeider beschutte + 108%'::text)
-) as v(status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url, bron_document)
+) as v(status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url, bron_document)
 where not exists (
     select 1 from public.param_rsz t
     where t.status = v.status

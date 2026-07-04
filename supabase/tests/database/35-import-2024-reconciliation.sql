@@ -59,12 +59,12 @@ select is(
 -- Re-run param_rsz insert — bewijs lives_ok (geen exclusion/constraint fires)
 select lives_ok(
     $$
-    insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url, bron_document)
-    select v.status, v.werkgeverscategorie, v.geldig_van, v.geldig_tot, v.basisbijdrage_pct, v.basisfactor_arbeider_pct, v.bron_url, v.bron_document
+    insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url, bron_document)
+    select v.status, v.werkgeverscategorie, v.geldig_van, v.geldig_tot, v.basisbijdrage_pct, v.basisfactor_pct, v.bron_url, v.bron_document
     from (values
         ('bediende'::text, 1::smallint, '2024-01-01'::date, '2025-01-01'::date, 0.2507::numeric(6,4), null::numeric(6,4), 'x'::text, 'x'::text),
         ('arbeider'::text, 1::smallint, '2024-01-01'::date, '2025-01-01'::date, 0.2507::numeric(6,4), 1.0800::numeric(6,4), 'x'::text, 'x'::text)
-    ) as v(status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url, bron_document)
+    ) as v(status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url, bron_document)
     where not exists (
         select 1 from public.param_rsz t
         where t.status = v.status
@@ -136,7 +136,7 @@ select is(
 
 -- 1) Arbeider cat 1 heeft 108% basisfactor
 select is(
-    (select basisfactor_arbeider_pct from public.param_rsz where status = 'arbeider' and werkgeverscategorie = 1),
+    (select basisfactor_pct from public.param_rsz where status = 'arbeider' and werkgeverscategorie = 1),
     1.0800::numeric(6,4),
     'arbeider cat 1 heeft basisfactor 108% (PDF Laag 3 conform)'
 );
@@ -168,15 +168,15 @@ select is(
 ------------------------------------------------------------
 
 select is(
-    (select count(*)::int from public.param_rsz where status = 'arbeider' and basisfactor_arbeider_pct is not null),
+    (select count(*)::int from public.param_rsz where status = 'arbeider' and basisfactor_pct is not null),
     3,
-    'alle 3 arbeider-rijen hebben non-NULL basisfactor_arbeider_pct (biconditional CHECK T-015)'
+    'alle 3 arbeider-rijen hebben non-NULL basisfactor_pct (biconditional CHECK T-015)'
 );
 
 select is(
-    (select count(*)::int from public.param_rsz where status = 'bediende' and basisfactor_arbeider_pct is null),
+    (select count(*)::int from public.param_rsz where status = 'bediende' and basisfactor_pct is null),
     3,
-    'alle 3 bediende-rijen hebben NULL basisfactor_arbeider_pct (biconditional CHECK T-015)'
+    'alle 3 bediende-rijen hebben NULL basisfactor_pct (biconditional CHECK T-015)'
 );
 
 

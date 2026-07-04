@@ -75,7 +75,7 @@ export default async function PopulatiePage({
     const [{ data: rszData }, { data: structureleData }] = await Promise.all([
         supabase
             .from("param_rsz")
-            .select("status, werkgeverscategorie, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url, geldig_van, geldig_tot")
+            .select("status, werkgeverscategorie, basisbijdrage_pct, basisfactor_pct, bron_url, geldig_van, geldig_tot")
             .lte("geldig_van", periode)
             .or(`geldig_tot.is.null,geldig_tot.gt.${periode}`),
         supabase

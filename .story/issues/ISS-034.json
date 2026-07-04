@@ -14,9 +14,9 @@
     "T-022",
     "T-024"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Already fixed by T-024 hotfix (20260703220000_mu_function.sql). `\\d public.fact_prestatie` toont uren numeric(10,4). Marker gesloten 2026-07-04.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "fact_prestatie.uren numeric(6,4) te krap — 99.9999 max, realistisch is 100-200 uren/maand"
 }

@@ -1,5 +1,5 @@
 BEGIN;
--- T-041 HOTFIX: param_rsz.basisfactor_arbeider_pct wordt NOT NULL,
+-- T-041 HOTFIX: param_rsz.basisfactor_pct wordt NOT NULL,
 -- bediende rows worden gebackfilt van null naar 1.0000, conditional CHECK verwijderd.
 --
 -- Principe V (test-first): dit test-bestand wordt gecommit vóór de HOTFIX migration.
@@ -21,8 +21,8 @@ select plan(3);
 ------------------------------------------------------------
 
 select col_not_null(
-    'public', 'param_rsz', 'basisfactor_arbeider_pct',
-    'S1 HOTFIX: param_rsz.basisfactor_arbeider_pct is NOT NULL na HOTFIX'
+    'public', 'param_rsz', 'basisfactor_pct',
+    'S1 HOTFIX: param_rsz.basisfactor_pct is NOT NULL na HOTFIX'
 );
 
 
@@ -32,7 +32,7 @@ select col_not_null(
 
 select results_eq(
     $sql$
-        select basisfactor_arbeider_pct
+        select basisfactor_pct
         from public.param_rsz
         where status = 'bediende'
           and werkgeverscategorie = 1
@@ -54,7 +54,7 @@ select results_eq(
         select count(*)::int
         from public.param_rsz
         where status = 'bediende'
-          and basisfactor_arbeider_pct is null
+          and basisfactor_pct is null
     $sql$,
     $sql$ values (0) $sql$,
     'S3 HOTFIX volledigheid: 0 bediende rows met NULL basisfactor (alle cat 1/2/3 gebackfilt)'

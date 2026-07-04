@@ -26,7 +26,7 @@ export type RSZParam = {
     status: string;
     werkgeverscategorie: number;
     basisbijdrage_pct: number;
-    basisfactor_arbeider_pct: number;
+    basisfactor_pct: number;
     bron_url: string;
 };
 
@@ -75,7 +75,7 @@ export function RowDetailSheet({
     const structureel = structureleParams.find((p) => p.werkgeverscategorie === row.werkgeverscategorie);
 
     // Reconstructie stap 1 (grondslag)
-    const factor = row.status === "arbeider" ? Number(rsz?.basisfactor_arbeider_pct ?? 1.08) : 1.0;
+    const factor = row.status === "arbeider" ? Number(rsz?.basisfactor_pct ?? 1.08) : 1.0;
     const grondslag = row.bruto * factor;
 
     // Reconstructie stap 2 (basis RSZ)
