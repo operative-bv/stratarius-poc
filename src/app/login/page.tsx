@@ -4,11 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle2, AlertTriangle, MailCheck } from "lucide-react";
 
 export default function Login({
   searchParams,
 }: {
-  searchParams: { message: string, returnUrl?: string };
+  searchParams: { message?: string; returnUrl?: string; email?: string; kind?: string };
 }) {
   const signIn = async (_prevState: any, formData: FormData) => {
     "use server";
@@ -17,6 +19,8 @@ export default function Login({
     const password = formData.get("password") as string;
     const supabase = createClient();
 
+    const signInReturnUrl = searchParams.returnUrl && searchParams.returnUrl !== "undefined"
+      ? searchParams.returnUrl : null;
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -24,10 +28,18 @@ export default function Login({
 
     if (error) {
       console.error("[signIn] Supabase auth error:", error.status, error.code, error.message);
+      const returnUrlParam = signInReturnUrl ? `&returnUrl=${encodeURIComponent(signInReturnUrl)}` : "";
+      // Specifieke boodschap voor niet-bevestigd account (Supabase code = 'email_not_confirmed').
+      if (error.code === "email_not_confirmed") {
+        return redirect(`/login?kind=email_not_confirmed&email=${encodeURIComponent(email)}${returnUrlParam}`);
+      }
+      // Ongeldige credentials — geen technische details voor de user tonen.
+      if (error.code === "invalid_credentials") {
+        return redirect(`/login?kind=invalid_credentials${returnUrlParam}`);
+      }
+      // Anders: technische fallback (bv. 500).
       const detail = `${error.status ?? "?"} ${error.code ?? "?"}: ${error.message}`;
-      const returnUrlParam = searchParams.returnUrl && searchParams.returnUrl !== "undefined"
-        ? `&returnUrl=${searchParams.returnUrl}` : "";
-      return redirect(`/login?message=${encodeURIComponent(detail)}${returnUrlParam}`);
+      return redirect(`/login?kind=error&message=${encodeURIComponent(detail)}${returnUrlParam}`);
     }
 
     const target = searchParams.returnUrl && searchParams.returnUrl !== "undefined"
@@ -43,19 +55,29 @@ export default function Login({
     const password = formData.get("password") as string;
     const supabase = createClient();
 
+    // Alleen returnUrl mee-geven als 'ie echt is gezet (voorkomt "returnUrl=undefined" string).
+    const rawReturnUrl = searchParams.returnUrl;
+    const safeReturnUrl = rawReturnUrl && rawReturnUrl !== "undefined" ? rawReturnUrl : "";
+    const redirectQuery = safeReturnUrl ? `?returnUrl=${encodeURIComponent(safeReturnUrl)}` : "";
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${origin}/auth/callback?returnUrl=${searchParams.returnUrl}`,
+        emailRedirectTo: `${origin}/auth/callback${redirectQuery}`,
       },
     });
 
     if (error) {
-      return redirect(`/login?message=Could not authenticate user&returnUrl=${searchParams.returnUrl}`);
+      const errorReturnUrl = safeReturnUrl ? `&returnUrl=${encodeURIComponent(safeReturnUrl)}` : "";
+      // Al bestaand account? Supabase geeft user_already_exists / user_repeated_signup.
+      if (error.code === "user_already_exists" || error.code === "user_repeated_signup") {
+        return redirect(`/login?kind=user_exists&email=${encodeURIComponent(email)}${errorReturnUrl}`);
+      }
+      return redirect(`/login?kind=error&message=${encodeURIComponent(error.message)}${errorReturnUrl}`);
     }
 
-    return redirect(`/dashboard`);
+    return redirect(`/login?kind=email_sent&email=${encodeURIComponent(email)}`);
   };
 
   return (
@@ -112,10 +134,50 @@ export default function Login({
         >
           Sign Up
         </SubmitButton>
-        {searchParams?.message && (
-          <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
-            {searchParams.message}
-          </p>
+        {searchParams?.kind === "email_sent" && (
+          <Alert className="mt-4 border-emerald-500/40 bg-emerald-500/5">
+            <MailCheck className="h-4 w-4 text-emerald-600" />
+            <AlertTitle>Bevestigingslink verstuurd</AlertTitle>
+            <AlertDescription>
+              We stuurden een link naar <span className="font-medium">{searchParams.email}</span>. Klik &apos;m om je account te activeren.
+            </AlertDescription>
+          </Alert>
+        )}
+        {searchParams?.kind === "email_not_confirmed" && (
+          <Alert className="mt-4 border-amber-500/40 bg-amber-500/5">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertTitle>Nog niet bevestigd</AlertTitle>
+            <AlertDescription>
+              Je e-mailadres <span className="font-medium">{searchParams.email}</span> is nog niet bevestigd. Check je inbox voor de bevestigingslink.
+            </AlertDescription>
+          </Alert>
+        )}
+        {searchParams?.kind === "invalid_credentials" && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Ongeldige inloggegevens</AlertTitle>
+            <AlertDescription>
+              Het e-mailadres of wachtwoord klopt niet. Nog geen account? Klik hieronder op Sign Up.
+            </AlertDescription>
+          </Alert>
+        )}
+        {searchParams?.kind === "user_exists" && (
+          <Alert className="mt-4 border-blue-500/40 bg-blue-500/5">
+            <CheckCircle2 className="h-4 w-4 text-blue-600" />
+            <AlertTitle>Account bestaat al</AlertTitle>
+            <AlertDescription>
+              Er is al een account voor <span className="font-medium">{searchParams.email}</span>. Log in met Sign In hierboven.
+            </AlertDescription>
+          </Alert>
+        )}
+        {searchParams?.kind === "error" && searchParams?.message && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Er ging iets mis</AlertTitle>
+            <AlertDescription className="font-mono text-xs break-all">
+              {searchParams.message}
+            </AlertDescription>
+          </Alert>
         )}
       </form>
     </div>
