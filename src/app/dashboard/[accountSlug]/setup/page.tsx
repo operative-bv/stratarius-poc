@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import { Building2, Info, Check } from "lucide-react";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -81,7 +82,7 @@ export default async function SetupPage({
         }
 
         revalidatePath(`/dashboard/${accountSlug}`);
-        redirect(`/dashboard/${accountSlug}?welcome=1`);
+        redirect(`/dashboard/${accountSlug}?toast_success=${encodeURIComponent(`Welkom bij ${naam}! Je kunt nu contracten importeren.`)}`);
     }
 
     return (
@@ -94,6 +95,14 @@ export default async function SetupPage({
                 <p className="text-muted-foreground mt-2">
                     Nog één stap: vertel ons over je Belgische legale entiteit. Dit bepaalt welke RSZ-tarieven, doelgroepverminderingen en cascade-parameters gebruikt worden.
                 </p>
+            </div>
+
+            <div className="mb-6">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                    <span>Configuratie</span>
+                    <span>Stap 1 van 1</span>
+                </div>
+                <Progress value={50} className="h-2" />
             </div>
 
             {sp.error && (

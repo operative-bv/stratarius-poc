@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Users, TrendingUp, TrendingDown } from "lucide-react";
 import {
     RowDetailSheet,
@@ -224,42 +225,42 @@ export default async function PopulatiePage({
             {rows.length > 0 && (
                 <Card>
                     <CardContent className="pt-6 overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b text-left text-xs text-muted-foreground">
-                                    <th className="pb-2 pr-3">Contract</th>
-                                    <th className="pb-2 pr-3">Team</th>
-                                    <th className="pb-2 pr-3">Status</th>
-                                    <th className="pb-2 pr-3">PC</th>
-                                    <th className="pb-2 pr-3 text-right">Bruto</th>
-                                    <th className="pb-2 pr-3 text-right">Basis RSZ</th>
-                                    <th className="pb-2 pr-3 text-right text-green-600">Vermindering</th>
-                                    <th className="pb-2 pr-3 text-right">Bijzondere</th>
-                                    <th className="pb-2 pr-3 text-right">Vakantiegeld</th>
-                                    <th className="pb-2 pr-3 text-right">Extralegaal</th>
-                                    <th className="pb-2 pr-3 text-right font-semibold">Patronaal</th>
-                                    <th className="pb-2 pr-3 text-right font-semibold">TCO</th>
-                                    <th className="pb-2 text-right"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Contract</TableHead>
+                                    <TableHead>Team</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>PC</TableHead>
+                                    <TableHead className="text-right">Bruto</TableHead>
+                                    <TableHead className="text-right">Basis RSZ</TableHead>
+                                    <TableHead className="text-right text-green-600">Vermindering</TableHead>
+                                    <TableHead className="text-right">Bijzondere</TableHead>
+                                    <TableHead className="text-right">Vakantiegeld</TableHead>
+                                    <TableHead className="text-right">Extralegaal</TableHead>
+                                    <TableHead className="text-right font-semibold">Patronaal</TableHead>
+                                    <TableHead className="text-right font-semibold">TCO</TableHead>
+                                    <TableHead />
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
                                 {rows.map((r) => (
-                                    <tr key={r.contract_id} className="border-b hover:bg-muted/40">
-                                        <td className="py-2 pr-3 font-mono text-xs">{r.contract_id.slice(0, 8)}</td>
-                                        <td className="py-2 pr-3 text-xs">{r.functienaam}</td>
-                                        <td className="py-2 pr-3">
+                                    <TableRow key={r.contract_id}>
+                                        <TableCell className="font-mono text-xs">{r.contract_id.slice(0, 8)}</TableCell>
+                                        <TableCell className="text-xs">{r.functienaam}</TableCell>
+                                        <TableCell>
                                             <Badge variant={r.status === "arbeider" ? "outline" : "secondary"}>{r.status}</Badge>
-                                        </td>
-                                        <td className="py-2 pr-3">{r.pc_id}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">€ {roundFinal(r.bruto)}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">€ {roundFinal(r.stap2_basis_rsz)}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums text-green-600">−€ {roundFinal(r.stap3_vermindering)}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">€ {roundFinal(r.stap5_bijzondere)}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">€ {roundFinal(r.stap6_vakantiegeld)}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">€ {roundFinal(r.stap7_extralegaal)}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums font-semibold">€ {roundFinal(r.totaal_patronale_kost)}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums font-semibold">€ {roundFinal(r.tco)}</td>
-                                        <td className="py-2 text-right">
+                                        </TableCell>
+                                        <TableCell>{r.pc_id}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.bruto)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap2_basis_rsz)}</TableCell>
+                                        <TableCell className="text-right tabular-nums text-green-600">−€ {roundFinal(r.stap3_vermindering)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap5_bijzondere)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap6_vakantiegeld)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap7_extralegaal)}</TableCell>
+                                        <TableCell className="text-right tabular-nums font-semibold">€ {roundFinal(r.totaal_patronale_kost)}</TableCell>
+                                        <TableCell className="text-right tabular-nums font-semibold">€ {roundFinal(r.tco)}</TableCell>
+                                        <TableCell className="text-right">
                                             <RowDetailSheet
                                                 row={r}
                                                 rszParams={rszParams}
@@ -267,25 +268,25 @@ export default async function PopulatiePage({
                                                 extralegaalDetails={extralegaalMap.get(r.contract_id) ?? []}
                                                 periode={periode}
                                             />
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </tbody>
-                            <tfoot>
-                                <tr className="border-t-2 font-semibold bg-muted/40">
-                                    <td className="py-3 pr-3" colSpan={4}>Totaal populatie ({rows.length})</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.bruto)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.rsz)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums text-green-600">−€ {roundFinal(totals.verm)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.bijz)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.vak)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.extra)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums text-primary">€ {roundFinal(totals.pat)}</td>
-                                    <td className="py-3 pr-3 text-right tabular-nums text-primary">€ {roundFinal(totals.tco)}</td>
-                                    <td className="py-3"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                            </TableBody>
+                            <TableFooter>
+                                <TableRow>
+                                    <TableCell colSpan={4}>Totaal populatie ({rows.length})</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.bruto)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.rsz)}</TableCell>
+                                    <TableCell className="text-right tabular-nums text-green-600">−€ {roundFinal(totals.verm)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.bijz)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.vak)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.extra)}</TableCell>
+                                    <TableCell className="text-right tabular-nums text-primary">€ {roundFinal(totals.pat)}</TableCell>
+                                    <TableCell className="text-right tabular-nums text-primary">€ {roundFinal(totals.tco)}</TableCell>
+                                    <TableCell />
+                                </TableRow>
+                            </TableFooter>
+                        </Table>
                         <p className="text-xs text-muted-foreground mt-4">
                             POC subset: exclusief stap 4 (doelgroepverminderingen), stap 8-9 (wagen, arbeidsongevallen). Bedragen via banker&apos;s rounding. RLS filtert automatisch op tenant.
                         </p>

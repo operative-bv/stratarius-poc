@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Scale, TrendingUp, TrendingDown, Minus, RefreshCw, SplitSquareHorizontal, Sigma } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -57,10 +58,15 @@ export default async function LoonkloofPage({
     async function refreshMart() {
         "use server";
         const supabase = await createClient();
-        await supabase.rpc("refresh_mart_loonkloof", {
+        const { error } = await supabase.rpc("refresh_mart_loonkloof", {
             p_rechtsgrondslag: "manual refresh via dashboard loonkloof page",
         });
         revalidatePath(`/dashboard/${accountSlug}/loonkloof`);
+        redirect(
+            error
+                ? `/dashboard/${accountSlug}/loonkloof?toast_error=${encodeURIComponent(`Refresh faalde: ${error.message}`)}`
+                : `/dashboard/${accountSlug}/loonkloof?toast_success=${encodeURIComponent("Mart_loonkloof refreshed")}`,
+        );
     }
 
     async function runOaxaca() {
@@ -288,39 +294,39 @@ export default async function LoonkloofPage({
                     <CardTitle>Loonkloof per team / functieniveau</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b text-left text-xs text-muted-foreground">
-                                <th className="pb-2 pr-3">Team</th>
-                                <th className="pb-2 pr-3 text-right">Populatie</th>
-                                <th className="pb-2 pr-3 text-right">Man n</th>
-                                <th className="pb-2 pr-3 text-right">Vrouw n</th>
-                                <th className="pb-2 pr-3 text-right">Gem. uurloon M</th>
-                                <th className="pb-2 pr-3 text-right">Gem. uurloon V</th>
-                                <th className="pb-2 pr-3 text-right">Gap %</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Team</TableHead>
+                                <TableHead className="text-right">Populatie</TableHead>
+                                <TableHead className="text-right">Man n</TableHead>
+                                <TableHead className="text-right">Vrouw n</TableHead>
+                                <TableHead className="text-right">Gem. uurloon M</TableHead>
+                                <TableHead className="text-right">Gem. uurloon V</TableHead>
+                                <TableHead className="text-right">Gap %</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {nivelenGap.map((n) => {
                                 const gap = n.avgM > 0 ? ((n.avgM - n.avgV) / n.avgM) * 100 : 0;
                                 return (
-                                    <tr key={n.niveau} className="border-b hover:bg-muted/40">
-                                        <td className="py-2 pr-3 font-medium">{n.naam}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">{n.total}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">{n.mCount}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">{n.vCount}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">€ {fmtEur(n.avgM)}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums">€ {fmtEur(n.avgV)}</td>
-                                        <td className="py-2 pr-3 text-right tabular-nums font-semibold">
+                                    <TableRow key={n.niveau}>
+                                        <TableCell className="font-medium">{n.naam}</TableCell>
+                                        <TableCell className="text-right tabular-nums">{n.total}</TableCell>
+                                        <TableCell className="text-right tabular-nums">{n.mCount}</TableCell>
+                                        <TableCell className="text-right tabular-nums">{n.vCount}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {fmtEur(n.avgM)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {fmtEur(n.avgV)}</TableCell>
+                                        <TableCell className="text-right tabular-nums font-semibold">
                                             <span className={gap > 3 ? "text-orange-600" : gap < -3 ? "text-green-600" : ""}>
                                                 {gap > 0 ? "+" : ""}{gap.toFixed(1)}%
                                             </span>
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 );
                             })}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                     <p className="text-xs text-muted-foreground mt-4">
                         Ruwe (ongecorrigeerde) gap per team. Voor de <em>gecorrigeerde</em> splitsing (endowment vs residual) — zie decompositie kaart boven. Volwaardige Oaxaca-Blinder met OLS-coëfficiënten + p-values wordt post-POC toegevoegd via externe stats-service.
                     </p>
@@ -453,34 +459,34 @@ function OaxacaCard({ result, onRerun }: { result: OaxacaResult; onRerun: () => 
             {/* Coefficient tabel */}
             <div>
                 <div className="text-sm font-medium mb-2">Coëfficiënten per variabele</div>
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="border-b text-left text-xs text-muted-foreground">
-                            <th className="pb-2 pr-3">Variabele</th>
-                            <th className="pb-2 pr-3 text-right">β mannen</th>
-                            <th className="pb-2 pr-3 text-right">β vrouwen</th>
-                            <th className="pb-2 pr-3 text-right">p-value</th>
-                            <th className="pb-2 pr-3 text-right">Bijdrage kloof</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Variabele</TableHead>
+                            <TableHead className="text-right">β mannen</TableHead>
+                            <TableHead className="text-right">β vrouwen</TableHead>
+                            <TableHead className="text-right">p-value</TableHead>
+                            <TableHead className="text-right">Bijdrage kloof</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
                         {result.coefficients.map((c) => {
                             const significant = c.p_value < 0.05;
                             return (
-                                <tr key={c.variabele} className="border-b hover:bg-muted/40">
-                                    <td className="py-2 pr-3 font-medium">{c.variabele}</td>
-                                    <td className="py-2 pr-3 text-right tabular-nums">{c.beta_m.toFixed(3)}</td>
-                                    <td className="py-2 pr-3 text-right tabular-nums">{c.beta_v.toFixed(3)}</td>
-                                    <td className={`py-2 pr-3 text-right tabular-nums ${significant ? "font-semibold" : "text-muted-foreground"}`}>
+                                <TableRow key={c.variabele}>
+                                    <TableCell className="font-medium">{c.variabele}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{c.beta_m.toFixed(3)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{c.beta_v.toFixed(3)}</TableCell>
+                                    <TableCell className={`text-right tabular-nums ${significant ? "font-semibold" : "text-muted-foreground"}`}>
                                         {c.p_value.toFixed(3)}
                                         {significant && " *"}
-                                    </td>
-                                    <td className="py-2 pr-3 text-right tabular-nums">€ {fmtEur(Math.abs(c.kloof_bijdrage))}</td>
-                                </tr>
+                                    </TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {fmtEur(Math.abs(c.kloof_bijdrage))}</TableCell>
+                                </TableRow>
                             );
                         })}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
                 <p className="text-xs text-muted-foreground mt-2">
                     * p &lt; 0.05 = statistisch significant. R² mannen = {result.r_squared_m.toFixed(2)} · R² vrouwen = {result.r_squared_v.toFixed(2)}.
                 </p>

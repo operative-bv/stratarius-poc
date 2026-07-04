@@ -1,6 +1,7 @@
 "use client";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Info, ExternalLink } from "lucide-react";
 
@@ -108,15 +109,24 @@ export function RowDetailSheet({
 
     return (
         <Sheet>
-            <SheetTrigger asChild>
-                <button
-                    type="button"
-                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary hover:underline"
-                    aria-label="Toon berekening"
-                >
-                    <Info className="h-3.5 w-3.5" />
-                </button>
-            </SheetTrigger>
+            <TooltipProvider>
+                <Tooltip>
+                    <SheetTrigger asChild>
+                        <TooltipTrigger asChild>
+                            <button
+                                type="button"
+                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary hover:underline"
+                                aria-label="Toon berekening"
+                            >
+                                <Info className="h-3.5 w-3.5" />
+                            </button>
+                        </TooltipTrigger>
+                    </SheetTrigger>
+                    <TooltipContent side="left">
+                        Toon volledige rekencascade voor dit contract
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
             <SheetContent
                 side="right"
                 className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col data-[state=open]:duration-200 data-[state=closed]:duration-150 data-[state=open]:ease-out"

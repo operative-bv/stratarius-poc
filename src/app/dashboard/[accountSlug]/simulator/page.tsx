@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TrendingUp, ChevronDown, Car, AlertTriangle } from "lucide-react";
 
 type CascadeResult = {
@@ -303,10 +304,12 @@ export default async function SimulatorPage({
                                     <span className="text-2xl font-semibold tabular-nums">€ {roundFinal(result.totaal_patronale_kost)}</span>
                                 </div>
 
-                                <DrillDown label={STAP_DETAILS.stap2.title} value={result.stap2_basis_rsz} details={STAP_DETAILS.stap2} />
-                                <DrillDown label={STAP_DETAILS.stap3.title} value={result.stap3_vermindering} negative details={STAP_DETAILS.stap3} />
-                                <DrillDown label={STAP_DETAILS.stap5.title} value={result.stap5_bijzondere} details={STAP_DETAILS.stap5} />
-                                <DrillDown label={STAP_DETAILS.stap6.title} value={result.stap6_vakantiegeld} details={STAP_DETAILS.stap6} />
+                                <Accordion type="multiple" className="w-full">
+                                    <DrillDown id="stap2" label={STAP_DETAILS.stap2.title} value={result.stap2_basis_rsz} details={STAP_DETAILS.stap2} />
+                                    <DrillDown id="stap3" label={STAP_DETAILS.stap3.title} value={result.stap3_vermindering} negative details={STAP_DETAILS.stap3} />
+                                    <DrillDown id="stap5" label={STAP_DETAILS.stap5.title} value={result.stap5_bijzondere} details={STAP_DETAILS.stap5} />
+                                    <DrillDown id="stap6" label={STAP_DETAILS.stap6.title} value={result.stap6_vakantiegeld} details={STAP_DETAILS.stap6} />
+                                </Accordion>
 
                                 {result.wagen && (
                                     <div className="rounded-lg border-2 border-orange-500/30 bg-orange-500/5 p-4 space-y-3">
@@ -367,41 +370,44 @@ export default async function SimulatorPage({
 }
 
 function DrillDown({
+    id,
     label,
     value,
     negative = false,
     details,
 }: {
+    id: string;
     label: string;
     value: number | null;
     negative?: boolean;
     details: { formule: string; bron: string; toelichting: string };
 }) {
     return (
-        <details className="rounded-lg border p-3 [&_svg]:open:rotate-180">
-            <summary className="flex justify-between items-center cursor-pointer list-none">
-                <span className="flex items-center gap-2 text-sm font-medium">
-                    <ChevronDown className="h-4 w-4 transition-transform" />
-                    {label}
-                </span>
-                <span className={`text-sm tabular-nums ${negative ? "text-green-600" : ""}`}>
-                    {value === null ? "—" : `${negative ? "−" : ""}€ ${roundFinal(value)}`}
-                </span>
-            </summary>
-            <div className="mt-3 pt-3 border-t space-y-2 text-xs">
-                <div>
-                    <span className="text-muted-foreground">Formule: </span>
-                    <code className="font-mono">{details.formule}</code>
+        <AccordionItem value={id} className="border rounded-lg px-3 mb-2 last:mb-0">
+            <AccordionTrigger className="hover:no-underline">
+                <div className="flex-1 flex justify-between items-center pr-2">
+                    <span className="text-sm font-medium">{label}</span>
+                    <span className={`text-sm tabular-nums ${negative ? "text-green-600" : ""}`}>
+                        {value === null ? "—" : `${negative ? "−" : ""}€ ${roundFinal(value)}`}
+                    </span>
                 </div>
-                <div>
-                    <span className="text-muted-foreground">Uitleg: </span>
-                    <span>{details.toelichting}</span>
+            </AccordionTrigger>
+            <AccordionContent>
+                <div className="space-y-2 text-xs pt-2">
+                    <div>
+                        <span className="text-muted-foreground">Formule: </span>
+                        <code className="font-mono">{details.formule}</code>
+                    </div>
+                    <div>
+                        <span className="text-muted-foreground">Uitleg: </span>
+                        <span>{details.toelichting}</span>
+                    </div>
+                    <div>
+                        <span className="text-muted-foreground">Bron: </span>
+                        <a href={details.bron} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">{details.bron}</a>
+                    </div>
                 </div>
-                <div>
-                    <span className="text-muted-foreground">Bron: </span>
-                    <a href={details.bron} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">{details.bron}</a>
-                </div>
-            </div>
-        </details>
+            </AccordionContent>
+        </AccordionItem>
     );
 }

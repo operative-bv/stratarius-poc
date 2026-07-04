@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { FlaskConical, ArrowRight, Car } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FlaskConical, ArrowRight, Car, Percent } from "lucide-react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -67,9 +68,9 @@ export default async function ScenariosPage({
         });
 
         if (error) {
-            redirect(`/dashboard/${accountSlug}/scenarios?error=${encodeURIComponent(error.message)}`);
+            redirect(`/dashboard/${accountSlug}/scenarios?toast_error=${encodeURIComponent(error.message)}`);
         }
-        redirect(`/dashboard/${accountSlug}/populatie?scenario=${data}&compare=1`);
+        redirect(`/dashboard/${accountSlug}/populatie?scenario=${data}&compare=1&toast_success=${encodeURIComponent(`Scenario "${naam}" aangemaakt`)}`);
     }
 
     async function createWagenScenario(formData: FormData) {
@@ -95,9 +96,9 @@ export default async function ScenariosPage({
         });
 
         if (error) {
-            redirect(`/dashboard/${accountSlug}/scenarios?error=${encodeURIComponent(error.message)}`);
+            redirect(`/dashboard/${accountSlug}/scenarios?toast_error=${encodeURIComponent(error.message)}`);
         }
-        redirect(`/dashboard/${accountSlug}/populatie?scenario=${data}&compare=1`);
+        redirect(`/dashboard/${accountSlug}/populatie?scenario=${data}&compare=1&toast_success=${encodeURIComponent(`Wagen-scenario "${naam}" aangemaakt`)}`);
     }
 
     return (
@@ -120,13 +121,25 @@ export default async function ScenariosPage({
                 </Card>
             )}
 
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Loon-mutatie scenario</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form action={createScenario} className="space-y-4">
+            <Tabs defaultValue="loon" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 max-w-md">
+                    <TabsTrigger value="loon" className="flex items-center gap-2">
+                        <Percent className="h-4 w-4" />
+                        Loon-mutatie
+                    </TabsTrigger>
+                    <TabsTrigger value="wagen" className="flex items-center gap-2">
+                        <Car className="h-4 w-4" />
+                        Wagen-toewijzing
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="loon" className="mt-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Loon-mutatie scenario</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <form action={createScenario} className="space-y-4">
                             <input type="hidden" name="entiteit" value={entiteit?.legale_entiteit_id ?? ""} />
 
                             <div className="space-y-2">
@@ -189,18 +202,20 @@ export default async function ScenariosPage({
                                 Bij submit: nieuw scenario wordt aangemaakt, fact_looncomponent wordt gedupliceerd met mutatie, en je wordt geredirect naar populatie-view met vergelijk-modus.
                             </p>
                         </form>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Car className="h-5 w-5" />
-                            Wagen-toewijzing scenario
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form action={createWagenScenario} className="space-y-4">
+                <TabsContent value="wagen" className="mt-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Car className="h-5 w-5" />
+                                Wagen-toewijzing scenario
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <form action={createWagenScenario} className="space-y-4">
                             <input type="hidden" name="entiteit" value={entiteit?.legale_entiteit_id ?? ""} />
 
                             <div className="space-y-2">
@@ -254,9 +269,10 @@ export default async function ScenariosPage({
                                 Voegt bedrijfswagen_tco (lease patronaal) + bedrijfswagen_vaa (fiscaal) toe voor elk contract in het gekozen team.
                             </p>
                         </form>
-                    </CardContent>
-                </Card>
-            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
 
             <Card>
                 <CardHeader>
