@@ -43,6 +43,13 @@ with
         left join public.fact_looncomponent fl
             on fl.contract_id = cr.contract_id
             and fl.periode = date_trunc('month', cr.referentiedatum)::date
+            -- Filter naar baseline scenario per tenant zodat basis_vte niet across
+            -- what-if scenarios wordt gesommeerd (loonkloof-analyse gebruikt actuals).
+            and fl.scenario_id in (
+                select s.scenario_id from public.dim_scenario s
+                where s.kind = 'baseline'
+                  and s.legale_entiteit_id = cr.legale_entiteit_id
+            )
         left join public.dim_looncomponent dl on dl.component_id = fl.component_id
         group by cr.persoon_id, cr.referentiedatum, cr.pc_id, cr.functieniveau, cr.geslacht, cr.geldig_van, cr.legale_entiteit_id
     )

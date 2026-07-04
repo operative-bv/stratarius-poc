@@ -80,5 +80,9 @@ BEGIN
     END LOOP;
 END $DEMO$;
 
+-- Refresh mart_loonkloof zodat /loonkloof pagina direct data toont na db reset.
+REFRESH MATERIALIZED VIEW public.mart_loonkloof;
+
 SELECT 'Setup:' as status;
 SELECT functienaam, count(*) as headcount FROM dim_contract c JOIN dim_functie f ON f.functie_id = c.functie_id GROUP BY functienaam;
+SELECT 'mart_loonkloof:' as info, count(*) as rows FROM public.mart_loonkloof;
