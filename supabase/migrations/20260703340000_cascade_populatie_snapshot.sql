@@ -1,7 +1,7 @@
 -- T-039 (populatie snapshot): één query die cascade output voor alle
 -- contracten in caller's tenant × periode berekent. Voorkomt N+1 client-side loop.
 --
--- Filter via RLS: user ziet alleen contracten waar has_role_on_account(basejump_account_id).
+-- Filter via RLS: user ziet alleen contracten waar has_role_on_account(owning_account_id).
 
 create or replace function public.cascade_populatie_snapshot(
     p_periode date,

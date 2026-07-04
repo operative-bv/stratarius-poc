@@ -28,7 +28,7 @@ export default async function SetupPage({
     const { data: existingEntiteit } = await supabase
         .from("dim_legale_entiteit")
         .select("legale_entiteit_id")
-        .eq("basejump_account_id", accountData.account_id)
+        .eq("owning_account_id", accountData.account_id)
         .limit(1);
     if (existingEntiteit && existingEntiteit.length > 0) {
         redirect(`/dashboard/${accountSlug}`);
@@ -55,7 +55,7 @@ export default async function SetupPage({
         const { data: entiteitData, error: entiteitErr } = await supabase
             .from("dim_legale_entiteit")
             .insert({
-                basejump_account_id: accountId,
+                owning_account_id: accountId,
                 werkgeverscategorie,
                 ondernemingsnr,
                 naam,

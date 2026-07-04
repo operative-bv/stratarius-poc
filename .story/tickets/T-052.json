@@ -1,12 +1,12 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "completedDate": "2026-07-04",
   "createdDate": "2026-07-04",
   "description": "Cosmetic maar structurele hygiëne: dim_persoon en dim_functie gebruiken `owning_account_id`, dim_legale_entiteit gebruikt `basejump_account_id`. Kies één convention (voorstel: `owning_account_id` want dat is basejump-agnostisch, past bij een eventuele auth-migratie). Vergt: (1) ALTER TABLE RENAME COLUMN, (2) RLS policy DROP + CREATE met nieuwe naam, (3) trigger update (dim_legale_entiteit_enforce_team_account leest NEW.basejump_account_id), (4) grep-verify server actions + queries in src/. Low-risk technisch, breekt wel bestaande code. Migration + coordinated code-change PR. Ontdekt tijdens tracker-triage 2026-07-04.",
   "id": "T-052",
   "order": 80,
   "phase": "productie",
-  "status": "open",
+  "status": "complete",
   "title": "Naming drift fix: unify owning_account_id ↔ basejump_account_id",
   "type": "chore"
 }

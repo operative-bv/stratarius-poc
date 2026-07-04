@@ -12,7 +12,7 @@ select tests.authenticate_as('team_a_owner');
 insert into basejump.accounts (id, name, slug, personal_account) values
     ('11111111-1111-1111-1111-111111111111', 'Team A', 'team-a', false);
 
-insert into public.dim_legale_entiteit (legale_entiteit_id, basejump_account_id, werkgeverscategorie, naam, land_id) values
+insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
     ('aaaaaaaa-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 1, 'Team A BVBA', 'BE');
 
 insert into public.dim_persoon (persoon_id, owning_account_id, geboortedatum) values
@@ -26,7 +26,7 @@ select tests.authenticate_as('team_b_owner');
 insert into basejump.accounts (id, name, slug, personal_account) values
     ('22222222-2222-2222-2222-222222222222', 'Team B', 'team-b', false);
 
-insert into public.dim_legale_entiteit (legale_entiteit_id, basejump_account_id, werkgeverscategorie, naam, land_id) values
+insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
     ('aaaaaaaa-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 1, 'Team B BVBA', 'BE');
 
 

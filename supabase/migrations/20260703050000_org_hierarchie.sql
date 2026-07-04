@@ -161,21 +161,21 @@ comment on column public.map_entiteit_pc_competentie.activiteit is
 
 alter table public.map_entiteit_pc_competentie enable row level security;
 
--- RLS transitive tenant via entiteit_id → dim_legale_entiteit.basejump_account_id (T-006 pattern).
+-- RLS transitive tenant via entiteit_id → dim_legale_entiteit.owning_account_id (T-006 pattern).
 create policy map_entiteit_pc_competentie_tenant on public.map_entiteit_pc_competentie
     for all
     using (
         exists (
             select 1 from public.dim_legale_entiteit le
             where le.legale_entiteit_id = map_entiteit_pc_competentie.entiteit_id
-              and basejump.has_role_on_account(le.basejump_account_id)
+              and basejump.has_role_on_account(le.owning_account_id)
         )
     )
     with check (
         exists (
             select 1 from public.dim_legale_entiteit le
             where le.legale_entiteit_id = map_entiteit_pc_competentie.entiteit_id
-              and basejump.has_role_on_account(le.basejump_account_id)
+              and basejump.has_role_on_account(le.owning_account_id)
         )
     );
 

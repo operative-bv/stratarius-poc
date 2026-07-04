@@ -20,7 +20,7 @@ select tests.authenticate_as('t');
 insert into basejump.accounts (id, name, slug, personal_account) values
     ('a1111111-1111-1111-1111-111111111111', 'T', 'ts', false);
 
-insert into public.dim_legale_entiteit (legale_entiteit_id, basejump_account_id, werkgeverscategorie, naam, land_id, gewest) values
+insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id, gewest) values
     ('aaaaaaaa-0000-0000-0000-000000000001', 'a1111111-1111-1111-1111-111111111111', 1, 'VL', 'BE', 'vlaanderen'),
     ('aaaaaaaa-0000-0000-0000-000000000002', 'a1111111-1111-1111-1111-111111111111', 1, 'WA', 'BE', 'wallonie'),
     ('aaaaaaaa-0000-0000-0000-000000000003', 'a1111111-1111-1111-1111-111111111111', 1, 'BR', 'BE', 'brussel');

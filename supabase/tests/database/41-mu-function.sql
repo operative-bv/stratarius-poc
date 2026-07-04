@@ -24,7 +24,7 @@ select tests.authenticate_as('tenant_a_owner');
 insert into basejump.accounts (id, name, slug, personal_account) values
     ('a1111111-1111-1111-1111-111111111111', 'Tenant', 'tenant', false);
 
-insert into public.dim_legale_entiteit (legale_entiteit_id, basejump_account_id, werkgeverscategorie, naam, land_id) values
+insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
     ('aaaaaaaa-1111-1111-1111-111111111111', 'a1111111-1111-1111-1111-111111111111', 1, 'Test BVBA', 'BE');
 
 insert into public.dim_persoon (persoon_id, owning_account_id, geslacht, geboortedatum) values

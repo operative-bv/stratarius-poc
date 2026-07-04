@@ -18,7 +18,7 @@ VALUES (
 ON CONFLICT (provider_id, provider) DO NOTHING;
 INSERT INTO basejump.accounts (id, name, slug, personal_account, primary_owner_user_id) VALUES ('a1111111-1111-1111-1111-111111111111', 'Demo BVBA', 'demo-bvba', false, 'a0000000-0000-0000-0000-000000000001');
 INSERT INTO basejump.account_user (account_id, user_id, account_role) VALUES ('a1111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 'owner');
-INSERT INTO public.dim_legale_entiteit (legale_entiteit_id, basejump_account_id, werkgeverscategorie, naam, land_id, gewest) VALUES ('aaaaaaaa-1111-1111-1111-111111111111', 'a1111111-1111-1111-1111-111111111111', 1, 'Demo BVBA', 'BE', 'vlaanderen');
+INSERT INTO public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id, gewest) VALUES ('aaaaaaaa-1111-1111-1111-111111111111', 'a1111111-1111-1111-1111-111111111111', 1, 'Demo BVBA', 'BE', 'vlaanderen');
 
 -- 4 teams (functies)
 INSERT INTO public.dim_functie (functie_id, owning_account_id, functienaam, functieniveau) VALUES

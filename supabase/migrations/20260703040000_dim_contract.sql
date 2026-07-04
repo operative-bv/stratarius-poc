@@ -59,8 +59,8 @@ comment on column public.dim_contract.status is
 alter table public.dim_contract enable row level security;
 
 -- RLS pattern deviation from T-004/T-005: dim_contract has no direct
--- basejump_account_id. Tenant identity is transitive via legale_entiteit_id →
--- dim_legale_entiteit.basejump_account_id. DELIBERATE: do NOT normalize by
+-- owning_account_id. Tenant identity is transitive via legale_entiteit_id →
+-- dim_legale_entiteit.owning_account_id. DELIBERATE: do NOT normalize by
 -- adding a redundant owning_account_id column — the transitivity is the
 -- correct model (a legale entiteit BELONGS to one tenant; contracts belong to
 -- the same tenant through the entiteit).
@@ -75,14 +75,14 @@ create policy dim_contract_tenant on public.dim_contract
         exists (
             select 1 from public.dim_legale_entiteit le
             where le.legale_entiteit_id = dim_contract.legale_entiteit_id
-              and basejump.has_role_on_account(le.basejump_account_id)
+              and basejump.has_role_on_account(le.owning_account_id)
         )
     )
     with check (
         exists (
             select 1 from public.dim_legale_entiteit le
             where le.legale_entiteit_id = dim_contract.legale_entiteit_id
-              and basejump.has_role_on_account(le.basejump_account_id)
+              and basejump.has_role_on_account(le.owning_account_id)
         )
     );
 

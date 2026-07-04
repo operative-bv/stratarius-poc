@@ -18,7 +18,7 @@ select tests.create_supabase_user('tenant_b_owner');
 select tests.authenticate_as('tenant_a_owner');
 insert into basejump.accounts (id, name, slug, personal_account) values
     ('a1111111-1111-1111-1111-111111111111', 'Tenant A', 'tenant-a', false);
-insert into public.dim_legale_entiteit (legale_entiteit_id, basejump_account_id, werkgeverscategorie, naam, land_id) values
+insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
     ('aaaaaaaa-1111-1111-1111-111111111111', 'a1111111-1111-1111-1111-111111111111', 1, 'Tenant A BVBA', 'BE');
 insert into public.dim_persoon (persoon_id, geslacht, geboortedatum) values
     ('a2222222-1111-1111-1111-111111111111', 'V', '1985-01-01');
@@ -31,7 +31,7 @@ insert into public.dim_scenario (scenario_id, legale_entiteit_id, naam, kind) va
 select tests.authenticate_as('tenant_b_owner');
 insert into basejump.accounts (id, name, slug, personal_account) values
     ('b1111111-2222-2222-2222-222222222222', 'Tenant B', 'tenant-b', false);
-insert into public.dim_legale_entiteit (legale_entiteit_id, basejump_account_id, werkgeverscategorie, naam, land_id) values
+insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
     ('bbbbbbbb-2222-2222-2222-222222222222', 'b1111111-2222-2222-2222-222222222222', 1, 'Tenant B BVBA', 'BE');
 insert into public.dim_persoon (persoon_id, geslacht, geboortedatum) values
     ('b2222222-2222-2222-2222-222222222222', 'M', '1985-01-01');

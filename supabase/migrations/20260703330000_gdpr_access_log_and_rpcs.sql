@@ -85,7 +85,7 @@ begin
         m.functieniveau, m.ancienniteit_jaren
     from public.mart_loonkloof m
     where basejump.has_role_on_account((
-        select le.basejump_account_id
+        select le.owning_account_id
         from public.dim_legale_entiteit le
         where le.legale_entiteit_id = m.legale_entiteit_id
     ));

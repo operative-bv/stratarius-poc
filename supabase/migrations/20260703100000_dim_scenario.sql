@@ -26,26 +26,26 @@ create table public.dim_scenario (
 comment on column public.dim_scenario.kind is
     'actual = historische feiten (default) | what_if = ad-hoc scenario | forecast = geplande toekomstige scenario | baseline = referentie voor vergelijking.';
 comment on column public.dim_scenario.legale_entiteit_id is
-    'Tenant boundary via dim_legale_entiteit.basejump_account_id (T-006 pattern). Scenario is eigendom van de legale entiteit; wordt niet gedeeld tussen tenants.';
+    'Tenant boundary via dim_legale_entiteit.owning_account_id (T-006 pattern). Scenario is eigendom van de legale entiteit; wordt niet gedeeld tussen tenants.';
 
 alter table public.dim_scenario enable row level security;
 
 -- RLS transitive tenant: byte-identical USING + WITH CHECK exists via
--- dim_legale_entiteit.basejump_account_id. Matches T-006 dim_contract.
+-- dim_legale_entiteit.owning_account_id. Matches T-006 dim_contract.
 create policy dim_scenario_tenant on public.dim_scenario
     for all
     using (
         exists (
             select 1 from public.dim_legale_entiteit le
             where le.legale_entiteit_id = dim_scenario.legale_entiteit_id
-              and basejump.has_role_on_account(le.basejump_account_id)
+              and basejump.has_role_on_account(le.owning_account_id)
         )
     )
     with check (
         exists (
             select 1 from public.dim_legale_entiteit le
             where le.legale_entiteit_id = dim_scenario.legale_entiteit_id
-              and basejump.has_role_on_account(le.basejump_account_id)
+              and basejump.has_role_on_account(le.owning_account_id)
         )
     );
 

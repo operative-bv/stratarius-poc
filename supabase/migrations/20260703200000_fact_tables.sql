@@ -57,14 +57,14 @@ create policy fact_looncomponent_tenant on public.fact_looncomponent
         from public.dim_contract c
         join public.dim_legale_entiteit e using (legale_entiteit_id)
         where c.contract_id = fact_looncomponent.contract_id
-          and basejump.has_role_on_account(e.basejump_account_id)
+          and basejump.has_role_on_account(e.owning_account_id)
     ))
     with check (exists (
         select 1
         from public.dim_contract c
         join public.dim_legale_entiteit e using (legale_entiteit_id)
         where c.contract_id = fact_looncomponent.contract_id
-          and basejump.has_role_on_account(e.basejump_account_id)
+          and basejump.has_role_on_account(e.owning_account_id)
     ));
 
 create index fact_looncomponent_contract_periode_idx
@@ -106,14 +106,14 @@ create policy fact_prestatie_tenant on public.fact_prestatie
         from public.dim_contract c
         join public.dim_legale_entiteit e using (legale_entiteit_id)
         where c.contract_id = fact_prestatie.contract_id
-          and basejump.has_role_on_account(e.basejump_account_id)
+          and basejump.has_role_on_account(e.owning_account_id)
     ))
     with check (exists (
         select 1
         from public.dim_contract c
         join public.dim_legale_entiteit e using (legale_entiteit_id)
         where c.contract_id = fact_prestatie.contract_id
-          and basejump.has_role_on_account(e.basejump_account_id)
+          and basejump.has_role_on_account(e.owning_account_id)
     ));
 
 create index fact_prestatie_contract_periode_idx
@@ -161,14 +161,14 @@ create policy fact_wagen_tenant on public.fact_wagen
         from public.dim_contract c
         join public.dim_legale_entiteit e using (legale_entiteit_id)
         where c.contract_id = fact_wagen.contract_id
-          and basejump.has_role_on_account(e.basejump_account_id)
+          and basejump.has_role_on_account(e.owning_account_id)
     ))
     with check (exists (
         select 1
         from public.dim_contract c
         join public.dim_legale_entiteit e using (legale_entiteit_id)
         where c.contract_id = fact_wagen.contract_id
-          and basejump.has_role_on_account(e.basejump_account_id)
+          and basejump.has_role_on_account(e.owning_account_id)
     ));
 
 create index fact_wagen_contract_periode_idx
@@ -221,7 +221,7 @@ create policy fact_loonkost_read on public.fact_loonkost
         from public.dim_contract c
         join public.dim_legale_entiteit e using (legale_entiteit_id)
         where c.contract_id = fact_loonkost.contract_id
-          and basejump.has_role_on_account(e.basejump_account_id)
+          and basejump.has_role_on_account(e.owning_account_id)
     ));
 
 -- AFGELEID-invariant: geen writes voor authenticated/public/anon

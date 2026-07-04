@@ -23,7 +23,7 @@ select has_table('public', 'dim_land', 'dim_land table exists');
 select has_table('public', 'dim_legale_entiteit', 'dim_legale_entiteit table exists');
 select col_is_pk('public', 'dim_land', 'land_id', 'dim_land.land_id is PK');
 select col_is_pk('public', 'dim_legale_entiteit', 'legale_entiteit_id', 'dim_legale_entiteit.legale_entiteit_id is PK');
-select col_is_fk('public', 'dim_legale_entiteit', 'basejump_account_id', 'basejump_account_id is FK');
+select col_is_fk('public', 'dim_legale_entiteit', 'owning_account_id', 'owning_account_id is FK');
 select col_is_fk('public', 'dim_legale_entiteit', 'land_id', 'land_id is FK');
 select col_type_is('public', 'dim_legale_entiteit', 'werkgeverscategorie', 'smallint', 'werkgeverscategorie is smallint');
 
@@ -97,7 +97,7 @@ reset role;
 select tests.authenticate_as('team_a_owner');
 
 select lives_ok(
-    $$ insert into public.dim_legale_entiteit (basejump_account_id, werkgeverscategorie, naam, land_id, ondernemingsnr)
+    $$ insert into public.dim_legale_entiteit (owning_account_id, werkgeverscategorie, naam, land_id, ondernemingsnr)
        values ('11111111-1111-1111-1111-111111111111', 1, 'Boekhouding BVBA', 'BE', '0403.019.261') $$,
     'team A owner can insert a legale entiteit under Team A'
 );
@@ -119,7 +119,7 @@ select is(
 ------------------------------------------------------------
 
 select throws_ok(
-    $$ insert into public.dim_legale_entiteit (basejump_account_id, werkgeverscategorie, naam, land_id)
+    $$ insert into public.dim_legale_entiteit (owning_account_id, werkgeverscategorie, naam, land_id)
        values ('11111111-1111-1111-1111-111111111111', 1, 'Team A hijack attempt', 'BE') $$,
     '42501'
 );
@@ -131,7 +131,7 @@ select throws_ok(
 select tests.authenticate_as('team_a_owner');
 
 select throws_ok(
-    $$ insert into public.dim_legale_entiteit (basejump_account_id, werkgeverscategorie, naam, land_id)
+    $$ insert into public.dim_legale_entiteit (owning_account_id, werkgeverscategorie, naam, land_id)
        values ('11111111-1111-1111-1111-111111111111', 4, 'invalid cat', 'BE') $$,
     '23514'
 );
@@ -144,7 +144,7 @@ select throws_ok(
 
 select throws_ok(
     format(
-        $$ insert into public.dim_legale_entiteit (basejump_account_id, werkgeverscategorie, naam, land_id)
+        $$ insert into public.dim_legale_entiteit (owning_account_id, werkgeverscategorie, naam, land_id)
            values (%L, 1, 'personal attempt', 'BE') $$,
         (select id from basejump.accounts where personal_account = true and primary_owner_user_id = tests.get_supabase_uid('team_a_owner'))
     ),

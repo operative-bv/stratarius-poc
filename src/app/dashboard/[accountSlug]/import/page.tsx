@@ -31,7 +31,7 @@ async function importCsv(formData: FormData): Promise<void> {
 
     // Fetch tenant setup — legale entiteit + functies + baseline scenario
     const [{ data: entData }, { data: funcData }, { data: scenData }] = await Promise.all([
-        supabase.from("dim_legale_entiteit").select("legale_entiteit_id, basejump_account_id").limit(1),
+        supabase.from("dim_legale_entiteit").select("legale_entiteit_id, owning_account_id").limit(1),
         supabase.from("dim_functie").select("functie_id, functienaam, owning_account_id"),
         supabase.from("dim_scenario").select("scenario_id").eq("kind", "baseline").limit(1),
     ]);
@@ -89,7 +89,7 @@ async function importCsv(formData: FormData): Promise<void> {
         if (!functie && team) {
             const { data: newFunc } = await supabase
                 .from("dim_functie")
-                .insert({ owning_account_id: entiteit.basejump_account_id, functienaam: team, functieniveau: 10 })
+                .insert({ owning_account_id: entiteit.owning_account_id, functienaam: team, functieniveau: 10 })
                 .select("functie_id, functienaam, owning_account_id")
                 .single();
             if (newFunc) {
@@ -107,7 +107,7 @@ async function importCsv(formData: FormData): Promise<void> {
         const { data: persoonInsert, error: persoonErr } = await supabase
             .from("dim_persoon")
             .insert({
-                owning_account_id: entiteit.basejump_account_id,
+                owning_account_id: entiteit.owning_account_id,
                 geslacht,
                 geboortedatum,
                 opleidingsniveau,
