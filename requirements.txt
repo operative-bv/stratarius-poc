@@ -1,5 +1,2 @@
-# Python dependencies voor Vercel Serverless Functions onder /api/*.py.
-# Leeg voor hello-endpoint (T-045 sanity check).
-# Volwaardige Oaxaca-Blinder komt met:
-#   statsmodels==0.14.1
-#   pandas==2.2.0
+statsmodels==0.14.4
+pandas==2.2.3
