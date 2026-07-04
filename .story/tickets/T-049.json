@@ -1,12 +1,12 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "completedDate": "2026-07-04",
   "createdDate": "2026-07-04",
   "description": "Cascade stap 9 vereist nieuwe param_arbeidsongevallen tabel per sector/PC met verzekeringstarief (effective-dated). Kolommen: pc_id, sector, tarief_pct, min_premie, geldig_van, geldig_tot. Pure functie cascade_stap9_arbeidsongevallen(rsz_grondslag, pc_id, sector, periode) = grondslag × tarief_pct. Add SET search_path=public,pg_temp. Test: 3+ sectoren met verschillende tarieven, boundary min_premie. Gepromoot uit ISS-067 (T-028 scope-reductie 2026-07-03).",
   "id": "T-049",
   "order": 50,
   "phase": "productie",
-  "status": "open",
+  "status": "complete",
   "title": "Cascade stap 9: arbeidsongevallenverzekering + param_arbeidsongevallen tabel",
   "type": "task"
 }
