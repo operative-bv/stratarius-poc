@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { headers as requestHeaders } from "next/headers";
 
 export type OaxacaRow = {
     uurloon: number;
@@ -37,8 +38,12 @@ export async function callOaxacaService(
     rows: OaxacaRow[],
     rechtsgrondslag: string,
 ): Promise<OaxacaResult> {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL
-        ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    // Bepaal base URL via de huidige request-headers — werkt in dev + preview + prod
+    // zonder afhankelijk te zijn van VERCEL_URL (die niet altijd naar dezelfde deploy wijst).
+    const h = requestHeaders();
+    const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+    const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${proto}://${host}`;
 
     const body = JSON.stringify({ rows, rechtsgrondslag });
     const headers: Record<string, string> = { "Content-Type": "application/json" };
