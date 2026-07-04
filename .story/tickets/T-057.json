@@ -1,12 +1,12 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "completedDate": "2026-07-04",
   "createdDate": "2026-07-04",
   "description": "create_what_if_scenario (basisloon-mutatie) en create_wagen_scenario (wagen-add) zijn aparte RPCs. Onmogelijk om \"indexatie +2% ÉN electric wagen voor sales-team\" in één scenario te maken zonder twee opeenvolgende calls (wat de scenario-integriteit doorbreekt: baseline → scenario A → scenario B, niet baseline → scenario X). Fix: nieuwe RPC create_scenario_with_mutations(p_baseline_id, p_naam, p_periode, p_mutations jsonb[]). Elke mutation is {type, filter, params}. Types: loon_pct_increase, loon_flat_replace, wagen_add, wagen_swap, extralegaal_add, extralegaal_pct_increase, contract_status_change. Filter per mutation herbruikt T-056 schema. Volgorde-onafhankelijk (allowed) of ordered (must be spec'd). Bestaande RPCs behouden voor backward-compat en simpele UI paths. Blocked by: T-056 (voor filter-schema). Ontdekt tijdens simulatie-analyse 2026-07-04.",
   "id": "T-057",
   "order": 130,
   "phase": "productie",
-  "status": "open",
+  "status": "complete",
   "title": "Unified scenario mutator: combineer loon-mutatie + wagen + extralegaal",
   "type": "feature"
 }
