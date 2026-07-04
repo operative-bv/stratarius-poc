@@ -1,61 +1,44 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 
-/**
- * Change password voor de ingelogde user.
- * Supabase `auth.updateUser({ password })` is de canonieke API.
- * User moet ingelogd zijn (session cookie geldig).
- */
-export async function changePassword(_prevState: unknown, formData: FormData) {
+export type AccountActionState = {
+    ok: boolean | null;
+    message: string | null;
+};
+
+export const initialAccountActionState: AccountActionState = { ok: null, message: null };
+
+export async function changePassword(
+    _prev: AccountActionState,
+    formData: FormData,
+): Promise<AccountActionState> {
     const password = String(formData.get("password") ?? "");
     const confirm = String(formData.get("confirm") ?? "");
 
     if (!password || password.length < 8) {
-        return redirect(
-            "/dashboard/settings?message=" +
-                encodeURIComponent("Wachtwoord moet minstens 8 tekens zijn") +
-                "&kind=password_error",
-        );
+        return { ok: false, message: "Wachtwoord moet minstens 8 tekens zijn" };
     }
     if (password !== confirm) {
-        return redirect(
-            "/dashboard/settings?message=" +
-                encodeURIComponent("Wachtwoorden komen niet overeen") +
-                "&kind=password_error",
-        );
+        return { ok: false, message: "Wachtwoorden komen niet overeen" };
     }
 
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
-
     if (error) {
-        return redirect(
-            "/dashboard/settings?message=" +
-                encodeURIComponent(error.message) +
-                "&kind=password_error",
-        );
+        return { ok: false, message: error.message };
     }
-
-    return redirect("/dashboard/settings?kind=password_ok");
+    return { ok: true, message: "Wachtwoord bijgewerkt" };
 }
 
-/**
- * Sign out van ALLE andere sessies (behoudt huidige).
- * Supabase `auth.signOut({ scope: 'others' })` invalidateert refresh tokens
- * voor alle andere devices; huidige session blijft actief.
- */
-export async function signOutOtherSessions() {
+export async function signOutOtherSessions(
+    _prev: AccountActionState,
+    _formData: FormData,
+): Promise<AccountActionState> {
     const supabase = createClient();
     const { error } = await supabase.auth.signOut({ scope: "others" });
-
     if (error) {
-        return redirect(
-            "/dashboard/settings?message=" +
-                encodeURIComponent(error.message) +
-                "&kind=sessions_error",
-        );
+        return { ok: false, message: error.message };
     }
-    return redirect("/dashboard/settings?kind=sessions_ok");
+    return { ok: true, message: "Alle andere sessies zijn uitgelogd" };
 }

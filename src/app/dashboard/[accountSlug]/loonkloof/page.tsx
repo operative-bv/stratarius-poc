@@ -1,12 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Scale, TrendingUp, TrendingDown, Minus, RefreshCw, SplitSquareHorizontal } from "lucide-react";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { Scale, TrendingUp, TrendingDown, Minus, SplitSquareHorizontal } from "lucide-react";
 import OaxacaSection from "@/components/loonkloof/oaxaca-section";
+import RefreshMartButton from "@/components/loonkloof/refresh-mart-button";
 
 type MartRow = {
     persoon_id: string;
@@ -51,20 +49,6 @@ export default async function LoonkloofPage({
 }) {
     const { accountSlug } = await params;
     const supabase = await createClient();
-
-    async function refreshMart() {
-        "use server";
-        const supabase = await createClient();
-        const { error } = await supabase.rpc("refresh_mart_loonkloof", {
-            p_rechtsgrondslag: "manual refresh via dashboard loonkloof page",
-        });
-        revalidatePath(`/dashboard/${accountSlug}/loonkloof`);
-        redirect(
-            error
-                ? `/dashboard/${accountSlug}/loonkloof?toast_error=${encodeURIComponent(`Refresh faalde: ${error.message}`)}`
-                : `/dashboard/${accountSlug}/loonkloof?toast_success=${encodeURIComponent("Mart_loonkloof refreshed")}`,
-        );
-    }
 
     // Load mart_loonkloof gefilterd op laatste kwartaal + join met functie
     const { data: martData, error } = await supabase
@@ -129,12 +113,7 @@ export default async function LoonkloofPage({
                         Bruto uurloon per geslacht × functieniveau — bron: <code>mart_loonkloof</code> Q2 2024
                     </p>
                 </div>
-                <form action={refreshMart}>
-                    <Button type="submit" variant="outline" size="sm">
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Refresh mart
-                    </Button>
-                </form>
+                <RefreshMartButton accountSlug={accountSlug} />
             </div>
 
             {error && (
