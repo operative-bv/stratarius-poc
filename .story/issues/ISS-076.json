@@ -1,0 +1,20 @@
+{
+  "components": [
+    "cascade",
+    "populatie",
+    "ui"
+  ],
+  "discoveredDate": "2026-07-04",
+  "id": "ISS-076",
+  "impact": "In cascade_populatie_snapshot wordt stap7_extralegaal wél als kolom teruggegeven maar NIET meegeteld in totaal_patronale_kost of tco. stap4_doelgroepverminderingen wordt zelfs helemaal niet aangeroepen. Voor tenants met significante extralegale voordelen of doelgroepverminderingen is de gerapporteerde TCO structureel te laag (extralegaal ontbreekt) of te hoog (doelgroepvermindering niet toegepast). T-058 lost dit niet op omdat scope beperkt was tot stap 8/9. Fix: cascade_stap4_doelgroepverminderingen aanroepen in berekend CTE + beide meesommen in totaal en tco.",
+  "location": [],
+  "phase": "productie",
+  "relatedTickets": [
+    "T-058"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "cascade_populatie_snapshot: stap4 en stap7 ontbreken in totaal_patronale_kost/tco"
+}

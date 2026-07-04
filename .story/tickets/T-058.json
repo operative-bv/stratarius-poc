@@ -3,13 +3,13 @@
     "T-048",
     "T-049"
   ],
-  "completedDate": null,
+  "completedDate": "2026-07-04",
   "createdDate": "2026-07-04",
   "description": "Huidige cascade_populatie_snapshot roept stap 2, 3, 5, 6, 7 aan maar mist: (1) stap 8 wagen/mobiliteit — komt via T-048, (2) stap 9 arbeidsongevallen — komt via T-049, (3) juiste μ per contract. μ is nu hardcoded 1.0000 in stap-3-aanroep — correct μ wordt via mu(contract_id, periode) berekend uit fact_prestatie met dim_prestatiecode.telt_voor_mu filter. Fix: signature RETURNS TABLE uitbreiden met stap8_wagen numeric(18,4) en stap9_arbeidsongevallen numeric(18,4). CTE uitbreiden om mu per contract op te halen. Stap 3 aanroep gebruikt echte mu ipv 1.0000. Impact op totaal_patronale_kost + tco kolommen: + stap 8 + stap 9. Blocked by: T-048 (stap 8), T-049 (stap 9). Ontdekt tijdens simulatie-analyse 2026-07-04.",
   "id": "T-058",
   "order": 140,
   "phase": "productie",
-  "status": "open",
+  "status": "complete",
   "title": "Populatie-snapshot uitbreiden: stap 8, stap 9, en μ per contract",
   "type": "task"
 }
