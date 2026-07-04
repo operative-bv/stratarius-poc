@@ -11,7 +11,7 @@ BEGIN;
 -- Deze migration DROPT de oude signature en CREATE'T een nieuwe (returns TABLE kan
 -- niet via CREATE OR REPLACE geherstructureerd worden in Postgres).
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(5);
 
@@ -22,8 +22,8 @@ select plan(5);
 
 select has_function(
     'public', 'cascade_populatie_snapshot',
-    array['date', 'uuid', 'uuid'],
-    'T1: cascade_populatie_snapshot(date, uuid, uuid) function exists'
+    array['date', 'uuid', 'jsonb'],
+    'T1: cascade_populatie_snapshot(date, uuid, jsonb) function exists'
 );
 
 
@@ -33,7 +33,7 @@ select has_function(
 ------------------------------------------------------------
 
 select lives_ok(
-    $$select stap8_wagen from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, null::uuid) limit 0$$,
+    $$select stap8_wagen from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, '{}'::jsonb) limit 0$$,
     'T2: return-type bevat kolom stap8_wagen numeric(18,4)'
 );
 
@@ -43,7 +43,7 @@ select lives_ok(
 ------------------------------------------------------------
 
 select lives_ok(
-    $$select stap9_arbeidsongevallen from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, null::uuid) limit 0$$,
+    $$select stap9_arbeidsongevallen from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, '{}'::jsonb) limit 0$$,
     'T3: return-type bevat kolom stap9_arbeidsongevallen numeric(18,4)'
 );
 
@@ -53,7 +53,7 @@ select lives_ok(
 ------------------------------------------------------------
 
 select lives_ok(
-    $$select mu from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, null::uuid) limit 0$$,
+    $$select mu from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, '{}'::jsonb) limit 0$$,
     'T4: return-type bevat kolom mu numeric(6,4) — bewijst mu-per-contract CTE'
 );
 
@@ -67,7 +67,7 @@ select lives_ok(
     $$select contract_id, persoon_id, pc_id, status, werkgeverscategorie, functienaam,
              bruto, stap2_basis_rsz, stap3_vermindering, stap5_bijzondere,
              stap6_vakantiegeld, stap7_extralegaal, totaal_patronale_kost, tco
-      from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, null::uuid)
+      from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, '{}'::jsonb)
       limit 0$$,
     'T5 regression: bestaande UI-kolommen contract_id/bruto/stap2..stap7/totaal/tco behouden'
 );

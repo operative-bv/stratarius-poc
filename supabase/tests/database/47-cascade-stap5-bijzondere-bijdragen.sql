@@ -2,7 +2,7 @@ BEGIN;
 -- T-043: cascade_stap5_bijzondere_bijdragen
 -- Depends: param_bijzondere_bijdragen (T-014) + T-020 seed (fso 0.10%, bev 0.16%, asbest 0.01%, loonmatiging 7.75%)
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 select plan(5);
 
 select has_function('public', 'cascade_stap5_bijzondere_bijdragen', array['numeric', 'date'], 'T1');

@@ -2,7 +2,7 @@ BEGIN;
 -- T-021: audit_parameter_snapshot + create_parameter_snapshot() reconciliation.
 -- Depends on: T-015 t/m T-020 data-imports (44 data-rijen).
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(17);
 

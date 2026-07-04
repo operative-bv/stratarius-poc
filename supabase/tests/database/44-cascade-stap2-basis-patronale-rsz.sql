@@ -17,7 +17,7 @@ BEGIN;
 -- NULL contract: temporele join miss → NULL. Documented behavior, cascade orchestrator
 -- (T-029) detecteert en throwt gestructureerde fout. Consistent met T-023/24/26.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(10);
 

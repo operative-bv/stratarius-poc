@@ -11,7 +11,7 @@ BEGIN;
 -- geen seed doelgroepen). Insert 3-4 test-scoped param_doelgroepvermindering
 -- rijen en verifieer de gecalculeerde output. Alle inserts in BEGIN..ROLLBACK.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(5);
 
@@ -33,7 +33,7 @@ select has_function(
 
 select is(
     public.cascade_stap4_doelgroepverminderingen(
-        '9c42a18f-ff84-4611-b70f-ae109267c16a'::uuid,
+        (select c.contract_id from public.dim_contract c join public.dim_legale_entiteit le on le.legale_entiteit_id = c.legale_entiteit_id where le.owning_account_id = 'a1111111-1111-1111-1111-111111111111'::uuid and c.pc_id = '200' order by c.geldig_van limit 1),
         3000.0000,
         1.0000,
         '2024-06-01'::date
@@ -61,7 +61,7 @@ insert into public.param_doelgroepvermindering (param_doelgroep_id, gewest, doel
 
 select is(
     public.cascade_stap4_doelgroepverminderingen(
-        '9c42a18f-ff84-4611-b70f-ae109267c16a'::uuid,
+        (select c.contract_id from public.dim_contract c join public.dim_legale_entiteit le on le.legale_entiteit_id = c.legale_entiteit_id where le.owning_account_id = 'a1111111-1111-1111-1111-111111111111'::uuid and c.pc_id = '200' order by c.geldig_van limit 1),
         3000.0000,
         1.0000,
         '2024-06-01'::date
@@ -81,7 +81,7 @@ insert into public.param_doelgroepvermindering (param_doelgroep_id, gewest, doel
 
 select is(
     public.cascade_stap4_doelgroepverminderingen(
-        '9c42a18f-ff84-4611-b70f-ae109267c16a'::uuid,
+        (select c.contract_id from public.dim_contract c join public.dim_legale_entiteit le on le.legale_entiteit_id = c.legale_entiteit_id where le.owning_account_id = 'a1111111-1111-1111-1111-111111111111'::uuid and c.pc_id = '200' order by c.geldig_van limit 1),
         3000.0000,
         1.0000,
         '2024-06-01'::date
@@ -98,7 +98,7 @@ select is(
 
 select is(
     public.cascade_stap4_doelgroepverminderingen(
-        '9c42a18f-ff84-4611-b70f-ae109267c16a'::uuid,
+        (select c.contract_id from public.dim_contract c join public.dim_legale_entiteit le on le.legale_entiteit_id = c.legale_entiteit_id where le.owning_account_id = 'a1111111-1111-1111-1111-111111111111'::uuid and c.pc_id = '200' order by c.geldig_van limit 1),
         3000.0000,
         0.5000,
         '2024-06-01'::date

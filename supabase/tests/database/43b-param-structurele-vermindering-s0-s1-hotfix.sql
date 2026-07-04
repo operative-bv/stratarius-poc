@@ -3,7 +3,7 @@ BEGIN;
 -- numeric(18,4) NOT NULL kolommen met CHECK (drempel_s0 <= drempel_s1).
 -- Backfill 2024 waardes: S0=7207.20, S1=12435.31 (bron: socialsecurity.be).
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(3);
 

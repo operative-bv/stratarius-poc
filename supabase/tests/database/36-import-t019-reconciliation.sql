@@ -2,7 +2,7 @@ BEGIN;
 -- Depends on dim_pc seed rows: 111, 124, 200, 302 (see supabase/migrations/20260703020000_dim_pc.sql)
 -- Depends on T-019 import migration 20260703160000_import_arbeidsduur_vakantiegeld_index_2024.sql
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(17);
 

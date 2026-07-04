@@ -10,7 +10,7 @@ BEGIN;
 --   Cat 3: F=375,  α=0.1714, δ=0.0686
 --   S0=7207.20, S1=12435.31 (RSZ 2024 waardes)
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(12);
 

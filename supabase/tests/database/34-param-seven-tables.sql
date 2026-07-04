@@ -2,7 +2,7 @@ BEGIN;
 -- Depends on dim_pc seed rows: 111, 124, 200, 302 (see supabase/migrations/20260703020000_dim_pc.sql).
 -- Als dim_pc seed IDs herbenoemd worden, faalt deze test suite als indicator van cross-migration coupling.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(139);
 

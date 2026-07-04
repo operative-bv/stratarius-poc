@@ -14,9 +14,9 @@
   "relatedTickets": [
     "T-015"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Fixed via test_helpers_shim migration. supabase/migrations/20260704001500_test_helpers_shim.sql maakt `tests` schema + 4 core functies (create_supabase_user, authenticate_as, get_supabase_uid, clear_authentication) die de basejump-supabase_test_helpers extension API mimick zonder externe extension nodig. Alle 55+ test files gemigreerd van `create extension \"basejump-supabase_test_helpers\"` naar `create extension if not exists pgtap;`. Mijn 14 nieuwe tests (51-64) passeren nu allemaal via directe psql; oudere tests (< 50) hebben pre-existing seed-conflict issues die orthogonaal zijn aan ISS-030.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "basejump-supabase_test_helpers extension missing from local Supabase Postgres"
 }

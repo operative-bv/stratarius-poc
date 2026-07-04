@@ -1,5 +1,5 @@
 BEGIN;
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 select plan(3);
 
 select has_function('public', 'cascade_stap7_extralegaal', array['uuid', 'date', 'uuid'], 'T1');

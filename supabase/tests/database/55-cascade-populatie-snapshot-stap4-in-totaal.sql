@@ -8,7 +8,7 @@ BEGIN;
 --
 -- Principe V: test-first commit. Nieuwe kolom stap4_doelgroep + regression op T-058 kolommen.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(3);
 
@@ -19,8 +19,8 @@ select plan(3);
 
 select has_function(
     'public', 'cascade_populatie_snapshot',
-    array['date', 'uuid', 'uuid'],
-    'T1: cascade_populatie_snapshot(date, uuid, uuid) function exists'
+    array['date', 'uuid', 'jsonb'],
+    'T1: cascade_populatie_snapshot(date, uuid, jsonb) function exists'
 );
 
 
@@ -29,7 +29,7 @@ select has_function(
 ------------------------------------------------------------
 
 select lives_ok(
-    $$select stap4_doelgroep from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, null::uuid) limit 0$$,
+    $$select stap4_doelgroep from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, '{}'::jsonb) limit 0$$,
     'T2: return-type bevat kolom stap4_doelgroep numeric(18,4)'
 );
 
@@ -43,7 +43,7 @@ select lives_ok(
              mu, bruto, stap2_basis_rsz, stap3_vermindering, stap4_doelgroep,
              stap5_bijzondere, stap6_vakantiegeld, stap7_extralegaal,
              stap8_wagen, stap9_arbeidsongevallen, totaal_patronale_kost, tco
-      from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, null::uuid)
+      from public.cascade_populatie_snapshot('2024-06-01'::date, null::uuid, '{}'::jsonb)
       limit 0$$,
     'T3 regression: alle T-058 kolommen + nieuwe stap4_doelgroep behouden'
 );

@@ -9,7 +9,7 @@ BEGIN;
 --   B: arbeider cat 1 PC 124, 36j, bruto 3000
 --   C: bediende cat 3 PC 200, 39j, bruto 5000 + groepsverzekering 1000
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 select plan(13);
 
 -- Setup

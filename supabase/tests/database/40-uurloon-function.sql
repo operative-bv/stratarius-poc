@@ -13,7 +13,7 @@ BEGIN;
 -- Principe IV: uses fte_breuk semantisch (uurloon normaliseert BELONING). μ niet betrokken.
 --   Deeltijds/tijdskrediet grensgevallen zitten CALLER-SIDE, niet in deze function.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(10);
 

@@ -20,7 +20,7 @@ BEGIN;
 --   Temporele join miss (onbekende pc_id of periode) → NULL.
 --   Cascade orchestrator T-029 detecteert NULL en throwt gestructureerde fout.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(11);
 

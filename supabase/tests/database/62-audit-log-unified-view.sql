@@ -3,7 +3,7 @@ BEGIN;
 --   Consolideert gdpr_access_log (T-034 reads) + mart_refresh_log (T-031 refreshes)
 --   in één query-interface met canonieke event_type/target_resource/metadata schema.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(4);
 

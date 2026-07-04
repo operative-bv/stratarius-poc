@@ -16,7 +16,7 @@ BEGIN;
 -- Fold uit plan-review round 1 (3 lenses convergeerden op silent NULL):
 --   ORIGINEEL plan had `else null`; herzien naar plpgsql + RAISE om typos loud te maken.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(18);
 

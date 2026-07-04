@@ -4,7 +4,7 @@ BEGIN;
 --
 -- Principe V: test-first commit.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(6);
 

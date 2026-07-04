@@ -7,7 +7,7 @@ BEGIN;
 -- Sibling param tabellen (sectorbijdrage, wagen_mobiliteit) volgen hetzelfde
 -- patroon; aparte tickets als er tenant-behoefte ontstaat.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(7);
 

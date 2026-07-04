@@ -33,7 +33,7 @@ BEGIN;
 --              WHERE dim_prestatiecode.toeslag_pct IS NOT NULL
 --                AND (contract_id, periode) match
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(12);
 

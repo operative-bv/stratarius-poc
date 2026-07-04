@@ -7,7 +7,7 @@ BEGIN;
 -- de migration. Bij eerste run zonder migration MOET dit falen (Red). Na migration
 -- run: alle 41 assertions slagen (Green).
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(41);
 

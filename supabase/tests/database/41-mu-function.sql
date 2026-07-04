@@ -13,7 +13,7 @@ BEGIN;
 --   Q = SUM(fact_prestatie.uren) WHERE dim_prestatiecode.telt_voor_mu = true
 --   S = param_arbeidsduur.gemiddelde_wekelijkse_uren × (52/12) — ref-uren per maand
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(9);
 

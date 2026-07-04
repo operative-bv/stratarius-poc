@@ -2,7 +2,7 @@ BEGIN;
 -- T-057: create_scenario_with_mutations RPC — unified scenario mutator.
 --        Combineert loon-mutatie + wagen + extralegaal in één call via jsonb array.
 
-create extension "basejump-supabase_test_helpers" version '0.0.6';
+create extension if not exists pgtap;
 
 select plan(6);
 
