@@ -8,7 +8,8 @@
   "id": "T-031",
   "order": 20,
   "phase": "loonkloof-mart",
-  "status": "open",
+  "status": "complete",
   "title": "Quarterly refresh cron via Supabase edge function",
-  "type": "feature"
+  "type": "feature",
+  "completed_at": "2026-07-04"
 }

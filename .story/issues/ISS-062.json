@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-062",
+  "impact": "Centenindex-bijdrage (50% indexbesparing) skipped voor POC. Loonmatiging = flat 7.75% per seed. Filed als ISS.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[domain-simplification] Centenindex-bijdrage (50% indexbesparing) skipped voor POC. Loonmatiging = flat "
+}

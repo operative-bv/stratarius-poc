@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-021",
+  "impact": "Bridge cycle prevention: app-layer concern (closure table maintenance out-of-scope per plan).",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[test coverage] Bridge cycle prevention: app-layer concern (closure table maintenance out-of-sco"
+}

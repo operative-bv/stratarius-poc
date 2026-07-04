@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-049",
+  "impact": "param_structurele_vermindering_drempel_order naam is descriptief genoeg voor POC.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[naming] param_structurele_vermindering_drempel_order naam is descriptief genoeg voor POC"
+}

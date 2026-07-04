@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-018",
+  "impact": "No overlap-detection test between multiple contracts for same persoon. Belgian law allows multi-contract in edge cases (deeltijds); needs domain input.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[test coverage] No overlap-detection test between multiple contracts for same persoon. Belgian l"
+}

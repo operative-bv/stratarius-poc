@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-008",
+  "impact": "Migration UPDATE naturally idempotent; explicit WHERE guard would be defensive but not required.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[migration] Migration UPDATE naturally idempotent; explicit WHERE guard would be defensive b"
+}

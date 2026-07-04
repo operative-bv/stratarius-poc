@@ -6,23 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, TrendingUp, TrendingDown } from "lucide-react";
-
-type PopRow = {
-    contract_id: string;
-    persoon_id: string;
-    pc_id: string;
-    status: string;
-    werkgeverscategorie: number;
-    functienaam: string;
-    bruto: number;
-    stap2_basis_rsz: number;
-    stap3_vermindering: number;
-    stap5_bijzondere: number;
-    stap6_vakantiegeld: number;
-    stap7_extralegaal: number;
-    totaal_patronale_kost: number;
-    tco: number;
-};
+import {
+    RowDetailSheet,
+    type PopRow,
+    type RSZParam,
+    type StructureleParam,
+    type ExtralegaalDetail,
+} from "./row-detail-sheet";
 
 type Scenario = { scenario_id: string; naam: string; kind: string };
 type Functie = { functie_id: string; functienaam: string };
@@ -78,6 +68,52 @@ export default async function PopulatiePage({
         p_functie_id: teamId,
     });
     const rows = (data ?? []) as PopRow[];
+
+    // Fetch tarieven voor drill-down dialog (RSZ + structurele vermindering actief op periode)
+    const [{ data: rszData }, { data: structureleData }] = await Promise.all([
+        supabase
+            .from("param_rsz")
+            .select("status, werkgeverscategorie, basisbijdrage_pct, basisfactor_arbeider_pct, bron_url, geldig_van, geldig_tot")
+            .lte("geldig_van", periode)
+            .or(`geldig_tot.is.null,geldig_tot.gt.${periode}`),
+        supabase
+            .from("param_structurele_vermindering")
+            .select("werkgeverscategorie, forfait, coefficient_a, coefficient_b, bron_url, geldig_van, geldig_tot")
+            .lte("geldig_van", periode)
+            .or(`geldig_tot.is.null,geldig_tot.gt.${periode}`),
+    ]);
+    const rszParams = (rszData ?? []) as RSZParam[];
+    const structureleParams = (structureleData ?? []) as StructureleParam[];
+
+    // Fetch extralegaal componenten voor alle contracten in scope
+    const contractIds = ((data ?? []) as PopRow[]).map((r) => r.contract_id);
+    const extralegaalMap = new Map<string, ExtralegaalDetail[]>();
+    if (contractIds.length > 0 && scenarioId) {
+        const { data: extraData } = await supabase
+            .from("fact_looncomponent")
+            .select("contract_id, component_id, bedrag, bron_ref, dim_looncomponent!inner(name, familie, is_basisloon)")
+            .in("contract_id", contractIds)
+            .eq("periode", periode)
+            .eq("scenario_id", scenarioId);
+        for (const row of (extraData ?? []) as unknown as Array<{
+            contract_id: string;
+            component_id: string;
+            bedrag: number;
+            bron_ref: string | null;
+            dim_looncomponent: { name: string; familie: string; is_basisloon: boolean };
+        }>) {
+            if (row.dim_looncomponent.is_basisloon) continue;
+            if (row.dim_looncomponent.familie === "vakantiegeld") continue;
+            const list = extralegaalMap.get(row.contract_id) ?? [];
+            list.push({
+                component_id: row.component_id,
+                name: row.dim_looncomponent.name,
+                bedrag: Number(row.bedrag),
+                bron_ref: row.bron_ref,
+            });
+            extralegaalMap.set(row.contract_id, list);
+        }
+    }
 
     // Optional compare-baseline (zelfde team filter)
     let compareRows: PopRow[] = [];
@@ -202,7 +238,8 @@ export default async function PopulatiePage({
                                     <th className="pb-2 pr-3 text-right">Vakantiegeld</th>
                                     <th className="pb-2 pr-3 text-right">Extralegaal</th>
                                     <th className="pb-2 pr-3 text-right font-semibold">Patronaal</th>
-                                    <th className="pb-2 text-right font-semibold">TCO</th>
+                                    <th className="pb-2 pr-3 text-right font-semibold">TCO</th>
+                                    <th className="pb-2 text-right"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -221,7 +258,16 @@ export default async function PopulatiePage({
                                         <td className="py-2 pr-3 text-right tabular-nums">€ {roundFinal(r.stap6_vakantiegeld)}</td>
                                         <td className="py-2 pr-3 text-right tabular-nums">€ {roundFinal(r.stap7_extralegaal)}</td>
                                         <td className="py-2 pr-3 text-right tabular-nums font-semibold">€ {roundFinal(r.totaal_patronale_kost)}</td>
-                                        <td className="py-2 text-right tabular-nums font-semibold">€ {roundFinal(r.tco)}</td>
+                                        <td className="py-2 pr-3 text-right tabular-nums font-semibold">€ {roundFinal(r.tco)}</td>
+                                        <td className="py-2 text-right">
+                                            <RowDetailSheet
+                                                row={r}
+                                                rszParams={rszParams}
+                                                structureleParams={structureleParams}
+                                                extralegaalDetails={extralegaalMap.get(r.contract_id) ?? []}
+                                                periode={periode}
+                                            />
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -235,7 +281,8 @@ export default async function PopulatiePage({
                                     <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.vak)}</td>
                                     <td className="py-3 pr-3 text-right tabular-nums">€ {roundFinal(totals.extra)}</td>
                                     <td className="py-3 pr-3 text-right tabular-nums text-primary">€ {roundFinal(totals.pat)}</td>
-                                    <td className="py-3 text-right tabular-nums text-primary">€ {roundFinal(totals.tco)}</td>
+                                    <td className="py-3 pr-3 text-right tabular-nums text-primary">€ {roundFinal(totals.tco)}</td>
+                                    <td className="py-3"></td>
                                 </tr>
                             </tfoot>
                         </table>

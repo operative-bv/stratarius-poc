@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-007",
+  "impact": "AccountSelector may show placeholder if accountId is personal. Minor UX artifact, acceptable for medium scope.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[consistency] AccountSelector may show placeholder if accountId is personal. Minor UX artifact"
+}

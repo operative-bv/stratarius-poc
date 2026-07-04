@@ -10,11 +10,11 @@ export default function NewTeamForm() {
         <form className="animate-in flex-1 flex flex-col w-full justify-center gap-y-6 text-foreground">
             <div className="flex flex-col gap-y-2">
                 <Label htmlFor="email">
-                    Team Name
+                    Naam organisatie
                 </Label>
                 <Input
                     name="name"
-                    placeholder="My Team"
+                    placeholder="Mijn organisatie"
                     required
                 />
             </div>
@@ -28,16 +28,16 @@ export default function NewTeamForm() {
                     </span>
                     <Input
                         name="slug"
-                        placeholder="my-team"
+                        placeholder="mijn-organisatie"
                         required
                     />
                 </div>
             </div>
             <SubmitButton
                 formAction={createTeam}
-                pendingText="Creating..."
+                pendingText="Aanmaken..."
             >
-                Create team
+                Organisatie aanmaken
             </SubmitButton>
         </form>
     )

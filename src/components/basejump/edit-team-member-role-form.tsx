@@ -32,7 +32,7 @@ export default function EditTeamMemberRoleForm({ accountId, teamMember, isPrimar
       <input type="hidden" name="returnUrl" value={pathName} />
       <div className="flex flex-col gap-y-2">
         <Label htmlFor="accountRole">
-          Team Role
+          Rol
         </Label>
         <Select value={teamRole} onValueChange={setTeamRole} name="accountRole">
           <SelectTrigger>

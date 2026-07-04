@@ -16,9 +16,9 @@ export default function EditTeamSlug({ account }: Props) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Team Identifier</CardTitle>
+                <CardTitle>URL identifier</CardTitle>
                 <CardDescription>
-                    Your team identifier must be unique
+                    De identifier verschijnt in de URL en moet uniek zijn
                 </CardDescription>
             </CardHeader>
             <form className="animate-in flex-1 text-foreground">
@@ -35,7 +35,7 @@ export default function EditTeamSlug({ account }: Props) {
                             <Input
                                 defaultValue={account.slug}
                                 name="slug"
-                                placeholder="my-team"
+                                placeholder="mijn-organisatie"
                                 required
                             />
                         </div>
@@ -44,9 +44,9 @@ export default function EditTeamSlug({ account }: Props) {
                 <CardFooter>
                     <SubmitButton
                         formAction={editTeamSlug}
-                        pendingText="Updating..."
+                        pendingText="Bijwerken..."
                     >
-                        Save
+                        Opslaan
                     </SubmitButton>
                 </CardFooter>
             </form>

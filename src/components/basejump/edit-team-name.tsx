@@ -15,9 +15,9 @@ export default function EditTeamName({ account }: Props) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Team Info</CardTitle>
+                <CardTitle>Organisatie</CardTitle>
                 <CardDescription>
-                    Your team name and identifier are unique for your team
+                    Naam en identifier zijn uniek per organisatie
                 </CardDescription>
             </CardHeader>
             <form className="animate-in flex-1 text-foreground">
@@ -25,12 +25,12 @@ export default function EditTeamName({ account }: Props) {
                 <CardContent className="flex flex-col gap-y-6">
                     <div className="flex flex-col gap-y-2">
                         <Label htmlFor="name">
-                            Team Name
+                            Naam organisatie
                         </Label>
                         <Input
                             defaultValue={account.name}
                             name="name"
-                            placeholder="My Team"
+                            placeholder="Mijn organisatie"
                             required
                         />
                     </div>
@@ -38,9 +38,9 @@ export default function EditTeamName({ account }: Props) {
                 <CardFooter>
                     <SubmitButton
                         formAction={editTeamName}
-                        pendingText="Updating..."
+                        pendingText="Bijwerken..."
                     >
-                        Save
+                        Opslaan
                     </SubmitButton>
                 </CardFooter>
             </form>

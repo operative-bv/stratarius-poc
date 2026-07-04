@@ -9,7 +9,8 @@
   "id": "T-037",
   "order": 30,
   "phase": "simulator-ui",
-  "status": "open",
+  "status": "complete",
   "title": "UI: wagen-toevoeging (cataloguswaarde, CO2, brandstoftype)",
-  "type": "feature"
+  "type": "feature",
+  "completed_at": "2026-07-04"
 }

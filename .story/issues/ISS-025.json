@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-025",
+  "impact": "toeslag_pct upper bound 2 (200%) is generous but harmless — could document rationale. Deferred.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[documentation] toeslag_pct upper bound 2 (200%) is generous but harmless — could document ratio"
+}

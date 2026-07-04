@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-013",
+  "impact": "Ondernemingsnr regex negative test (BE + invalid format) not added — defer as nice-to-have.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[test coverage] Ondernemingsnr regex negative test (BE + invalid format) not added — defer as ni"
+}

@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-061",
+  "impact": "formule_json.toepassing (wg employee count) skipped voor POC. Filed als ISS.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[domain-simplification] formule_json.toepassing (wg employee count) skipped voor POC. Filed als ISS."
+}

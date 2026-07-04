@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-026",
+  "impact": "No test asserts toeslag_pct IS NULL for non-overuren rows. Nice-to-have; deferred.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[test coverage] No test asserts toeslag_pct IS NULL for non-overuren rows. Nice-to-have; deferre"
+}

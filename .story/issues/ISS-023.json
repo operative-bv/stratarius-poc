@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-023",
+  "impact": "dim_org_unit.legale_entiteit_id cross-tenant: RLS on both tables mitigates. Explicit tenant-check-trigger deferred.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[ddl] dim_org_unit.legale_entiteit_id cross-tenant: RLS on both tables mitigates. Expl"
+}

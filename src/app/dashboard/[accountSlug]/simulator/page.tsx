@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, ChevronDown } from "lucide-react";
+import { TrendingUp, ChevronDown, Car, AlertTriangle } from "lucide-react";
 
 type CascadeResult = {
     stap2_basis_rsz: number | null;
@@ -14,8 +14,60 @@ type CascadeResult = {
     stap5_bijzondere: number | null;
     stap6_vakantiegeld: number | null;
     totaal_patronale_kost: number;
+    wagen?: WagenResult;
     error?: string;
 };
+
+type WagenResult = {
+    lease_maand: number; // werkgeverskost
+    vaa_maand: number; // fiscaal voordeel werknemer (excluded)
+    vaa_pct: number; // CO2-coefficient
+    leeftijd_coef: number; // afschrijvingscoefficient
+    minimum_toegepast: boolean;
+    brandstof: string;
+};
+
+const VAA_MIN_JAAR_2024 = 1600;
+const VAA_REF_CO2_BENZINE = 82;
+const VAA_REF_CO2_DIESEL = 67;
+const VAA_ELECTRIC_PCT = 0.04;
+const VAA_COEF_STEP = 0.001;
+const VAA_COEF_MIN = 0.04;
+const VAA_COEF_MAX = 0.18;
+const VAA_BASE_PCT = 0.055;
+
+function berekenLeeftijdCoef(aanschaf: Date, referentie: Date): number {
+    const monthsDiff = (referentie.getFullYear() - aanschaf.getFullYear()) * 12 + (referentie.getMonth() - aanschaf.getMonth());
+    if (monthsDiff < 12) return 1.0;
+    if (monthsDiff < 24) return 0.94;
+    if (monthsDiff < 36) return 0.88;
+    if (monthsDiff < 48) return 0.82;
+    if (monthsDiff < 60) return 0.76;
+    return 0.70;
+}
+
+function berekenCO2Coef(brandstof: string, co2: number): number {
+    if (brandstof === "elektrisch") return VAA_ELECTRIC_PCT;
+    const referentie = brandstof === "diesel" ? VAA_REF_CO2_DIESEL : VAA_REF_CO2_BENZINE;
+    const raw = VAA_BASE_PCT + (co2 - referentie) * VAA_COEF_STEP;
+    return Math.min(VAA_COEF_MAX, Math.max(VAA_COEF_MIN, raw));
+}
+
+function berekenVAA(cataloguswaarde: number, co2: number, brandstof: string, aanschaf: Date, referentie: Date): WagenResult {
+    const leeftijd_coef = berekenLeeftijdCoef(aanschaf, referentie);
+    const vaa_pct = berekenCO2Coef(brandstof, co2);
+    // VAA jaar = cataloguswaarde × 6/7 × leeftijd × CO2-coef  (KB VAA-formule)
+    const vaa_jaar_raw = cataloguswaarde * (6 / 7) * leeftijd_coef * vaa_pct;
+    const vaa_jaar = Math.max(VAA_MIN_JAAR_2024, vaa_jaar_raw);
+    return {
+        lease_maand: 0, // ingevuld door caller
+        vaa_maand: vaa_jaar / 12,
+        vaa_pct,
+        leeftijd_coef,
+        minimum_toegepast: vaa_jaar_raw < VAA_MIN_JAAR_2024,
+        brandstof,
+    };
+}
 
 // Banker's rounding mirror van server-side round_final('display').
 // Postgres round() = half-away-from-zero; banker's = half-to-even.
@@ -55,9 +107,24 @@ async function simulate(formData: FormData): Promise<CascadeResult> {
     const s3 = stap3.data ? Number(stap3.data) : null;
     const s5 = stap5.data ? Number(stap5.data) : null;
     const s6 = stap6.data ? Number(stap6.data) : null;
-    const totaal = (s2 ?? 0) - (s3 ?? 0) + (s5 ?? 0) + (s6 ?? 0);
+    const cascadeTotaal = (s2 ?? 0) - (s3 ?? 0) + (s5 ?? 0) + (s6 ?? 0);
 
-    return { stap2_basis_rsz: s2, stap3_vermindering: s3, stap5_bijzondere: s5, stap6_vakantiegeld: s6, totaal_patronale_kost: totaal };
+    // Optionele wagen
+    const catalog = Number(formData.get("catalog") ?? 0);
+    const co2 = Number(formData.get("co2") ?? 0);
+    const brandstof = String(formData.get("brandstof") ?? "");
+    const lease = Number(formData.get("lease") ?? 0);
+    const aanschafStr = String(formData.get("aanschaf") ?? "");
+    let wagen: WagenResult | undefined;
+    if (catalog > 0 && brandstof && aanschafStr) {
+        const aanschaf = new Date(aanschafStr);
+        const referentie = new Date(periode);
+        wagen = berekenVAA(catalog, co2, brandstof, aanschaf, referentie);
+        wagen.lease_maand = lease;
+    }
+
+    const totaal = cascadeTotaal + (wagen?.lease_maand ?? 0);
+    return { stap2_basis_rsz: s2, stap3_vermindering: s3, stap5_bijzondere: s5, stap6_vakantiegeld: s6, totaal_patronale_kost: totaal, wagen };
 }
 
 const STAP_DETAILS = {
@@ -90,7 +157,10 @@ const STAP_DETAILS = {
 export default async function SimulatorPage({
     searchParams,
 }: {
-    searchParams: Promise<{ bruto?: string; status?: string; cat?: string; periode?: string }>;
+    searchParams: Promise<{
+        bruto?: string; status?: string; cat?: string; periode?: string;
+        catalog?: string; co2?: string; brandstof?: string; aanschaf?: string; lease?: string;
+    }>;
 }) {
     const params = await searchParams;
     const bruto = params.bruto ? Number(params.bruto) : null;
@@ -102,6 +172,11 @@ export default async function SimulatorPage({
         fd.set("status", params.status ?? "bediende");
         fd.set("cat", params.cat ?? "1");
         fd.set("periode", params.periode ?? "2024-01-01");
+        if (params.catalog) fd.set("catalog", params.catalog);
+        if (params.co2) fd.set("co2", params.co2);
+        if (params.brandstof) fd.set("brandstof", params.brandstof);
+        if (params.aanschaf) fd.set("aanschaf", params.aanschaf);
+        if (params.lease) fd.set("lease", params.lease);
         result = await simulate(fd);
     }
 
@@ -162,6 +237,50 @@ export default async function SimulatorPage({
                             <Label htmlFor="periode">Periode (kwartaal-begin)</Label>
                             <Input id="periode" name="periode" type="date" defaultValue={params.periode ?? "2024-01-01"} />
                         </div>
+                        <details className="md:col-span-2 rounded-lg border p-3 [&_svg.chev]:open:rotate-180">
+                            <summary className="flex items-center gap-2 cursor-pointer list-none text-sm font-medium">
+                                <ChevronDown className="h-4 w-4 transition-transform chev" />
+                                <Car className="h-4 w-4" />
+                                Bedrijfswagen (optioneel)
+                                <Badge variant="outline" className="ml-auto text-xs">stap 8 — VAA-valkuil demo</Badge>
+                            </summary>
+                            <div className="grid md:grid-cols-2 gap-4 mt-4 pt-4 border-t">
+                                <div className="space-y-2">
+                                    <Label htmlFor="catalog">Cataloguswaarde (EUR)</Label>
+                                    <Input id="catalog" name="catalog" type="number" step="0.01" defaultValue={params.catalog ?? "38000"} placeholder="38000" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="co2">CO2 uitstoot (g/km)</Label>
+                                    <Input id="co2" name="co2" type="number" defaultValue={params.co2 ?? "130"} placeholder="130" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="brandstof">Brandstoftype</Label>
+                                    <Select name="brandstof" defaultValue={params.brandstof ?? "diesel"}>
+                                        <SelectTrigger id="brandstof"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="benzine">Benzine</SelectItem>
+                                            <SelectItem value="diesel">Diesel</SelectItem>
+                                            <SelectItem value="hybride">Hybride</SelectItem>
+                                            <SelectItem value="elektrisch">Elektrisch (4% VAA)</SelectItem>
+                                            <SelectItem value="cng">CNG</SelectItem>
+                                            <SelectItem value="lpg">LPG</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="aanschaf">Aanschaffingsdatum</Label>
+                                    <Input id="aanschaf" name="aanschaf" type="date" defaultValue={params.aanschaf ?? "2023-06-01"} />
+                                </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="lease">Leasekost per maand (patronaal)</Label>
+                                    <Input id="lease" name="lease" type="number" step="0.01" defaultValue={params.lease ?? "650"} placeholder="650" />
+                                    <p className="text-xs text-muted-foreground">
+                                        Volledige lease-fee excl. BTW — telt volledig als werkgeverskost.
+                                    </p>
+                                </div>
+                            </div>
+                        </details>
+
                         <div className="md:col-span-2">
                             <Button type="submit" className="w-full">Simuleer</Button>
                         </div>
@@ -189,8 +308,54 @@ export default async function SimulatorPage({
                                 <DrillDown label={STAP_DETAILS.stap5.title} value={result.stap5_bijzondere} details={STAP_DETAILS.stap5} />
                                 <DrillDown label={STAP_DETAILS.stap6.title} value={result.stap6_vakantiegeld} details={STAP_DETAILS.stap6} />
 
+                                {result.wagen && (
+                                    <div className="rounded-lg border-2 border-orange-500/30 bg-orange-500/5 p-4 space-y-3">
+                                        <div className="flex items-center gap-2 text-sm font-semibold">
+                                            <Car className="h-4 w-4" />
+                                            Bedrijfswagen — stap 8
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <div>
+                                                <div className="font-medium">Lease-fee (patronaal)</div>
+                                                <div className="text-xs text-muted-foreground">Werkgeverskost, opgenomen in totaal</div>
+                                            </div>
+                                            <div className="text-right tabular-nums font-semibold">
+                                                € {roundFinal(result.wagen.lease_maand)}
+                                                <div className="text-xs text-muted-foreground">/ maand</div>
+                                            </div>
+                                        </div>
+                                        <div className="border-t pt-3 flex justify-between text-sm">
+                                            <div>
+                                                <div className="font-medium flex items-center gap-2">
+                                                    VAA — fiscaal voordeel werknemer
+                                                    <Badge variant="outline" className="text-xs">buiten werkgeverskost</Badge>
+                                                </div>
+                                                <div className="text-xs text-muted-foreground">
+                                                    Cataloguswaarde × 6/7 × {(result.wagen.leeftijd_coef * 100).toFixed(0)}% (leeftijd) × {(result.wagen.vaa_pct * 100).toFixed(2)}% (CO2/brandstof)
+                                                </div>
+                                                {result.wagen.minimum_toegepast && (
+                                                    <div className="text-xs text-orange-600 mt-1">
+                                                        ⚠ Minimum VAA € {roundFinal(VAA_MIN_JAAR_2024 / 12)}/maand toegepast (KB 2024)
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="text-right tabular-nums font-semibold text-muted-foreground">
+                                                € {roundFinal(result.wagen.vaa_maand)}
+                                                <div className="text-xs text-muted-foreground">/ maand</div>
+                                            </div>
+                                        </div>
+                                        <Alert>
+                                            <AlertTriangle className="h-4 w-4" />
+                                            <AlertTitle className="text-xs">VAA-valkuil — Principe II</AlertTitle>
+                                            <AlertDescription className="text-xs">
+                                                VAA is een <strong>fiscaal voordeel voor de werknemer</strong> (belast in personenbelasting) — <strong>geen werkgeverskost</strong>. Alleen de lease-fee telt patronaal mee. Deze scheiding is de meest voorkomende classificatie-fout bij interne payroll-berekeningen.
+                                            </AlertDescription>
+                                        </Alert>
+                                    </div>
+                                )}
+
                                 <p className="text-xs text-muted-foreground mt-4">
-                                    POC-scope: exclusief stap 1 (grondslag = bruto), stap 4 (doelgroepverminderingen), stap 7 (extralegaal), stap 8-9 (wagen, arbeidsongevallen). Bedragen gerenderd via <code>round_final(display)</code> banker&apos;s rounding — Principe III geen inline <code>.toFixed()</code>.
+                                    POC-scope: exclusief stap 4 (doelgroepverminderingen), stap 7 (extralegaal componenten, wel via scenario), stap 9 (arbeidsongevallen). Stap 8 wagen: lease patronaal + VAA gescheiden zoals boven. Bedragen via <code>round_final(display)</code> banker&apos;s rounding.
                                 </p>
                             </div>
                         )}

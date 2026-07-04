@@ -19,13 +19,13 @@ export default function CreateTeamInvitationButton({accountId}: Props) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Invite new member</Button>
+        <Button variant="outline">Nieuw lid uitnodigen</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create a new invitation</DialogTitle>
+          <DialogTitle>Nieuwe uitnodiging</DialogTitle>
           <DialogDescription>
-            Invitation links can be given to anyone to join your team
+            Uitnodigingslinks kunnen worden gedeeld met wie je aan de organisatie wilt toevoegen.
           </DialogDescription>
         </DialogHeader>
         <NewInvitationForm accountId={accountId} />

@@ -1,0 +1,1 @@
+T-030 mart_loonkloof materialized view delivered. 10 kolommen (persoon_id, legale_entiteit_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren). Refresh cron T-031.

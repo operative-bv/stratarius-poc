@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-017",
+  "impact": "No unique constraint preventing two open-ended contracts per persoon; convention-enforced. Future ticket.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[data-integrity] No unique constraint preventing two open-ended contracts per persoon; convention"
+}

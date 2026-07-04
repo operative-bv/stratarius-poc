@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-039",
+  "impact": "Verplaatst naar T-041 (stap 2 gebruikt p_status).",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[input-validation] Verplaatst naar T-041 (stap 2 gebruikt p_status)."
+}

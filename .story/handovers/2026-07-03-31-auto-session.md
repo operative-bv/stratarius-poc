@@ -1,0 +1,1 @@
+T-034 delivered. gdpr_access_log tabel + 2 SECURITY DEFINER RPCs. Column-level REVOKE T-004 blocks direct geslacht select. 13 tickets Phase 5+6.

@@ -1,0 +1,22 @@
+{
+  "components": [
+    "src/app/layout.tsx",
+    "basejump",
+    "branding"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-010",
+  "impact": "Browser tab title en meta description in `src/app/layout.tsx` regel 14-15 zijn nog Basejump-boilerplate: \"Basejump starter kit\" / \"The fastest way to build apps with Next.js and Supabase\". Should be \"Stratarius\" of vergelijkbaar. Cosmetisch, geen functional issue. T-002 verwijderde de landing page maar liet root-layout metadata staan. Fix is 2-regel edit.",
+  "location": [
+    "src/app/layout.tsx:14-15"
+  ],
+  "phase": null,
+  "relatedTickets": [
+    "T-002"
+  ],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "low",
+  "status": "open",
+  "title": "Root layout metadata still shows \"Basejump starter kit\""
+}

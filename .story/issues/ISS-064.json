@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-064",
+  "impact": "Eindejaarspremie deferred (aparte tabel + gelijkstellingen). ISS follow-up.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[scope] Eindejaarspremie deferred (aparte tabel + gelijkstellingen). ISS follow-up."
+}

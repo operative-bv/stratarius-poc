@@ -95,38 +95,37 @@ export default async function TeamDashboardPage({
                 <KpiCard icon={TrendingUp} label="Totaal TCO" value={`€ ${roundFinal(totalTco)}`} sub="werkgeverskost totaal" highlight />
             </div>
 
-            {/* Team breakdown */}
+            {/* Team breakdown + donut chart */}
             <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Users className="h-5 w-5" />
-                            Teams overzicht
+                            TCO per team
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-3">
-                            {teamRows.map(([name, stats]) => {
-                                const Icon = TEAM_ICONS[name] ?? Users;
-                                const pct = totalTco > 0 ? (stats.tco / totalTco) * 100 : 0;
-                                return (
-                                    <div key={name} className="flex items-center justify-between border-b pb-3 last:border-0">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 rounded-lg bg-muted">
-                                                <Icon className="h-4 w-4" />
+                        <div className="flex items-center gap-6">
+                            <DonutChart data={teamRows.map(([name, stats]) => ({ name, value: stats.tco }))} total={totalTco} />
+                            <div className="space-y-3 flex-1">
+                                {teamRows.map(([name, stats], idx) => {
+                                    const Icon = TEAM_ICONS[name] ?? Users;
+                                    const pct = totalTco > 0 ? (stats.tco / totalTco) * 100 : 0;
+                                    return (
+                                        <div key={name} className="flex items-center justify-between border-b pb-2 last:border-0">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: DONUT_COLORS[idx % DONUT_COLORS.length] }} />
+                                                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                                                <div className="text-sm font-medium">{name}</div>
                                             </div>
-                                            <div>
-                                                <div className="font-medium text-sm">{name}</div>
-                                                <div className="text-xs text-muted-foreground">{stats.count} medewerker{stats.count !== 1 ? "s" : ""}</div>
+                                            <div className="text-right">
+                                                <div className="text-xs font-semibold tabular-nums">{pct.toFixed(0)}%</div>
+                                                <div className="text-xs text-muted-foreground">€ {roundFinal(stats.tco)}</div>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-sm font-semibold tabular-nums">€ {roundFinal(stats.tco)}</div>
-                                            <div className="text-xs text-muted-foreground">{pct.toFixed(0)}% van TCO</div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -162,6 +161,46 @@ function KpiCard({ icon: Icon, label, value, sub, highlight = false }: { icon: t
                 <div className="text-xs text-muted-foreground mt-1">{sub}</div>
             </CardContent>
         </Card>
+    );
+}
+
+const DONUT_COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899", "#06b6d4", "#f43f5e"];
+
+function DonutChart({ data, total }: { data: { name: string; value: number }[]; total: number }) {
+    const size = 160;
+    const strokeWidth = 28;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    let cumulative = 0;
+    return (
+        <div className="relative" style={{ width: size, height: size }}>
+            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+                <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeWidth} />
+                {data.map((d, i) => {
+                    const value = d.value / total;
+                    const dash = value * circumference;
+                    const offset = cumulative * circumference;
+                    cumulative += value;
+                    return (
+                        <circle
+                            key={d.name}
+                            cx={size / 2}
+                            cy={size / 2}
+                            r={radius}
+                            fill="none"
+                            stroke={DONUT_COLORS[i % DONUT_COLORS.length]}
+                            strokeWidth={strokeWidth}
+                            strokeDasharray={`${dash} ${circumference}`}
+                            strokeDashoffset={-offset}
+                        />
+                    );
+                })}
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="text-xs text-muted-foreground">TCO</div>
+                <div className="text-sm font-semibold tabular-nums">€ {(total / 1000).toFixed(0)}k</div>
+            </div>
+        </div>
     );
 }
 

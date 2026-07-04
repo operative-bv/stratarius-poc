@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-014",
+  "impact": "dim_legale_entiteit.land_id index deferred — dim_land has 5 rows, no query benefit.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[consistency] dim_legale_entiteit.land_id index deferred — dim_land has 5 rows, no query benef"
+}

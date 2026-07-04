@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-075",
+  "impact": "round_final RPC per bedrag = N RPC calls. Client-side utility acceptabel voor POC — exact match met server round_final via banker's algorithm.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[principle-iii] round_final RPC per bedrag = N RPC calls. Client-side utility acceptabel voor PO"
+}

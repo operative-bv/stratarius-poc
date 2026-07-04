@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-068",
+  "impact": "dim_looncomponent naming vs param_extralegaal (maaltijdcheques vs maaltijdcheque) niet gemapt. POC groepsverzekering (13.26%) werkt exact.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[domain] dim_looncomponent naming vs param_extralegaal (maaltijdcheques vs maaltijdcheque"
+}

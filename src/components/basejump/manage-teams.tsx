@@ -17,9 +17,9 @@ export default async function ManageTeams() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Teams</CardTitle>
+                <CardTitle>Organisaties</CardTitle>
                 <CardDescription>
-                    These are the teams you belong to
+                    De organisaties waar je toegang tot hebt
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -32,7 +32,7 @@ export default async function ManageTeams() {
                                     {team.name}
                                     <Badge variant={team.account_role === 'owner' ? 'default' : 'outline'}>{team.is_primary_owner ? 'Primary Owner' : team.account_role}</Badge></div>
                                 </TableCell>
-                                <TableCell className="text-right"><Button variant="outline" asChild><Link href={`/dashboard/${team.slug}`}>View</Link></Button></TableCell>
+                                <TableCell className="text-right"><Button variant="outline" asChild><Link href={`/dashboard/${team.slug}`}>Openen</Link></Button></TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

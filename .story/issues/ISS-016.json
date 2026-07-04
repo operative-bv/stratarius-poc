@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-016",
+  "impact": "dim_contract_geldig_idx could be partial (WHERE geldig_tot IS NULL) for current-contract lookups. Future perf tuning.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[performance] dim_contract_geldig_idx could be partial (WHERE geldig_tot IS NULL) for current-"
+}

@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-059",
+  "impact": "POC sommeert alle matches; productie regels via ISS follow-up.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[domain-correctness] POC sommeert alle matches; productie regels via ISS follow-up."
+}

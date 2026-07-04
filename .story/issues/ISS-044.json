@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-044",
+  "impact": "Missing test voor invalid contract_id → NULL pc_id → NULL propagation. Non-blocking; caller-side validation.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[error-handling] Missing test voor invalid contract_id → NULL pc_id → NULL propagation. Non-block"
+}

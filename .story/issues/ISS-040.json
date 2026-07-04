@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-040",
+  "impact": "Verplaatst naar T-042 test scope.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "high",
+  "status": "open",
+  "title": "[boundary-correctness] Verplaatst naar T-042 test scope."
+}

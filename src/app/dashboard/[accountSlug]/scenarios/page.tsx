@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { FlaskConical, ArrowRight } from "lucide-react";
+import { FlaskConical, ArrowRight, Car } from "lucide-react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -72,6 +72,34 @@ export default async function ScenariosPage({
         redirect(`/dashboard/${accountSlug}/populatie?scenario=${data}&compare=1`);
     }
 
+    async function createWagenScenario(formData: FormData) {
+        "use server";
+        const supabase = await createClient();
+        const naam = String(formData.get("naam") ?? "").trim();
+        const baselineId = String(formData.get("baseline") ?? "");
+        const teamId = String(formData.get("team") ?? "");
+        const wagenCat = String(formData.get("wagen_categorie") ?? "");
+        const entiteitId = String(formData.get("entiteit") ?? "");
+
+        if (!naam || !baselineId || !entiteitId || !teamId || !wagenCat) {
+            redirect(`/dashboard/${accountSlug}/scenarios?error=validation`);
+        }
+
+        const { data, error } = await supabase.rpc("create_wagen_scenario", {
+            p_legale_entiteit_id: entiteitId,
+            p_naam: naam,
+            p_baseline_scenario_id: baselineId,
+            p_periode: "2024-06-01",
+            p_functie_id: teamId,
+            p_wagen_categorie: wagenCat,
+        });
+
+        if (error) {
+            redirect(`/dashboard/${accountSlug}/scenarios?error=${encodeURIComponent(error.message)}`);
+        }
+        redirect(`/dashboard/${accountSlug}/populatie?scenario=${data}&compare=1`);
+    }
+
     return (
         <div className="mx-auto max-w-5xl py-8 space-y-6">
             <div>
@@ -95,7 +123,7 @@ export default async function ScenariosPage({
             <div className="grid gap-6 md:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Nieuw scenario</CardTitle>
+                        <CardTitle>Loon-mutatie scenario</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form action={createScenario} className="space-y-4">
@@ -166,32 +194,97 @@ export default async function ScenariosPage({
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Bestaande scenarios ({scenarios.length})</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                            <Car className="h-5 w-5" />
+                            Wagen-toewijzing scenario
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-2">
-                            {scenarios.map((s) => (
-                                <Link
-                                    key={s.scenario_id}
-                                    href={`/dashboard/${accountSlug}/populatie?scenario=${s.scenario_id}&compare=1`}
-                                    className="flex items-center justify-between border rounded-lg p-3 hover:bg-muted/40 transition-colors group"
-                                >
-                                    <div>
-                                        <div className="text-sm font-medium flex items-center gap-2">
-                                            {s.naam}
-                                            <Badge variant={s.kind === "baseline" ? "outline" : "secondary"}>{s.kind}</Badge>
-                                        </div>
-                                        <div className="text-xs text-muted-foreground mt-1">
-                                            {new Date(s.created_at).toLocaleString("nl-BE")}
-                                        </div>
-                                    </div>
-                                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                                </Link>
-                            ))}
-                        </div>
+                        <form action={createWagenScenario} className="space-y-4">
+                            <input type="hidden" name="entiteit" value={entiteit?.legale_entiteit_id ?? ""} />
+
+                            <div className="space-y-2">
+                                <Label htmlFor="wagen_naam">Scenario naam</Label>
+                                <Input id="wagen_naam" name="naam" placeholder="bv. Sales team elektrische wagens" required />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="wagen_baseline">Baseline</Label>
+                                <Select name="baseline" defaultValue={baseline?.scenario_id}>
+                                    <SelectTrigger id="wagen_baseline"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {scenarios.filter((s) => s.kind === "baseline").map((s) => (
+                                            <SelectItem key={s.scenario_id} value={s.scenario_id}>{s.naam}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="wagen_team">Team</Label>
+                                <Select name="team" required>
+                                    <SelectTrigger id="wagen_team"><SelectValue placeholder="Kies team" /></SelectTrigger>
+                                    <SelectContent>
+                                        {functies.map((f) => (
+                                            <SelectItem key={f.functie_id} value={f.functie_id}>{f.functienaam}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="wagen_categorie">Wagen categorie</Label>
+                                <Select name="wagen_categorie" defaultValue="electric">
+                                    <SelectTrigger id="wagen_categorie"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="compact">Compact — €25k · €450/m · CO2 105</SelectItem>
+                                        <SelectItem value="mid">Mid — €38k · €650/m · CO2 130</SelectItem>
+                                        <SelectItem value="premium">Premium — €55k · €900/m · CO2 155</SelectItem>
+                                        <SelectItem value="electric">Elektrisch — €45k · €700/m · CO2 0</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <Button type="submit" className="w-full" variant="outline">
+                                <Car className="h-4 w-4 mr-2" />
+                                Maak wagen-scenario
+                            </Button>
+
+                            <p className="text-xs text-muted-foreground">
+                                Voegt bedrijfswagen_tco (lease patronaal) + bedrijfswagen_vaa (fiscaal) toe voor elk contract in het gekozen team.
+                            </p>
+                        </form>
                     </CardContent>
                 </Card>
             </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Bestaande scenarios ({scenarios.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        {scenarios.map((s) => (
+                            <Link
+                                key={s.scenario_id}
+                                href={`/dashboard/${accountSlug}/populatie?scenario=${s.scenario_id}&compare=1`}
+                                className="flex items-center justify-between border rounded-lg p-3 hover:bg-muted/40 transition-colors group"
+                            >
+                                <div>
+                                    <div className="text-sm font-medium flex items-center gap-2">
+                                        {s.naam}
+                                        <Badge variant={s.kind === "baseline" ? "outline" : "secondary"}>{s.kind}</Badge>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                        {new Date(s.created_at).toLocaleString("nl-BE")}
+                                    </div>
+                                </div>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

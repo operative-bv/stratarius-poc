@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-038",
+  "impact": "Verplaatst naar T-042: drempel_s0/drempel_s1 vernoemd in ticket description.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "high",
+  "status": "open",
+  "title": "[naming] Verplaatst naar T-042: drempel_s0/drempel_s1 vernoemd in ticket description."
+}

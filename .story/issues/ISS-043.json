@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-043",
+  "impact": "Performance MAJOR: N+1 pattern voor T-029 orchestrator. Filed als ISS-042 voor batch-variant follow-up. Niet in scope T-026.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "high",
+  "status": "open",
+  "title": "[performance] Performance MAJOR: N+1 pattern voor T-029 orchestrator. Filed als ISS-042 voor b"
+}

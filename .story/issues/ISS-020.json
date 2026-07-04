@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-020",
+  "impact": "Map PK dedup on same (entiteit, activiteit, categorie, geldig_van): PK inherently prevents; overlap on interval-ranges deferred to btree_gist future work.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[test coverage] Map PK dedup on same (entiteit, activiteit, categorie, geldig_van): PK inherentl"
+}

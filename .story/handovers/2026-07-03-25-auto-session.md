@@ -1,0 +1,1 @@
+T-043 delivered push-through. Simple sum(tarief × grondslag) over 4 bijzondere bijdragen types. POC skips toepassing conditions + centenindex complexity (ISS-063). Manual smoke exact. 2 commits.

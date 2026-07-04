@@ -175,8 +175,8 @@ export default async function ImportPage({
     const sp = await searchParams;
 
     const supabase = await createClient();
-    const { data: contractsCount } = await supabase.from("dim_contract").select("contract_id", { count: "exact", head: true });
-    const totalContracts = (contractsCount as unknown as { count?: number })?.count ?? 0;
+    const { count } = await supabase.from("dim_contract").select("contract_id", { count: "exact", head: true });
+    const totalContracts = count ?? 0;
 
     return (
         <div className="mx-auto max-w-5xl py-8 space-y-6">
@@ -231,23 +231,23 @@ export default async function ImportPage({
                                 <Input id="csv" name="csv" type="file" accept=".csv,text/csv" required />
                             </div>
 
-                            <Alert>
-                                <Info className="h-4 w-4" />
-                                <AlertTitle>Verwacht formaat</AlertTitle>
-                                <AlertDescription>
-                                    <code className="block text-xs mt-2 whitespace-pre bg-muted p-2 rounded">
-                                        naam,geslacht,geboortedatum,opleidingsniveau,team,status,pc,bruto{"\n"}
-                                        Alice De Vries,v,1985-03-15,hooggeschoold,Sales,bediende,200,4500{"\n"}
-                                        Bob Peeters,m,1990-07-22,middel_geschoold,Engineering,bediende,200,5200
-                                    </code>
-                                    <ul className="text-xs mt-2 list-disc list-inside space-y-1">
-                                        <li><code>geslacht</code>: m / v / x</li>
-                                        <li><code>status</code>: bediende / arbeider</li>
-                                        <li><code>pc</code>: 200 (bediende) / 124 (bouw arbeider) / etc.</li>
-                                        <li><code>team</code>: bestaande functie of nieuwe wordt aangemaakt</li>
-                                    </ul>
-                                </AlertDescription>
-                            </Alert>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm font-medium">
+                                    <Info className="h-4 w-4" />
+                                    Verwacht formaat
+                                </div>
+                                <pre className="text-xs bg-muted rounded-md p-3 overflow-x-auto font-mono leading-relaxed">
+{`naam,geslacht,geboortedatum,opleidingsniveau,team,status,pc,bruto
+Alice De Vries,v,1985-03-15,hooggeschoold,Sales,bediende,200,4500
+Bob Peeters,m,1990-07-22,middel_geschoold,Engineering,bediende,200,5200`}
+                                </pre>
+                                <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
+                                    <li><code className="font-mono">geslacht</code>: m / v / x</li>
+                                    <li><code className="font-mono">status</code>: bediende / arbeider</li>
+                                    <li><code className="font-mono">pc</code>: 200 (bediende) / 124 (bouw arbeider) / etc.</li>
+                                    <li><code className="font-mono">team</code>: bestaande functie of nieuwe wordt aangemaakt</li>
+                                </ul>
+                            </div>
 
                             <Button type="submit" className="w-full">
                                 <Upload className="h-4 w-4 mr-2" />

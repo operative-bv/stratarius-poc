@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-053",
+  "impact": "coefficient_a/b domain-tech-debt in T-016 schema. Non-blocking.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[naming] coefficient_a/b domain-tech-debt in T-016 schema. Non-blocking."
+}

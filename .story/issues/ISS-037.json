@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-037",
+  "impact": "Verplaatst naar T-041 ticket description (stap 2 scope).",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "high",
+  "status": "open",
+  "title": "[coupling] Verplaatst naar T-041 ticket description (stap 2 scope)."
+}

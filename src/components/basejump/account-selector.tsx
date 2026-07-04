@@ -61,7 +61,7 @@ export default function AccountSelector({ className, accountId, onAccountSelecte
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
-                        aria-label="Select a team"
+                        aria-label="Selecteer organisatie"
                         className={cn("w-[250px] justify-between", className)}
                     >
                         {selectedAccount?.name || placeholder}
@@ -71,10 +71,10 @@ export default function AccountSelector({ className, accountId, onAccountSelecte
                 <PopoverContent className="w-[250px] p-0">
                     <Command>
                         <CommandList>
-                            <CommandInput placeholder="Search account..." />
-                            <CommandEmpty>No account found.</CommandEmpty>
+                            <CommandInput placeholder="Zoek organisatie..." />
+                            <CommandEmpty>Geen organisatie gevonden.</CommandEmpty>
                             {Boolean(teamAccounts?.length) && (
-                                <CommandGroup heading="Teams">
+                                <CommandGroup heading="Organisaties">
                                     {teamAccounts?.map((team) => (
                                         <CommandItem
                                             key={team.account_id}
@@ -113,7 +113,7 @@ export default function AccountSelector({ className, accountId, onAccountSelecte
                                         }}
                                     >
                                         <PlusCircle className="mr-2 h-5 w-5" />
-                                        Create Team
+                                        Nieuwe organisatie
                                     </CommandItem>
                                 </DialogTrigger>
                             </CommandGroup>
@@ -123,9 +123,9 @@ export default function AccountSelector({ className, accountId, onAccountSelecte
             </Popover>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Create a new team</DialogTitle>
+                    <DialogTitle>Nieuwe organisatie aanmaken</DialogTitle>
                     <DialogDescription>
-                        Create a team to collaborate with others.
+                        Een organisatie is een aparte klant-entiteit met eigen medewerkers en data.
                     </DialogDescription>
                 </DialogHeader>
                 <NewTeamForm  />

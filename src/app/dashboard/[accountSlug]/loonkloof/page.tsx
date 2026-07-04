@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Scale, TrendingUp, TrendingDown, Minus, RefreshCw } from "lucide-react";
+import { Scale, TrendingUp, TrendingDown, Minus, RefreshCw, SplitSquareHorizontal } from "lucide-react";
 import { revalidatePath } from "next/cache";
 
 type MartRow = {
@@ -15,6 +15,21 @@ type MartRow = {
     geslacht: string;
     functieniveau: number;
     ancienniteit_jaren: number;
+};
+
+type DecompRow = {
+    legale_entiteit_id: string;
+    referentiedatum: string;
+    kwartaal: string;
+    n_m: number;
+    n_v: number;
+    gem_uurloon_m: number;
+    gem_uurloon_v: number;
+    raw_gap: number;
+    residual_gap: number;
+    endowment_gap: number;
+    raw_gap_ci95_halfwidth: number;
+    matched_stratum_pop: number;
 };
 
 function fmtEur(v: number): string {
@@ -49,6 +64,13 @@ export default async function LoonkloofPage({
         .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
         .eq("referentiedatum", "2024-06-30");
     const rows = (martData ?? []) as MartRow[];
+
+    // Load Kitagawa-decompositie via GDPR-safe RPC (T-033)
+    const { data: decompData } = await supabase.rpc("mart_loonkloof_decomp_read", {
+        p_rechtsgrondslag: "loonkloof analysepagina — decompositie weergave",
+        p_kwartaal: "2024-Q2",
+    });
+    const decomp = ((decompData ?? []) as DecompRow[])[0] ?? null;
 
     // Aggregate per geslacht
     const m = rows.filter((r) => r.geslacht === "m");
@@ -143,6 +165,22 @@ export default async function LoonkloofPage({
                 </Card>
             </div>
 
+            {/* Kitagawa decomposition — T-033 */}
+            {decomp && (decomp.n_m > 0 && decomp.n_v > 0) && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <SplitSquareHorizontal className="h-5 w-5" />
+                            Loonkloof decompositie
+                            <Badge variant="outline" className="text-xs font-normal">Kitagawa · POC</Badge>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <DecompositionCard decomp={decomp} />
+                    </CardContent>
+                </Card>
+            )}
+
             {/* Uurloon basis vs variabele split */}
             <Card>
                 <CardHeader>
@@ -200,13 +238,99 @@ export default async function LoonkloofPage({
                         </tbody>
                     </table>
                     <p className="text-xs text-muted-foreground mt-4">
-                        Ruwe (ongecorrigeerde) gap. Voor de <em>gecorrigeerde</em> gap via OLS + Oaxaca-Blinder decompositie (verklaarbaar door leeftijd/opleiding/ancienniteit vs onverklaarbaar) — zie T-033 roadmap.
+                        Ruwe (ongecorrigeerde) gap per team. Voor de <em>gecorrigeerde</em> splitsing (endowment vs residual) — zie decompositie kaart boven. Volwaardige Oaxaca-Blinder met OLS-coëfficiënten + p-values wordt post-POC toegevoegd via externe stats-service.
                     </p>
                 </CardContent>
             </Card>
 
             <div className="text-xs text-muted-foreground">
                 GDPR: dim_persoon.geslacht + opleidingsniveau zijn beschermde kolommen. Deze pagina roept mart_loonkloof aan via geagregeerde views — direct SELECT op dim_persoon protected columns is REVOKED (T-004 + T-034). Access-log via <code>gdpr_access_log</code>.
+            </div>
+        </div>
+    );
+}
+
+function DecompositionCard({ decomp }: { decomp: DecompRow }) {
+    const rawGap = Number(decomp.raw_gap);
+    const endowment = Number(decomp.endowment_gap);
+    const residual = Number(decomp.residual_gap);
+    const ci = Number(decomp.raw_gap_ci95_halfwidth);
+    const rawGapPct = decomp.gem_uurloon_m > 0 ? (rawGap / Number(decomp.gem_uurloon_m)) * 100 : 0;
+    const residualPct = decomp.gem_uurloon_m > 0 ? (residual / Number(decomp.gem_uurloon_m)) * 100 : 0;
+    const totalAbs = Math.abs(endowment) + Math.abs(residual);
+    const endowmentShare = totalAbs > 0 ? Math.abs(endowment) / totalAbs : 0;
+    const residualShare = totalAbs > 0 ? Math.abs(residual) / totalAbs : 0;
+    const rawSignificant = Math.abs(rawGap) > ci;
+
+    return (
+        <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-lg border p-4 space-y-1">
+                    <div className="text-xs uppercase text-muted-foreground">Ruwe kloof</div>
+                    <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(rawGap))}</div>
+                    <div className="text-xs text-muted-foreground">
+                        {rawGap >= 0 ? "mannen +" : "vrouwen +"}{Math.abs(rawGapPct).toFixed(1)}% per uur
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                        95% CI: ± € {fmtEur(ci)} · {rawSignificant ? "✓ significant" : "⚠ niet significant"}
+                    </div>
+                </div>
+
+                <div className="rounded-lg border p-4 bg-blue-50 dark:bg-blue-950/20 space-y-1">
+                    <div className="text-xs uppercase text-muted-foreground">Endowment (verklaarbaar)</div>
+                    <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(endowment))}</div>
+                    <div className="text-xs text-muted-foreground">
+                        {(endowmentShare * 100).toFixed(0)}% van de kloof
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 italic">
+                        Verschillen in observables (functieniveau, opleiding, ancienniteit)
+                    </div>
+                </div>
+
+                <div className={`rounded-lg border p-4 space-y-1 ${Math.abs(residual) > ci ? "bg-orange-50 dark:bg-orange-950/20 border-orange-500/40" : "bg-secondary"}`}>
+                    <div className="text-xs uppercase text-muted-foreground">Residual (onverklaarbaar)</div>
+                    <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(residual))}</div>
+                    <div className="text-xs text-muted-foreground">
+                        {(residualShare * 100).toFixed(0)}% · {Math.abs(residualPct).toFixed(1)}% per uur
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 italic">
+                        Binnen-stratum verschil na controle op observables
+                    </div>
+                </div>
+            </div>
+
+            {/* Stacked bar visualisatie */}
+            <div>
+                <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                    <span>Endowment</span>
+                    <span>Residual</span>
+                </div>
+                <div className="flex h-8 rounded-full overflow-hidden border">
+                    <div
+                        className="bg-blue-500 flex items-center justify-center text-xs text-white font-medium"
+                        style={{ width: `${endowmentShare * 100}%` }}
+                    >
+                        {endowmentShare > 0.1 && `${(endowmentShare * 100).toFixed(0)}%`}
+                    </div>
+                    <div
+                        className={`flex items-center justify-center text-xs text-white font-medium ${Math.abs(residual) > ci ? "bg-orange-500" : "bg-gray-400"}`}
+                        style={{ width: `${residualShare * 100}%` }}
+                    >
+                        {residualShare > 0.1 && `${(residualShare * 100).toFixed(0)}%`}
+                    </div>
+                </div>
+            </div>
+
+            <div className="text-xs text-muted-foreground space-y-1">
+                <p>
+                    <strong>Methode</strong>: stratified Kitagawa-decompositie. Strata = functieniveau × opleidingsniveau × ancienniteit-bucket. Populatie in matched strata: {decomp.matched_stratum_pop} contracten.
+                </p>
+                <p>
+                    <strong>Interpretatie</strong>: het <span className="text-blue-600 dark:text-blue-400">blauwe</span> deel verdwijnt als M en V dezelfde functie-/opleidings-/ervaringsverdeling hadden. Het {Math.abs(residual) > ci ? <span className="text-orange-600">oranje</span> : "grijze"} deel blijft over — hoe kleiner, hoe minder onverklaard.
+                </p>
+                <p>
+                    <strong>Beperking</strong>: geen individuele coëfficiënten of p-values per variabele — dit vereist multivariate OLS (post-POC via externe R/Python service). CI via normale benadering (mag afwijken bij kleine n).
+                </p>
             </div>
         </div>
     );

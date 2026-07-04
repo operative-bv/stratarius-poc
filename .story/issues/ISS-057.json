@@ -1,0 +1,16 @@
+{
+  "components": [
+    "autonomous"
+  ],
+  "discoveredDate": "2026-07-03",
+  "id": "ISS-057",
+  "impact": "Cumulatie policy: POC sommeert alle matchende doelgroepen × μ. Realiteit: Belgische wet verbiedt sommige combinaties. Filed als follow-up ISS.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "[domain-correctness] Cumulatie policy: POC sommeert alle matchende doelgroepen × μ. Realiteit: Belgis"
+}
