@@ -1,0 +1,19 @@
+{
+  "content": "Scalar cascade functies (per-contract row-based calls) zijn OK voor POC-schaal maar schalen lineair met N. Batch-variants (RETURNS TABLE met set-based JOIN) zijn 5-10x sneller op productieschaal maar duplicate query-logic. Regel: bouw batch-variants alleen wanneer profielcijfers tonen dat het scalar patroon een productie-bottleneck is. Populatie_snapshot blijft canonical read; batch is opt-in per hot-path.",
+  "context": "ISS-042 filed als N+1 zorg op T-026. Meting toonde 22ms scalar populatie_snapshot vs 2.7ms batch stap2 op 27 seed contracten Demo BVBA (8x speedup). Extrapoleert naar 10k contracten: 800ms scalar vs 100ms batch. Toont dat het patroon bestaat maar niet altijd nodig is. cascade_stap2_basis_patronale_rsz_batch levert de demonstration; sibling batches (stap 3-9) volgen zodra profielcijfers rechtvaardigen.",
+  "createdDate": "2026-07-04",
+  "id": "L-006",
+  "lastValidated": "2026-07-04",
+  "reinforcements": 0,
+  "source": "postmortem",
+  "status": "active",
+  "supersedes": null,
+  "tags": [
+    "cascade",
+    "performance",
+    "batch",
+    "profiling"
+  ],
+  "title": "Cascade batch-variants: measure first, optimize second",
+  "updatedDate": "2026-07-04"
+}
