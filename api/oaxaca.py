@@ -1,17 +1,19 @@
 """
-Oaxaca-Blinder decompositie endpoint met echte OLS via statsmodels.
+Oaxaca-Blinder decompositie endpoint met OLS via numpy (statsmodels-vrij).
 
 Model:
     log(uurloon) = β_0 + β_1 * functieniveau + β_2 * ancienniteit + β_3 * opleiding_dummy + ε
 
-Twee regressies: één op mannelijke subset, één op vrouwelijke subset.
+Twee regressies: één op mannelijke subset, één op vrouwelijke subset, plus pooled.
 Oaxaca-Blinder two-fold decompositie:
     raw_gap = mean(log(uurloon_M)) - mean(log(uurloon_V))
     endowment  = (X̄_M - X̄_V) · β_pooled          # verschil in observables
-    coefficient = X̄_V · (β_M - β_V)                # verschil in beloningsstructuur
-    residual   = raw_gap - endowment - coefficient  # interaction term
+    coefficient = X̄_M · (β_M - β_pooled) + X̄_V · (β_pooled - β_V)   # verschil in beloningsstructuur
 
 Auth via HMAC-SHA256 signatuur als STATS_SIGNING_SECRET env-var gezet is.
+
+Bundle-note: statsmodels + pandas overschrijden de 250MB Vercel Python function limit.
+Deze implementatie doet OLS handmatig met numpy en t-CDF via scipy.stats om onder de limiet te blijven.
 """
 
 from http.server import BaseHTTPRequestHandler
@@ -21,9 +23,8 @@ import hmac
 import hashlib
 import time
 
-import pandas as pd
 import numpy as np
-import statsmodels.api as sm
+from scipy import stats
 
 
 MAX_SKEW_SECONDS = 300
@@ -57,120 +58,128 @@ def verify_signature(headers, body: bytes) -> tuple[bool, str]:
     return True, "ok"
 
 
-def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Encode categorische variabelen: opleidingsniveau → dummies. Voeg constante toe."""
-    # Log-transform uurloon (Oaxaca-conventie voor semi-elasticiteits-interpretatie)
-    df = df.copy()
-    df["log_uurloon"] = np.log(df["uurloon"].astype(float).clip(lower=0.01))
-    df["functieniveau"] = pd.to_numeric(df["functieniveau"], errors="coerce").fillna(0)
-    df["ancienniteit"] = pd.to_numeric(df["ancienniteit"], errors="coerce").fillna(0)
-
-    # Dummy encoding voor opleidingsniveau — ref categorie 'middel_geschoold'
-    opleiding_dummies = pd.get_dummies(df["opleidingsniveau"], prefix="opl", dtype=float)
-    for col in ["opl_laaggeschoold", "opl_middel_geschoold", "opl_hooggeschoold"]:
-        if col not in opleiding_dummies.columns:
-            opleiding_dummies[col] = 0.0
-    if "opl_middel_geschoold" in opleiding_dummies.columns:
-        opleiding_dummies = opleiding_dummies.drop(columns=["opl_middel_geschoold"])
-
-    features = pd.concat([df[["functieniveau", "ancienniteit"]], opleiding_dummies], axis=1)
-    features = features.astype(float)
-    return features
+REQUIRED_COLUMNS = ("uurloon", "geslacht", "functieniveau", "ancienniteit", "opleidingsniveau")
 
 
-def oaxaca_blinder(df: pd.DataFrame) -> dict:
-    """Voer echte OLS + Oaxaca-Blinder decompositie uit.
+def _to_float(v, default=0.0):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return default
 
-    Retourneert dict met per-variabele coëfficiënten + p-values + endowment/coefficient split.
-    """
-    features_all = prepare_features(df)
-    df = df.copy()
-    df["log_uurloon"] = np.log(df["uurloon"].astype(float).clip(lower=0.01))
 
-    m_mask = df["geslacht"] == "m"
-    v_mask = df["geslacht"] == "v"
+def prepare_arrays(rows: list[dict]):
+    """Bouw feature-matrix X (zonder constante), log_y, gender-array en kolomnamen."""
+    n = len(rows)
+    uurloon = np.array([max(_to_float(r.get("uurloon"), 0.01), 0.01) for r in rows], dtype=float)
+    log_y = np.log(uurloon)
+    functieniveau = np.array([_to_float(r.get("functieniveau"), 0.0) for r in rows], dtype=float)
+    ancienniteit = np.array([_to_float(r.get("ancienniteit"), 0.0) for r in rows], dtype=float)
+    gender = np.array([str(r.get("geslacht") or "") for r in rows])
+    opl = [str(r.get("opleidingsniveau") or "") for r in rows]
 
-    X_m = sm.add_constant(features_all[m_mask], has_constant="add")
-    X_v = sm.add_constant(features_all[v_mask], has_constant="add")
-    X_pooled = sm.add_constant(features_all, has_constant="add")
+    # Ref-categorie: middel_geschoold -> beide dummies 0
+    dum_laag = np.array([1.0 if x == "laaggeschoold" else 0.0 for x in opl], dtype=float)
+    dum_hoog = np.array([1.0 if x == "hooggeschoold" else 0.0 for x in opl], dtype=float)
 
-    y_m = df.loc[m_mask, "log_uurloon"]
-    y_v = df.loc[v_mask, "log_uurloon"]
-    y_all = df["log_uurloon"]
+    X = np.column_stack([functieniveau, ancienniteit, dum_laag, dum_hoog])
+    colnames = ["functieniveau", "ancienniteit", "opl_laaggeschoold", "opl_hooggeschoold"]
+    return X, log_y, gender, uurloon, colnames
 
+
+def ols_fit(X_features: np.ndarray, y: np.ndarray) -> dict:
+    """OLS met handmatige constante. Retourneert betas, p-values, R², X̄ (incl. constante)."""
+    n = X_features.shape[0]
+    X = np.column_stack([np.ones(n), X_features])
+    k = X.shape[1]
+
+    beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+    residuals = y - X @ beta
+    ss_res = float(np.sum(residuals ** 2))
+    ss_tot = float(np.sum((y - y.mean()) ** 2))
+    r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
+
+    dof = max(n - k, 1)
+    sigma2 = ss_res / dof
+
+    try:
+        cov = sigma2 * np.linalg.inv(X.T @ X)
+        se = np.sqrt(np.maximum(np.diag(cov), 0.0))
+    except np.linalg.LinAlgError:
+        se = np.full(k, np.inf)
+
+    with np.errstate(divide="ignore", invalid="ignore"):
+        t_stats = np.where(se > 0, beta / se, 0.0)
+    pvals = 2.0 * stats.t.sf(np.abs(t_stats), df=dof)
+
+    x_bar = np.concatenate([[1.0], X_features.mean(axis=0)])
+
+    return {
+        "beta": beta,
+        "pvalues": pvals,
+        "rsquared": r_squared,
+        "x_bar": x_bar,
+    }
+
+
+def oaxaca_blinder(rows: list[dict]) -> dict:
+    X, log_y, gender, uurloon, colnames = prepare_arrays(rows)
+
+    m_mask = gender == "m"
+    v_mask = gender == "v"
     n_m = int(m_mask.sum())
     n_v = int(v_mask.sum())
 
-    # Guard: minstens 3 observaties per groep voor stabiele OLS
     if n_m < 3 or n_v < 3:
         raise ValueError(f"Onvoldoende data voor OLS: n_M={n_m}, n_V={n_v} (min 3 per groep)")
 
-    ols_m = sm.OLS(y_m, X_m).fit()
-    ols_v = sm.OLS(y_v, X_v).fit()
-    ols_pooled = sm.OLS(y_all, X_pooled).fit()
+    m = ols_fit(X[m_mask], log_y[m_mask])
+    v = ols_fit(X[v_mask], log_y[v_mask])
+    pooled = ols_fit(X, log_y)
 
-    # Mean X-vectoren per groep (voor decompositie)
-    X_m_bar = X_m.mean()
-    X_v_bar = X_v.mean()
+    diff_x = m["x_bar"] - v["x_bar"]
+    endowment_log = float(diff_x @ pooled["beta"])
+    coef_m_part = float(m["x_bar"] @ (m["beta"] - pooled["beta"]))
+    coef_v_part = float(v["x_bar"] @ (pooled["beta"] - v["beta"]))
+    coefficient_log = coef_m_part + coef_v_part
 
-    # Two-fold Oaxaca-Blinder (Blinder 1973 / Oaxaca 1973)
-    # E = (X̄_M - X̄_V) · β_pooled   (endowment / explained)
-    # C = X̄_V · (β_M - β_pooled) + X̄_M · (β_pooled - β_V)   (coefficient / unexplained)
-    diff_X = X_m_bar - X_v_bar
-    endowment_effect = float(diff_X @ ols_pooled.params)
-    coefficient_m_part = float(X_m_bar @ (ols_m.params - ols_pooled.params))
-    coefficient_v_part = float(X_v_bar @ (ols_pooled.params - ols_v.params))
-    coefficient_effect = coefficient_m_part + coefficient_v_part
+    raw_gap_log = float(log_y[m_mask].mean() - log_y[v_mask].mean())
+    mean_uurloon = float(uurloon.mean())
 
-    raw_gap_log = float(y_m.mean() - y_v.mean())
-
-    # Per-variabele bijdrage aan endowment (voor UI-tabel)
     coeffs = []
-    for var in X_m.columns:
-        if var == "const":
-            continue
-        beta_m = float(ols_m.params.get(var, 0))
-        beta_v = float(ols_v.params.get(var, 0))
-        p_m = float(ols_m.pvalues.get(var, 1.0))
-        p_v = float(ols_v.pvalues.get(var, 1.0))
-        # Kloof-bijdrage = (X̄_m - X̄_v) * β_pooled per variabele
-        diff_var = float(X_m_bar.get(var, 0) - X_v_bar.get(var, 0))
-        beta_pooled = float(ols_pooled.params.get(var, 0))
-        contribution_log = diff_var * beta_pooled
-        # Converteer log-gap naar EUR-equivalent (approximation via mean uurloon)
-        mean_uurloon = float(df["uurloon"].mean())
-        contribution_eur = contribution_log * mean_uurloon
+    for i, name in enumerate(colnames, start=1):  # skip constante (index 0)
+        beta_m = float(m["beta"][i])
+        beta_v = float(v["beta"][i])
+        p_m = float(m["pvalues"][i])
+        p_v = float(v["pvalues"][i])
+        diff_var = float(m["x_bar"][i] - v["x_bar"][i])
+        beta_pooled = float(pooled["beta"][i])
+        contribution_eur = diff_var * beta_pooled * mean_uurloon
         coeffs.append({
-            "variabele": var,
+            "variabele": name,
             "beta_m": round(beta_m, 4),
             "beta_v": round(beta_v, 4),
             "p_value": round(min(p_m, p_v), 4),
             "kloof_bijdrage": round(contribution_eur, 4),
         })
 
-    # Convert log-gap terug naar EUR (approximation via mean loonniveau)
-    mean_uurloon = float(df["uurloon"].mean())
-    raw_gap_eur = raw_gap_log * mean_uurloon
-    endowment_eur = endowment_effect * mean_uurloon
-    coefficient_eur = coefficient_effect * mean_uurloon
-
     return {
         "kind": "oaxaca_blinder",
-        "runtime": "statsmodels-OLS",
+        "runtime": "numpy-OLS",
         "n_m": n_m,
         "n_v": n_v,
-        "avg_uurloon_m": round(float(df.loc[m_mask, "uurloon"].mean()), 4),
-        "avg_uurloon_v": round(float(df.loc[v_mask, "uurloon"].mean()), 4),
-        "raw_gap": round(raw_gap_eur, 4),
+        "avg_uurloon_m": round(float(uurloon[m_mask].mean()), 4),
+        "avg_uurloon_v": round(float(uurloon[v_mask].mean()), 4),
+        "raw_gap": round(raw_gap_log * mean_uurloon, 4),
         "raw_gap_log": round(raw_gap_log, 4),
-        "endowment_gap": round(endowment_eur, 4),
-        "coefficient_gap": round(coefficient_eur, 4),
+        "endowment_gap": round(endowment_log * mean_uurloon, 4),
+        "coefficient_gap": round(coefficient_log * mean_uurloon, 4),
         "coefficients": coeffs,
-        "r_squared_m": round(float(ols_m.rsquared), 4),
-        "r_squared_v": round(float(ols_v.rsquared), 4),
+        "r_squared_m": round(m["rsquared"], 4),
+        "r_squared_v": round(v["rsquared"], 4),
         "note": (
-            f"Model: log(uurloon) = f(functieniveau, ancienniteit, opleidingsniveau). "
-            f"Two-fold Oaxaca-Blinder met β_pooled. Log-gap × mean(uurloon) = EUR equivalent."
+            "Model: log(uurloon) = f(functieniveau, ancienniteit, opleidingsniveau). "
+            "Two-fold Oaxaca-Blinder met β_pooled. Log-gap × mean(uurloon) = EUR equivalent."
         ),
     }
 
@@ -197,14 +206,17 @@ class handler(BaseHTTPRequestHandler):
             self._respond(400, {"error": "missing or empty 'rows' array"})
             return
 
+        if not isinstance(rows[0], dict):
+            self._respond(400, {"error": "rows[0] must be an object"})
+            return
+
+        missing = [c for c in REQUIRED_COLUMNS if c not in rows[0]]
+        if missing:
+            self._respond(400, {"error": f"missing columns: {missing}"})
+            return
+
         try:
-            df = pd.DataFrame(rows)
-            required = {"uurloon", "geslacht", "functieniveau", "ancienniteit", "opleidingsniveau"}
-            missing = required - set(df.columns)
-            if missing:
-                self._respond(400, {"error": f"missing columns: {sorted(missing)}"})
-                return
-            result = oaxaca_blinder(df)
+            result = oaxaca_blinder(rows)
         except ValueError as e:
             self._respond(400, {"error": "insufficient data", "detail": str(e)})
             return
