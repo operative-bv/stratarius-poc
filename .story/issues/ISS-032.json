@@ -18,9 +18,9 @@
     "T-017",
     "T-018"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Fixed: 14 value-range CHECK constraints toegevoegd via edit-in-place op alle parameter tabellen (param_rsz, param_plafond, param_structurele_vermindering, param_doelgroepvermindering, param_arbeidsduur, param_vakantiegeld, param_index, param_bijzondere_bijdragen, param_sectorbijdrage, param_extralegaal, param_wagen_mobiliteit, param_arbeidsongevallen, param_extralegaal_override). Bounds: rates BETWEEN 0 AND 1, factors BETWEEN 1 AND 2 (of NULL), forfaits/premies >= 0, index_coefficient BETWEEN 0.5 AND 2, wekelijkse_uren BETWEEN 0 AND 60, taks_pct BETWEEN 0 AND 1. DB reset passeert alle seed rijen.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "Add value-range CHECK constraints across parameter layer (EE4 concrete follow-up)"
 }
