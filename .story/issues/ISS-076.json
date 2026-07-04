@@ -12,9 +12,9 @@
   "relatedTickets": [
     "T-058"
   ],
-  "resolution": null,
-  "resolvedDate": null,
+  "resolution": "Fixed in migration 20260704000400. cascade_populatie_snapshot roept nu stap4_doelgroepverminderingen aan (nieuwe kolom stap4_doelgroep). Totaal_patronale_kost + tco formule uitgebreid met stap4 (subtract) en stap7 (add). Verified via pgTAP 3/3 assertions.",
+  "resolvedDate": "2026-07-04",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "cascade_populatie_snapshot: stap4 en stap7 ontbreken in totaal_patronale_kost/tco"
 }
