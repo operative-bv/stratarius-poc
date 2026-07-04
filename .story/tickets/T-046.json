@@ -1,12 +1,12 @@
 {
   "blockedBy": [],
-  "completedDate": null,
+  "completedDate": "2026-07-04",
   "createdDate": "2026-07-04",
   "description": "T-043 cascade_stap5 POC somt tarief × grondslag. Productie moet: (1) formule_json.toepassing evalueren — bv. FSO alleen bij werkgevers >= 20 werknemers. Vereist employee-count-per-legale_entiteit lookup (mogelijk view of RPC). (2) Centenindex-bijdrage apart berekenen: 50% × indexbesparing boven param_index.drempel_bruto (typisch 4000 EUR). Behoud pure-function contract; toepassing-evaluator kan aparte helper zijn. Test: FSO bij <20 en >=20 wnrs, centenindex met en zonder overschrijding drempel. Gepromoot uit ISS-063 (T-043 self-review 2026-07-03).",
   "id": "T-046",
   "order": 20,
   "phase": "productie",
-  "status": "open",
+  "status": "complete",
   "title": "Bijzondere bijdragen: formule_json.toepassing + centenindex-bijdrage",
   "type": "task"
 }
