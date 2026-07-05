@@ -1,31 +1,19 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { roundFinal as roundFinalMirror } from "@/lib/cascade-mirror";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, TrendingUp, TrendingDown, Info } from "lucide-react";
+import { Users, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PageHeader } from "@/components/dashboard/page-header";
-import {
-    RowDetailSheet,
-    type PopRow,
-    type RSZParam,
-    type StructureleParam,
-    type ExtralegaalDetail,
-} from "./row-detail-sheet";
+import PopulatieResults from "./populatie-results";
+import PopulatieSkeleton from "./populatie-skeleton";
 
 type Scenario = { scenario_id: string; naam: string; kind: string };
 type Functie = { functie_id: string; functienaam: string };
-
-const roundFinal = (value: number): string => roundFinalMirror(value);
-
-function sum(rows: PopRow[], key: keyof PopRow): number {
-    return rows.reduce((s, r) => s + Number(r[key]), 0);
-}
 
 export default async function PopulatiePage({
     searchParams,
@@ -38,121 +26,36 @@ export default async function PopulatiePage({
     const factor = view === "jaar" ? 12 : 1;
     const supabase = await createClient();
 
-    // Load scenarios + teams (functies) voor dropdowns
-    const { data: scenariosData } = await supabase
-        .from("dim_scenario")
-        .select("scenario_id, naam, kind")
-        .order("kind", { ascending: true });
+    // Snelle metadata queries — renderen direct in de shell
+    const [{ data: scenariosData }, { data: functiesData }] = await Promise.all([
+        supabase.from("dim_scenario").select("scenario_id, naam, kind").order("kind", { ascending: true }),
+        supabase.from("dim_functie").select("functie_id, functienaam").order("functienaam", { ascending: true }),
+    ]);
     const scenarios = (scenariosData ?? []) as Scenario[];
+    const functies = (functiesData ?? []) as Functie[];
     const baseline = scenarios.find((s) => s.kind === "baseline");
     const scenarioId = params.scenario ?? baseline?.scenario_id ?? null;
     const activeScenario = scenarios.find((s) => s.scenario_id === scenarioId);
-
-    const { data: functiesData } = await supabase
-        .from("dim_functie")
-        .select("functie_id, functienaam")
-        .order("functienaam", { ascending: true });
-    const functies = (functiesData ?? []) as Functie[];
     const teamId = params.team && params.team !== "all" ? params.team : null;
     const activeTeam = functies.find((f) => f.functie_id === teamId);
 
-    // Load populatie snapshot voor actief scenario + team
-    const filters = teamId ? { functie_ids: [teamId] } : {};
-    const { data, error } = await supabase.rpc("cascade_populatie_snapshot", {
-        p_periode: periode,
-        p_scenario_id: scenarioId,
-        p_filters: filters,
-    });
-    const rows = (data ?? []) as PopRow[];
-
-    // Fetch tarieven voor drill-down dialog (RSZ + structurele vermindering actief op periode)
-    const [{ data: rszData }, { data: structureleData }] = await Promise.all([
-        supabase
-            .from("param_rsz")
-            .select("status, werkgeverscategorie, basisbijdrage_pct, basisfactor_pct, bron_url, geldig_van, geldig_tot")
-            .lte("geldig_van", periode)
-            .or(`geldig_tot.is.null,geldig_tot.gt.${periode}`),
-        supabase
-            .from("param_structurele_vermindering")
-            .select("werkgeverscategorie, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url, geldig_van, geldig_tot")
-            .lte("geldig_van", periode)
-            .or(`geldig_tot.is.null,geldig_tot.gt.${periode}`),
-    ]);
-    const rszParams = (rszData ?? []) as RSZParam[];
-    const structureleParams = (structureleData ?? []) as StructureleParam[];
-
-    // Fetch extralegaal componenten voor alle contracten in scope
-    const contractIds = ((data ?? []) as PopRow[]).map((r) => r.contract_id);
-    const extralegaalMap = new Map<string, ExtralegaalDetail[]>();
-    if (contractIds.length > 0 && scenarioId) {
-        const { data: extraData } = await supabase
-            .from("fact_looncomponent")
-            .select("contract_id, component_id, bedrag, bron_ref, dim_looncomponent!inner(name, familie, is_basisloon)")
-            .in("contract_id", contractIds)
-            .eq("periode", periode)
-            .eq("scenario_id", scenarioId);
-        for (const row of (extraData ?? []) as unknown as Array<{
-            contract_id: string;
-            component_id: string;
-            bedrag: number;
-            bron_ref: string | null;
-            dim_looncomponent: { name: string; familie: string; is_basisloon: boolean };
-        }>) {
-            if (row.dim_looncomponent.is_basisloon) continue;
-            if (row.dim_looncomponent.familie === "vakantiegeld") continue;
-            const list = extralegaalMap.get(row.contract_id) ?? [];
-            list.push({
-                component_id: row.component_id,
-                name: row.dim_looncomponent.name,
-                bedrag: Number(row.bedrag),
-                bron_ref: row.bron_ref,
-            });
-            extralegaalMap.set(row.contract_id, list);
-        }
-    }
-
-    // Optional compare-baseline (zelfde team filter)
-    let compareRows: PopRow[] = [];
-    if (params.compare === "1" && baseline && scenarioId !== baseline.scenario_id) {
-        const { data: compData } = await supabase.rpc("cascade_populatie_snapshot", {
-            p_periode: periode,
-            p_scenario_id: baseline.scenario_id,
-            p_filters: filters,
-        });
-        compareRows = (compData ?? []) as PopRow[];
-    }
-
-    const totals = {
-        bruto: sum(rows, "bruto"),
-        rsz: sum(rows, "stap2_basis_rsz"),
-        verm: sum(rows, "stap3_vermindering"),
-        bijz: sum(rows, "stap5_bijzondere"),
-        vak: sum(rows, "stap6_vakantiegeld"),
-        extra: sum(rows, "stap7_extralegaal"),
-        pat: sum(rows, "totaal_patronale_kost"),
-        tco: sum(rows, "tco"),
-    };
-    const compareTotals = compareRows.length > 0
-        ? { bruto: sum(compareRows, "bruto"), pat: sum(compareRows, "totaal_patronale_kost"), tco: sum(compareRows, "tco") }
-        : null;
+    // Suspense key zorgt dat filter-changes een nieuwe boundary triggeren
+    const suspenseKey = `${periode}-${scenarioId}-${teamId}-${params.compare ?? ""}-${view}`;
 
     return (
         <div className="space-y-6">
             <PageHeader
                 icon={Users}
                 title="Populatie snapshot"
-                description={`Rekencascade toegepast op ${rows.length} contracten voor periode ${periode}`}
+                description={`Rekencascade voor periode ${periode}`}
                 actions={
                     <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary">{rows.length} contracten</Badge>
                         {activeScenario && (
                             <Badge variant={activeScenario.kind === "baseline" ? "outline" : "default"}>
                                 {activeScenario.naam}
                             </Badge>
                         )}
-                        {activeTeam && (
-                            <Badge variant="outline">Team: {activeTeam.functienaam}</Badge>
-                        )}
+                        {activeTeam && <Badge variant="outline">Team: {activeTeam.functienaam}</Badge>}
                     </div>
                 }
             />
@@ -170,7 +73,8 @@ export default async function PopulatiePage({
                                 <SelectContent>
                                     {scenarios.map((s) => (
                                         <SelectItem key={s.scenario_id} value={s.scenario_id}>
-                                            {s.naam} <span className="text-xs text-muted-foreground">({s.kind})</span>
+                                            {s.naam}{" "}
+                                            <span className="text-xs text-muted-foreground">({s.kind})</span>
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -204,9 +108,9 @@ export default async function PopulatiePage({
                                         </TooltipTrigger>
                                         <TooltipContent side="top" className="max-w-xs">
                                             <p className="text-xs">
-                                                <strong>Maand</strong>: cascade-accrual voor de gekozen datum.<br />
-                                                <strong>Jaar</strong>: 12 × maand-accrual.
-                                                Aanname: heel jaar hetzelfde contract. Wijkt af bij mid-year starts/eindes of piek-uitbetaalde componenten (vakantiegeld mei, eindejaarspremie december).
+                                                <strong>Maand</strong>: cascade-accrual voor de gekozen datum.
+                                                <br />
+                                                <strong>Jaar</strong>: 12 × maand-accrual. Aanname: heel jaar hetzelfde contract.
                                             </p>
                                         </TooltipContent>
                                     </Tooltip>
@@ -221,9 +125,18 @@ export default async function PopulatiePage({
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="compare" className="text-xs">Vergelijk met baseline</Label>
+                            <Label htmlFor="compare" className="text-xs">
+                                Vergelijk met baseline
+                            </Label>
                             <div className="flex items-center h-9">
-                                <input id="compare" name="compare" type="checkbox" value="1" defaultChecked={params.compare === "1"} className="h-4 w-4" />
+                                <input
+                                    id="compare"
+                                    name="compare"
+                                    type="checkbox"
+                                    value="1"
+                                    defaultChecked={params.compare === "1"}
+                                    className="h-4 w-4"
+                                />
                                 <span className="ml-2 text-sm">Toon delta</span>
                             </div>
                         </div>
@@ -232,122 +145,17 @@ export default async function PopulatiePage({
                 </CardContent>
             </Card>
 
-            {compareTotals && (
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="grid grid-cols-3 gap-4">
-                            <DeltaBox label={`Δ Bruto (populatie, ${view})`} baseline={compareTotals.bruto * factor} current={totals.bruto * factor} />
-                            <DeltaBox label={`Δ Patronale kost (${view})`} baseline={compareTotals.pat * factor} current={totals.pat * factor} />
-                            <DeltaBox label={`Δ TCO totaal (${view})`} baseline={compareTotals.tco * factor} current={totals.tco * factor} highlight />
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {error && (
-                <Card>
-                    <CardContent className="pt-6"><p className="text-red-500">Error: {error.message}</p></CardContent>
-                </Card>
-            )}
-
-            {rows.length > 0 && (
-                <Card>
-                    <CardContent className="pt-6 overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Contract</TableHead>
-                                    <TableHead>Team</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>PC</TableHead>
-                                    <TableHead className="text-right">Bruto</TableHead>
-                                    <TableHead className="text-right">Basis RSZ</TableHead>
-                                    <TableHead className="text-right text-green-600">Vermindering</TableHead>
-                                    <TableHead className="text-right">Bijzondere</TableHead>
-                                    <TableHead className="text-right">Vakantiegeld</TableHead>
-                                    <TableHead className="text-right">Extralegaal</TableHead>
-                                    <TableHead className="text-right font-semibold">Patronaal</TableHead>
-                                    <TableHead className="text-right font-semibold">TCO</TableHead>
-                                    <TableHead />
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {rows.map((r) => (
-                                    <TableRow key={r.contract_id}>
-                                        <TableCell className="font-mono text-xs">{r.contract_id.slice(0, 8)}</TableCell>
-                                        <TableCell className="text-xs">{r.functienaam}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={r.status === "arbeider" ? "outline" : "secondary"}>{r.status}</Badge>
-                                        </TableCell>
-                                        <TableCell>{r.pc_id}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.bruto * factor)}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap2_basis_rsz * factor)}</TableCell>
-                                        <TableCell className="text-right tabular-nums text-green-600">−€ {roundFinal(r.stap3_vermindering * factor)}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap5_bijzondere * factor)}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap6_vakantiegeld * factor)}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap7_extralegaal * factor)}</TableCell>
-                                        <TableCell className="text-right tabular-nums font-semibold">€ {roundFinal(r.totaal_patronale_kost * factor)}</TableCell>
-                                        <TableCell className="text-right tabular-nums font-semibold">€ {roundFinal(r.tco * factor)}</TableCell>
-                                        <TableCell className="text-right">
-                                            <RowDetailSheet
-                                                row={r}
-                                                rszParams={rszParams}
-                                                structureleParams={structureleParams}
-                                                extralegaalDetails={extralegaalMap.get(r.contract_id) ?? []}
-                                                periode={periode}
-                                                viewMode={view}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                            <TableFooter>
-                                <TableRow>
-                                    <TableCell colSpan={4}>Totaal populatie ({rows.length}) — {view === "jaar" ? "jaarbasis" : "maandbasis"}</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.bruto * factor)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.rsz * factor)}</TableCell>
-                                    <TableCell className="text-right tabular-nums text-green-600">−€ {roundFinal(totals.verm * factor)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.bijz * factor)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.vak * factor)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.extra * factor)}</TableCell>
-                                    <TableCell className="text-right tabular-nums text-primary">€ {roundFinal(totals.pat * factor)}</TableCell>
-                                    <TableCell className="text-right tabular-nums text-primary">€ {roundFinal(totals.tco * factor)}</TableCell>
-                                    <TableCell />
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
-                        <p className="text-xs text-muted-foreground mt-4">
-                            Cascade 9 stappen actief inclusief stap 4 doelgroepverminderingen (non-cumulatie), stap 8 wagen CO2-solidariteitsbijdrage, stap 9 arbeidsongevallen. Bedragen via banker&apos;s rounding. RLS filtert automatisch op tenant.
-                        </p>
-                    </CardContent>
-                </Card>
-            )}
-
-            {rows.length === 0 && !error && (
-                <Card>
-                    <CardContent className="pt-6">
-                        <p className="text-muted-foreground">Geen contracten gevonden. Check scenario + periode filter.</p>
-                    </CardContent>
-                </Card>
-            )}
-        </div>
-    );
-}
-
-function DeltaBox({ label, baseline, current, highlight = false }: { label: string; baseline: number; current: number; highlight?: boolean }) {
-    const delta = current - baseline;
-    const pct = baseline > 0 ? (delta / baseline) * 100 : 0;
-    const isUp = delta >= 0;
-    return (
-        <div className={`rounded-lg border p-4 ${highlight ? "bg-secondary" : ""}`}>
-            <div className="text-xs text-muted-foreground">{label}</div>
-            <div className="text-2xl font-semibold mt-1 tabular-nums flex items-center gap-2">
-                {isUp ? <TrendingUp className="h-5 w-5 text-orange-500" /> : <TrendingDown className="h-5 w-5 text-green-600" />}
-                {isUp ? "+" : ""}€ {roundFinal(Math.abs(delta))}
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-                {isUp ? "+" : ""}{pct.toFixed(1)}% vs baseline (€ {roundFinal(baseline)})
-            </div>
+            <Suspense key={suspenseKey} fallback={<PopulatieSkeleton />}>
+                <PopulatieResults
+                    periode={periode}
+                    scenarioId={scenarioId}
+                    baselineScenarioId={baseline?.scenario_id ?? null}
+                    teamId={teamId}
+                    compare={params.compare === "1"}
+                    view={view}
+                    factor={factor}
+                />
+            </Suspense>
         </div>
     );
 }
