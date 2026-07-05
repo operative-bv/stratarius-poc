@@ -41,12 +41,11 @@ export default function ClearPopulatieCard({
     const [state, formAction] = useFormState(bound, initialClearPopulatieState);
 
     useEffect(() => {
-        if (state.ok === true) {
+        if (state.status === "success") {
             toast.success(
                 `Populatie gewist — ${state.deletedContracten} contract${state.deletedContracten === 1 ? "" : "en"} en ${state.deletedPersonen} persoon${state.deletedPersonen === 1 ? "" : "en"} verwijderd`,
             );
-        }
-        if (state.ok === false && state.message) {
+        } else if (state.status === "error") {
             toast.error(state.message);
         }
     }, [state]);

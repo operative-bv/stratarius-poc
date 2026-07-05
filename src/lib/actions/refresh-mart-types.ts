@@ -1,6 +1,6 @@
-export type RefreshMartState = {
-    ok: boolean | null;
-    message: string | null;
-};
+export type RefreshMartState =
+    | { status: "idle" }
+    | { status: "success"; message: string }
+    | { status: "error"; message: string };
 
-export const initialRefreshMartState: RefreshMartState = { ok: null, message: null };
+export const initialRefreshMartState: RefreshMartState = { status: "idle" };

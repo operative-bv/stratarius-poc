@@ -1,6 +1,6 @@
-export type AccountActionState = {
-    ok: boolean | null;
-    message: string | null;
-};
+export type AccountActionState =
+    | { status: "idle" }
+    | { status: "success"; message: string }
+    | { status: "error"; message: string };
 
-export const initialAccountActionState: AccountActionState = { ok: null, message: null };
+export const initialAccountActionState: AccountActionState = { status: "idle" };

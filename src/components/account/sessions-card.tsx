@@ -23,8 +23,8 @@ export default function SessionsCard() {
     const [state, formAction] = useFormState(signOutOtherSessions, initialAccountActionState);
 
     useEffect(() => {
-        if (state.ok === true && state.message) toast.success(state.message);
-        if (state.ok === false && state.message) toast.error(state.message);
+        if (state.status === "success") toast.success(state.message);
+        else if (state.status === "error") toast.error(state.message);
     }, [state]);
 
     return (

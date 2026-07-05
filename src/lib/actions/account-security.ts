@@ -11,18 +11,18 @@ export async function changePassword(
     const confirm = String(formData.get("confirm") ?? "");
 
     if (!password || password.length < 8) {
-        return { ok: false, message: "Wachtwoord moet minstens 8 tekens zijn" };
+        return { status: "error", message: "Wachtwoord moet minstens 8 tekens zijn" };
     }
     if (password !== confirm) {
-        return { ok: false, message: "Wachtwoorden komen niet overeen" };
+        return { status: "error", message: "Wachtwoorden komen niet overeen" };
     }
 
     const supabase = await createClient();
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
-        return { ok: false, message: error.message };
+        return { status: "error", message: error.message };
     }
-    return { ok: true, message: "Wachtwoord bijgewerkt" };
+    return { status: "success", message: "Wachtwoord bijgewerkt" };
 }
 
 export async function signOutOtherSessions(
@@ -32,7 +32,7 @@ export async function signOutOtherSessions(
     const supabase = await createClient();
     const { error } = await supabase.auth.signOut({ scope: "others" });
     if (error) {
-        return { ok: false, message: error.message };
+        return { status: "error", message: error.message };
     }
-    return { ok: true, message: "Alle andere sessies zijn uitgelogd" };
+    return { status: "success", message: "Alle andere sessies zijn uitgelogd" };
 }

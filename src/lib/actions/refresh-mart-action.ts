@@ -13,9 +13,11 @@ export async function refreshMartAction(
     const { error } = await supabase.rpc("refresh_mart_loonkloof", {
         p_rechtsgrondslag: "manual refresh via dashboard loonkloof page",
     });
+    // ISS-080 note: revalidate ook bij error zodat een volgend bezoek verse
+    // data probeert op te halen (cache blijft anders potentially stale).
     revalidatePath(`/dashboard/${accountSlug}/loonkloof`);
     if (error) {
-        return { ok: false, message: `Refresh faalde: ${error.message}` };
+        return { status: "error", message: `Refresh faalde: ${error.message}` };
     }
-    return { ok: true, message: "Mart_loonkloof refreshed" };
+    return { status: "success", message: "Mart_loonkloof refreshed" };
 }
