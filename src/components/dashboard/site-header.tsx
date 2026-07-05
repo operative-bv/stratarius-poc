@@ -22,13 +22,27 @@ const LABELS: Record<string, string> = {
     import: "Import",
     setup: "Setup",
     settings: "Settings",
+    teams: "Organisaties",
+    billing: "Billing",
 };
 
-export default function SiteHeader({ accountSlug, accountName }: { accountSlug: string; accountName?: string }) {
+export default function SiteHeader({
+    mode = "team",
+    accountSlug,
+    accountName,
+}: {
+    mode?: "team" | "personal";
+    accountSlug?: string;
+    accountName?: string;
+}) {
     const pathname = usePathname();
     const segments = pathname.split("/").filter(Boolean);
-    // segments = ["dashboard", "<slug>", "<page>", ...]
-    const currentPage = segments[2] ? LABELS[segments[2]] ?? segments[2] : "Overview";
+    // team: ["dashboard", "<slug>", "<page>", ...]
+    // personal: ["dashboard", "<page>", ...]
+    const pageSegment = mode === "team" ? segments[2] : segments[1];
+    const subSegment = mode === "team" ? segments[3] : segments[2];
+    const rootHref = mode === "team" ? `/dashboard/${accountSlug}` : "/dashboard";
+    const rootLabel = mode === "team" ? accountName ?? "Dashboard" : "Persoonlijk";
 
     return (
         <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur px-4">
@@ -38,18 +52,34 @@ export default function SiteHeader({ accountSlug, accountName }: { accountSlug: 
                 <BreadcrumbList>
                     <BreadcrumbItem className="hidden sm:block">
                         <BreadcrumbLink asChild>
-                            <Link href={`/dashboard/${accountSlug}`}>{accountName ?? "Dashboard"}</Link>
+                            <Link href={rootHref}>{rootLabel}</Link>
                         </BreadcrumbLink>
                     </BreadcrumbItem>
-                    {segments[2] && (
+                    {pageSegment && (
                         <>
                             <BreadcrumbSeparator className="hidden sm:block" />
                             <BreadcrumbItem>
-                                <BreadcrumbPage>{currentPage}</BreadcrumbPage>
+                                {subSegment ? (
+                                    <BreadcrumbLink asChild>
+                                        <Link href={`${rootHref}/${pageSegment}`}>
+                                            {LABELS[pageSegment] ?? pageSegment}
+                                        </Link>
+                                    </BreadcrumbLink>
+                                ) : (
+                                    <BreadcrumbPage>{LABELS[pageSegment] ?? pageSegment}</BreadcrumbPage>
+                                )}
                             </BreadcrumbItem>
                         </>
                     )}
-                    {!segments[2] && (
+                    {subSegment && (
+                        <>
+                            <BreadcrumbSeparator className="hidden sm:block" />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>{LABELS[subSegment] ?? subSegment}</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </>
+                    )}
+                    {!pageSegment && (
                         <BreadcrumbItem className="sm:hidden">
                             <BreadcrumbPage>Overview</BreadcrumbPage>
                         </BreadcrumbItem>
