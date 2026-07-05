@@ -6,7 +6,6 @@ create extension if not exists pgtap;
 
 select plan(17);
 
-set local role service_role;
 
 
 ------------------------------------------------------------
@@ -155,7 +154,6 @@ select is(
 );
 
 
-reset role;
 
 
 select * from finish();

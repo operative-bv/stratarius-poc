@@ -6,7 +6,6 @@ create extension if not exists pgtap;
 
 select plan(20);
 
-set local role service_role;
 
 
 ------------------------------------------------------------
@@ -15,20 +14,20 @@ set local role service_role;
 
 select is(
     (select count(*)::int from public.param_wagen_mobiliteit),
-    1,
-    'param_wagen_mobiliteit has 1 rij (2024 CO2-solidariteitsbijdrage baseline)'
+    3,
+    'param_wagen_mobiliteit has 3 rijen (2024 baseline + 2025 + 2026 fiscal audit)'
 );
 
 select is(
     (select count(*)::int from public.param_bijzondere_bijdragen),
-    4,
-    'param_bijzondere_bijdragen has 4 rijen (fso, bev, asbest, loonmatiging)'
+    10,
+    'param_bijzondere_bijdragen has 10 rijen (2024 4 componenten + 2025/2026 fso+bev+asbest)'
 );
 
 select is(
     (select count(*)::int from public.param_extralegaal),
-    4,
-    'param_extralegaal has 4 rijen (maaltijdcheque, ecocheque, groepsverzekering, mobiliteitsbudget)'
+    6,
+    'param_extralegaal has 6 rijen (2024 + 2 additional voordeeltypes uit fiscal audit)'
 );
 
 select is(
@@ -92,9 +91,9 @@ select lives_ok(
     'param_sectorbijdrage idempotent re-run lives_ok'
 );
 
-select is((select count(*)::int from public.param_wagen_mobiliteit), 1, 'param_wagen_mobiliteit count unchanged na re-run');
-select is((select count(*)::int from public.param_bijzondere_bijdragen), 4, 'param_bijzondere_bijdragen count unchanged na re-run');
-select is((select count(*)::int from public.param_extralegaal), 4, 'param_extralegaal count unchanged na re-run');
+select is((select count(*)::int from public.param_wagen_mobiliteit), 3, 'param_wagen_mobiliteit count unchanged na re-run');
+select is((select count(*)::int from public.param_bijzondere_bijdragen), 10, 'param_bijzondere_bijdragen count unchanged na re-run');
+select is((select count(*)::int from public.param_extralegaal), 6, 'param_extralegaal count unchanged na re-run');
 select is((select count(*)::int from public.param_sectorbijdrage), 4, 'param_sectorbijdrage count unchanged na re-run');
 
 
@@ -103,19 +102,20 @@ select is((select count(*)::int from public.param_sectorbijdrage), 4, 'param_sec
 ------------------------------------------------------------
 
 select is(
-    (select co2_formule_json->>'factor' from public.param_wagen_mobiliteit),
+    (select co2_formule_json->>'factor' from public.param_wagen_mobiliteit where geldig_van = '2024-01-01'),
     '9.0',
     'CO2 formule factor = 9.0 (RSZ patronale bijdrage-formule constante)'
 );
 
+-- Fiscal audit: loonmatiging tarief nu 0 (moved naar stap 2 basisbijdrage 25%).
 select is(
-    (select tarief from public.param_bijzondere_bijdragen where type = 'loonmatiging'),
-    0.0775::numeric(6,4),
-    'loonmatiging tarief = 7.75% (patronale globale loonmatigingsbijdrage 2024)'
+    (select tarief from public.param_bijzondere_bijdragen where type = 'loonmatiging' and geldig_van = '2024-01-01'),
+    0.0000::numeric(6,4),
+    'loonmatiging tarief = 0 (moved naar stap 2 basisbijdrage 25%, dubbelrekening-preventie)'
 );
 
 select is(
-    (select taks_pct from public.param_extralegaal where voordeeltype = 'groepsverzekering'),
+    (select taks_pct from public.param_extralegaal where voordeeltype = 'groepsverzekering' and geldig_van = '2024-01-01'),
     0.1326::numeric(6,4),
     'groepsverzekering taks_pct = 13.26% (premietaks 4.4% + RSZ 8.86% per PDF)'
 );
@@ -132,12 +132,11 @@ select is(
       + (select count(*) from public.param_extralegaal where bron_document like '[POC_UNVERIFIED_2024]%')
       + (select count(*) from public.param_sectorbijdrage where bron_document like '[POC_UNVERIFIED_2024]%')
     )::int,
-    13,
-    'alle 13 T-020 rijen hebben [POC_UNVERIFIED_2024] prefix (pre-productie deploy-gate)'
+    12,
+    'alle 12 T-020 rijen 2024 hebben [POC_UNVERIFIED_2024] prefix (loonmatiging tarief=0 verwijderd uit prefix-count na fiscal audit)'
 );
 
 
-reset role;
 
 
 select * from finish();

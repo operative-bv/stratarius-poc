@@ -3,7 +3,6 @@ create extension if not exists pgtap;
 
 select plan(18);
 
-set local role service_role;
 
 
 ------------------------------------------------------------
@@ -12,13 +11,13 @@ set local role service_role;
 
 select is(
     (select count(*)::int from public.param_rsz),
-    6,
+    12,
     'param_rsz has 6 rijen na T-018 import (2 status x 3 werkgeverscategorie)'
 );
 
 select is(
     (select count(*)::int from public.param_structurele_vermindering),
-    3,
+    12,
     'param_structurele_vermindering has 3 rijen na T-018 import (3 werkgeverscategorie)'
 );
 
@@ -113,13 +112,13 @@ select lives_ok(
 -- Count-invariant after re-run: count blijft gelijk aan seeded
 select is(
     (select count(*)::int from public.param_rsz),
-    6,
+    12,
     'param_rsz count unchanged (6) na idempotent re-run'
 );
 
 select is(
     (select count(*)::int from public.param_structurele_vermindering),
-    3,
+    12,
     'param_structurele_vermindering count unchanged (3) na idempotent re-run'
 );
 
@@ -136,21 +135,21 @@ select is(
 
 -- 1) Arbeider cat 1 heeft 108% basisfactor
 select is(
-    (select basisfactor_pct from public.param_rsz where status = 'arbeider' and werkgeverscategorie = 1),
+    (select basisfactor_pct from public.param_rsz where status = 'arbeider' and werkgeverscategorie = 1 and geldig_van = '2024-01-01'),
     1.0800::numeric(6,4),
     'arbeider cat 1 heeft basisfactor 108% (PDF Laag 3 conform)'
 );
 
 -- 2) Bediende cat 2 heeft basisbijdrage 24.32%
 select is(
-    (select basisbijdrage_pct from public.param_rsz where status = 'bediende' and werkgeverscategorie = 2),
+    (select basisbijdrage_pct from public.param_rsz where status = 'bediende' and werkgeverscategorie = 2 and geldig_van = '2024-01-01'),
     0.2432::numeric(6,4),
     'bediende cat 2 (social profit) heeft basisbijdrage 24.32%'
 );
 
 -- 3) Structurele cat 3 heeft forfait 375
 select is(
-    (select forfait from public.param_structurele_vermindering where werkgeverscategorie = 3),
+    (select forfait from public.param_structurele_vermindering where werkgeverscategorie = 3 and geldig_van = '2024-01-01'),
     375.0000::numeric(18,4),
     'structurele vermindering cat 3 (beschutte werkplaats) heeft forfait 375 EUR'
 );
@@ -168,19 +167,20 @@ select is(
 ------------------------------------------------------------
 
 select is(
-    (select count(*)::int from public.param_rsz where status = 'arbeider' and basisfactor_pct is not null),
+    (select count(*)::int from public.param_rsz where status = 'arbeider' and basisfactor_pct is not null and geldig_van = '2024-01-01'),
     3,
-    'alle 3 arbeider-rijen hebben non-NULL basisfactor_pct (biconditional CHECK T-015)'
+    'alle 3 arbeider-rijen 2024 hebben non-NULL basisfactor_pct (biconditional CHECK T-015)'
 );
 
+-- Post fiscal audit: bediende basisfactor_pct = 1.0000 (identity multiplier) ipv NULL
+-- na NOT NULL constraint upgrade.
 select is(
-    (select count(*)::int from public.param_rsz where status = 'bediende' and basisfactor_pct is null),
+    (select count(*)::int from public.param_rsz where status = 'bediende' and basisfactor_pct = 1.0000 and geldig_van = '2024-01-01'),
     3,
-    'alle 3 bediende-rijen hebben NULL basisfactor_pct (biconditional CHECK T-015)'
+    'alle 3 bediende-rijen 2024 hebben identity basisfactor_pct 1.0000'
 );
 
 
-reset role;
 
 
 select * from finish();
