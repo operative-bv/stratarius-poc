@@ -15,7 +15,11 @@ export default async function PersonalAccountDashboard({
 
     return (
         <SidebarProvider>
-            <PersonalAppSidebar accountId={personalAccount.account_id} />
+            <PersonalAppSidebar
+                accountId={personalAccount.account_id}
+                userName={personalAccount?.name}
+                userEmail={personalAccount?.email}
+            />
             <SidebarInset>
                 <SiteHeader mode="personal" />
                 <Suspense fallback={null}>

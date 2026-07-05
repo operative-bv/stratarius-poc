@@ -21,9 +21,16 @@ export default async function PersonalAccountDashboard({
         redirect("/dashboard");
     }
 
+    const { data: personalAccount } = await supabaseClient.rpc("get_personal_account");
+
     return (
         <SidebarProvider>
-            <AppSidebar accountSlug={accountSlug} accountId={teamAccount.account_id} />
+            <AppSidebar
+                accountSlug={accountSlug}
+                accountId={teamAccount.account_id}
+                userName={personalAccount?.name}
+                userEmail={personalAccount?.email}
+            />
             <SidebarInset>
                 <SiteHeader accountSlug={accountSlug} accountName={teamAccount.name} />
                 <Suspense fallback={null}>

@@ -1,4 +1,6 @@
-import {Button} from "@/components/ui/button"
+"use client";
+
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -7,38 +9,33 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import {UserIcon} from "lucide-react";
-import {createClient} from "@/lib/supabase/server";
-import {redirect} from "next/navigation";
+import { UserIcon, LogOut } from "lucide-react";
+import { signOutAction } from "@/lib/actions/auth-actions";
 
-export default async function UserAccountButton() {
-    const supabaseClient = createClient();
-    const {data: personalAccount} = await supabaseClient.rpc('get_personal_account');
-
-    const signOut = async () => {
-        'use server'
-
-        const supabase = createClient()
-        await supabase.auth.signOut()
-        return redirect('/')
-    }
-
+export default function UserAccountButton({
+    name,
+    email,
+}: {
+    name?: string;
+    email?: string;
+}) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost">
-                    <UserIcon />
+                <Button variant="ghost" className="w-full justify-start gap-2 px-2">
+                    <UserIcon className="h-4 w-4" />
+                    <span className="truncate text-sm">{name ?? "Account"}</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{personalAccount.name}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                            {personalAccount.email}
-                        </p>
+                        <p className="text-sm font-medium leading-none">{name}</p>
+                        {email && (
+                            <p className="text-xs leading-none text-muted-foreground">{email}</p>
+                        )}
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -46,14 +43,20 @@ export default async function UserAccountButton() {
                     <DropdownMenuItem asChild>
                         <Link href="/dashboard">My Account</Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/dashboard/settings">Profiel & security</Link>
+                    </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                <form action={signOut}>
-                    <button>Log out</button>
-                </form>
+                <DropdownMenuItem asChild>
+                    <form action={signOutAction}>
+                        <button type="submit" className="flex w-full items-center gap-2 text-sm">
+                            <LogOut className="h-4 w-4" />
+                            Log uit
+                        </button>
+                    </form>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
-    )
+    );
 }

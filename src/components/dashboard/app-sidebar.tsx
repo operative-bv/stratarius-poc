@@ -31,7 +31,17 @@ import NavigatingAccountSelector from "@/components/dashboard/navigation-account
 
 type Item = { name: string; href: string; icon: React.ComponentType<{ className?: string }> };
 
-export default function AppSidebar({ accountSlug, accountId }: { accountSlug: string; accountId: string }) {
+export default function AppSidebar({
+    accountSlug,
+    accountId,
+    userName,
+    userEmail,
+}: {
+    accountSlug: string;
+    accountId: string;
+    userName?: string;
+    userEmail?: string;
+}) {
     const pathname = usePathname();
 
     const analytics: Item[] = [
@@ -106,7 +116,7 @@ export default function AppSidebar({ accountSlug, accountId }: { accountSlug: st
 
             <SidebarFooter className="border-t">
                 <div className="p-2 group-data-[collapsible=icon]:hidden">
-                    <UserAccountButton />
+                    <UserAccountButton name={userName} email={userEmail} />
                 </div>
             </SidebarFooter>
             <SidebarRail />
