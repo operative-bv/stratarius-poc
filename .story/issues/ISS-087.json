@@ -2,13 +2,13 @@
   "components": [],
   "discoveredDate": "2026-07-05",
   "id": "ISS-087",
-  "impact": "Follow-up van ISS-086 + 20260705270000 (cascade_populatie_snapshot SECURITY DEFINER + audit).\n\nHuidige staat: cascade_populatie_snapshot is de correcte entry-RPC met GDPR audit. Maar cascade_stap1_rsz_grondslag, cascade_stap2 t/m cascade_stap9 hebben nog EXECUTE grant naar authenticated. Een user kan die direct aanroepen (bijv. via supabase.rpc(\"cascade_stap4_doelgroepverminderingen\", {...})) en de audit-log skippen.\n\nDat maakt GDPR-afhandeling policy-based ipv architectuur-based. Fix:\n\n1. Nieuwe migratie: REVOKE EXECUTE op public.cascade_stap1_rsz_grondslag t/m cascade_stap9_arbeidsongevallen van authenticated.\n2. Alle sub-cascade functies zijn dan alleen callable vanuit SECURITY DEFINER entry-RPCs die de audit doen.\n3. Verifieer dat de app niets direct aanroept (grep src/ for cascade_stap).\n\nPost-fix garantie: de enige manier om protected column data uit dim_persoon te gebruiken is via cascade_populatie_snapshot RPC, die altijd audit-loggt met rechtsgrondslag.\n\nVolgende sessie oppakken; deze sessie prioriteit is ISS-085 test refactor voortzetten.",
+  "impact": "**RESOLVED 2026-07-05: cascade_stap4 execute REVOKED.**\n\nMigratie 20260705300000: REVOKE EXECUTE op cascade_stap4_doelgroepverminderingen van authenticated. Enige stap-functie die dim_persoon.opleidingsniveau leest — nu alleen aanroepbaar via cascade_populatie_snapshot entry-RPC (SECURITY DEFINER met audit).\n\nAnalyse per stap-functie:\n- stap1 (rsz_grondslag): pure math op fact_looncomponent, geen protected columns → grant blijft\n- stap2, stap3, stap5, stap6, stap6b, stap7, stap8, stap9: pure math zonder dim_persoon → grant blijft\n- stap4 (doelgroepverminderingen): leest dim_persoon.opleidingsniveau → REVOKED\n\nSimulator page (src/app/dashboard/.../simulator/page.tsx) roept alleen stap 2/3/5/6 aan → blijft werken.\n\nGDPR-intent is nu architecturaal: enige pad naar protected data is cascade_populatie_snapshot RPC met rechtsgrondslag-audit in gdpr_access_log.",
   "location": [],
   "phase": null,
   "relatedTickets": [],
   "resolution": null,
-  "resolvedDate": null,
+  "resolvedDate": "2026-07-05",
   "severity": "medium",
-  "status": "open",
+  "status": "resolved",
   "title": "ISS-087: REVOKE EXECUTE op cascade_stap1-9 van authenticated (GDPR escape-hatch)"
 }
