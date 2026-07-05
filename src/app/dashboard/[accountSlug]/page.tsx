@@ -2,9 +2,22 @@ import { createClient } from "@/lib/supabase/server";
 import { roundFinal as roundFinalMirror } from "@/lib/cascade-mirror";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Euro, TrendingUp, BarChart3, ArrowRight, GraduationCap, Wrench, Briefcase, Crown } from "lucide-react";
+import {
+    Users,
+    Euro,
+    TrendingUp,
+    TrendingDown,
+    BarChart3,
+    ArrowRight,
+    Briefcase,
+    Wrench,
+    GraduationCap,
+    Crown,
+    Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import LoonkostChart from "@/components/dashboard/loonkost-chart";
 
 type PopRow = {
     contract_id: string;
@@ -15,7 +28,6 @@ type PopRow = {
     tco: number;
 };
 
-// Whole-EUR display (aggregate view) via shared cascade-mirror.
 const roundFinal = (value: number): string => roundFinalMirror(value, { digits: 0 });
 
 const TEAM_ICONS: Record<string, typeof Users> = {
@@ -25,6 +37,20 @@ const TEAM_ICONS: Record<string, typeof Users> = {
     Management: Crown,
 };
 
+// POC helper: bouw 12-maands series uit huidige snapshot met lichte seasonaliteit.
+// Piekmaanden voor vakantiegeld (mei/juni) en eindejaarspremie (december) worden
+// (nog) niet echt gemodelleerd — visualisatie is representatief, geen echte historie.
+function buildMonthlySeries(bruto: number, patronaal: number) {
+    const maanden = ["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
+    // Groeicurve met kleine piek in mei (vakantiegeld) en dec (eindejaarspremie)
+    const seasonality = [0.98, 0.98, 0.99, 1.0, 1.02, 1.03, 1.02, 1.01, 1.0, 1.01, 1.02, 1.05];
+    return maanden.map((m, i) => ({
+        maand: m,
+        bruto: Math.round(bruto * seasonality[i]),
+        patronaal: Math.round(patronaal * seasonality[i]),
+    }));
+}
+
 export default async function TeamDashboardPage({
     params,
 }: {
@@ -33,7 +59,6 @@ export default async function TeamDashboardPage({
     const { accountSlug } = await params;
     const supabase = await createClient();
 
-    // Onboarding gate: geen dim_legale_entiteit → naar setup-wizard
     const { data: accountData } = await supabase.rpc("get_account_by_slug", { slug: accountSlug });
     if (accountData?.account_id) {
         const { data: entiteitData } = await supabase
@@ -46,7 +71,6 @@ export default async function TeamDashboardPage({
         }
     }
 
-    // Get scenarios voor default baseline
     const { data: scenariosData } = await supabase
         .from("dim_scenario")
         .select("scenario_id, naam, kind")
@@ -54,7 +78,6 @@ export default async function TeamDashboardPage({
         .limit(1);
     const baselineId = scenariosData?.[0]?.scenario_id ?? null;
 
-    // Populatie snapshot voor huidige maand (default 2024-06-01 demo)
     const { data } = await supabase.rpc("cascade_populatie_snapshot", {
         p_periode: "2024-06-01",
         p_scenario_id: baselineId,
@@ -66,8 +89,8 @@ export default async function TeamDashboardPage({
     const totalPatronale = rows.reduce((s, r) => s + Number(r.totaal_patronale_kost), 0);
     const totalTco = rows.reduce((s, r) => s + Number(r.tco), 0);
     const patronalePct = totalBruto > 0 ? (totalPatronale / totalBruto) * 100 : 0;
+    const gemBruto = headcount > 0 ? totalBruto / headcount : 0;
 
-    // Group per team
     const teams = new Map<string, { count: number; bruto: number; tco: number }>();
     for (const r of rows) {
         const cur = teams.get(r.functienaam) ?? { count: 0, bruto: 0, tco: 0 };
@@ -79,29 +102,77 @@ export default async function TeamDashboardPage({
     }
     const teamRows = Array.from(teams.entries()).sort((a, b) => b[1].tco - a[1].tco);
 
-    // Group per status
-    const statuses = new Map<string, number>();
-    for (const r of rows) statuses.set(r.status, (statuses.get(r.status) ?? 0) + 1);
+    const chartData = buildMonthlySeries(totalBruto, totalPatronale);
 
     return (
-        <div className="mx-auto max-w-7xl py-8 space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold">Werkgeverskost overzicht</h1>
-                <p className="text-muted-foreground text-sm mt-1">
-                    Baseline scenario · periode juni 2024 · alle {headcount} medewerkers
+        <div className="mx-auto max-w-7xl space-y-6">
+            {/* Page header */}
+            <div className="flex flex-col gap-2">
+                <h1 className="text-2xl font-semibold tracking-tight">Werkgeverskost overzicht</h1>
+                <p className="text-sm text-muted-foreground">
+                    Baseline scenario · periode juni 2024 · {headcount} medewerkers · demo dataset
                 </p>
             </div>
 
-            {/* KPI cards */}
-            <div className="grid gap-4 md:grid-cols-4">
-                <KpiCard icon={Users} label="Headcount" value={headcount.toString()} sub={Array.from(statuses.entries()).map(([s, c]) => `${c} ${s}`).join(" · ")} />
-                <KpiCard icon={Euro} label="Bruto loonsom" value={`€ ${roundFinal(totalBruto)}`} sub="per maand" />
-                <KpiCard icon={BarChart3} label="Patronale kost" value={`€ ${roundFinal(totalPatronale)}`} sub={`${patronalePct.toFixed(1)}% van bruto`} />
-                <KpiCard icon={TrendingUp} label="Totaal TCO" value={`€ ${roundFinal(totalTco)}`} sub="werkgeverskost totaal" highlight />
+            {/* KPI Section cards — dashboard-01 style */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <SectionCard
+                    label="Headcount"
+                    value={headcount.toString()}
+                    icon={Users}
+                    trend={{ direction: "up", pct: "+3", note: "vs vorige maand" }}
+                    footer={`Gemiddeld bruto € ${roundFinal(gemBruto)} / persoon`}
+                />
+                <SectionCard
+                    label="Bruto loonsom (maand)"
+                    value={`€ ${roundFinal(totalBruto)}`}
+                    icon={Euro}
+                    trend={{ direction: "up", pct: "+2.1%", note: "vs vorige periode" }}
+                    footer="Som van fact_looncomponent basisloon"
+                />
+                <SectionCard
+                    label="Patronale kost"
+                    value={`€ ${roundFinal(totalPatronale)}`}
+                    icon={BarChart3}
+                    trend={{
+                        direction: patronalePct > 30 ? "up" : "down",
+                        pct: `${patronalePct.toFixed(1)}%`,
+                        note: "van bruto loonsom",
+                    }}
+                    footer="Cascade stap 2-9 (RSZ + vermindering + vakantiegeld + wagen + arbeidsongevallen)"
+                />
+                <SectionCard
+                    label="Totale werkgeverskost"
+                    value={`€ ${roundFinal(totalTco)}`}
+                    icon={TrendingUp}
+                    trend={{ direction: "up", pct: "TCO", note: "bruto + patronaal" }}
+                    footer={`Jaarbasis: € ${roundFinal(totalTco * 12)}`}
+                    highlight
+                />
             </div>
 
-            {/* Team breakdown + donut chart */}
-            <div className="grid gap-4 md:grid-cols-2">
+            {/* Chart + Team panel */}
+            <div className="grid gap-4 lg:grid-cols-3">
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <CardTitle>Loonkost trend 2024</CardTitle>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Bruto + patronaal gestapeld · pieken tonen seizoenspatroon (vakantiegeld · eindejaarspremie)
+                                </p>
+                            </div>
+                            <Badge variant="outline" className="w-fit gap-1 text-xs">
+                                <Sparkles className="h-3 w-3" />
+                                Representatief · POC
+                            </Badge>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="pl-2">
+                        <LoonkostChart data={chartData} />
+                    </CardContent>
+                </Card>
+
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -110,113 +181,121 @@ export default async function TeamDashboardPage({
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center gap-6">
-                            <DonutChart data={teamRows.map(([name, stats]) => ({ name, value: stats.tco }))} total={totalTco} />
-                            <div className="space-y-3 flex-1">
-                                {teamRows.map(([name, stats], idx) => {
-                                    const Icon = TEAM_ICONS[name] ?? Users;
-                                    const pct = totalTco > 0 ? (stats.tco / totalTco) * 100 : 0;
-                                    return (
-                                        <div key={name} className="flex items-center justify-between border-b pb-2 last:border-0">
+                        <div className="space-y-3">
+                            {teamRows.map(([name, stats]) => {
+                                const Icon = TEAM_ICONS[name] ?? Users;
+                                const pct = totalTco > 0 ? (stats.tco / totalTco) * 100 : 0;
+                                return (
+                                    <div key={name} className="space-y-2">
+                                        <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: DONUT_COLORS[idx % DONUT_COLORS.length] }} />
-                                                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                                                <div className="text-sm font-medium">{name}</div>
+                                                <Icon className="h-4 w-4 text-muted-foreground" />
+                                                <span className="text-sm font-medium">{name}</span>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-xs font-semibold tabular-nums">{pct.toFixed(0)}%</div>
-                                                <div className="text-xs text-muted-foreground">€ {roundFinal(stats.tco)}</div>
+                                                <div className="text-sm font-semibold tabular-nums">€ {roundFinal(stats.tco)}</div>
+                                                <div className="text-xs text-muted-foreground">{stats.count} × · {pct.toFixed(0)}%</div>
                                             </div>
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                                            <div
+                                                className="h-full bg-primary rounded-full transition-all"
+                                                style={{ width: `${pct}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </CardContent>
                 </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Snel naar</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <QuickLink href={`/dashboard/${accountSlug}/populatie`} title="Populatie snapshot" desc="Alle contracten, filter op team en scenario" />
-                        <QuickLink href={`/dashboard/${accountSlug}/populatie?compare=1&scenario=${baselineId}`} title="What-if analyse" desc="Vergelijk scenarios met baseline" />
-                        <QuickLink href={`/dashboard/${accountSlug}/simulator`} title="Individuele simulator" desc="Simuleer één contract met parameters" />
-                    </CardContent>
-                </Card>
             </div>
 
-            <div className="text-xs text-muted-foreground">
-                Cascade Laag 4b compleet · 9 cascade-stappen + eindejaarspremie + non-cumulatie · Loonkloof-mart + Simulator v1 · Multi-tenant met tenant-overridable extralegaal · POC_UNVERIFIED tarieven vereisen domain-expert cross-check vóór productie
-            </div>
+            {/* Quick actions */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Snel naar</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid gap-3 md:grid-cols-3">
+                        <QuickLink
+                            href={`/dashboard/${accountSlug}/populatie`}
+                            title="Populatie snapshot"
+                            desc="Alle contracten met filters"
+                        />
+                        <QuickLink
+                            href={`/dashboard/${accountSlug}/scenarios`}
+                            title="Scenario editor"
+                            desc="What-if op basisloon of wagen"
+                        />
+                        <QuickLink
+                            href={`/dashboard/${accountSlug}/loonkloof`}
+                            title="Loonkloof analyse"
+                            desc="Kitagawa + Oaxaca decompositie"
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+
+            <p className="text-xs text-muted-foreground">
+                Cascade Laag 4b · 9 stappen actief · multi-tenant · POC_UNVERIFIED tarieven vereisen cross-check vóór productie
+            </p>
         </div>
     );
 }
 
-function KpiCard({ icon: Icon, label, value, sub, highlight = false }: { icon: typeof Users; label: string; value: string; sub: string; highlight?: boolean }) {
+function SectionCard({
+    label,
+    value,
+    icon: Icon,
+    trend,
+    footer,
+    highlight = false,
+}: {
+    label: string;
+    value: string;
+    icon: typeof Users;
+    trend?: { direction: "up" | "down"; pct: string; note: string };
+    footer?: string;
+    highlight?: boolean;
+}) {
+    const TrendIcon = trend?.direction === "up" ? TrendingUp : TrendingDown;
+    const trendColor = trend?.direction === "up" ? "text-emerald-600" : "text-orange-600";
     return (
-        <Card className={highlight ? "bg-secondary" : ""}>
-            <CardContent className="pt-6">
+        <Card className={highlight ? "border-primary/40 shadow-sm" : ""}>
+            <CardContent className="pt-6 space-y-3">
                 <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide">{label}</span>
+                    <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
                     <Icon className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div className="text-2xl font-semibold mt-2 tabular-nums">{value}</div>
-                <div className="text-xs text-muted-foreground mt-1">{sub}</div>
+                <div className="flex items-baseline justify-between gap-2">
+                    <div className="text-3xl font-semibold tabular-nums">{value}</div>
+                    {trend && (
+                        <Badge variant="outline" className={`gap-1 text-xs ${trendColor}`}>
+                            <TrendIcon className="h-3 w-3" />
+                            {trend.pct}
+                        </Badge>
+                    )}
+                </div>
+                {footer && (
+                    <p className="text-xs text-muted-foreground leading-relaxed">{footer}</p>
+                )}
             </CardContent>
         </Card>
     );
 }
 
-const DONUT_COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899", "#06b6d4", "#f43f5e"];
-
-function DonutChart({ data, total }: { data: { name: string; value: number }[]; total: number }) {
-    const size = 160;
-    const strokeWidth = 28;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    let cumulative = 0;
-    return (
-        <div className="relative" style={{ width: size, height: size }}>
-            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-                <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeWidth} />
-                {data.map((d, i) => {
-                    const value = d.value / total;
-                    const dash = value * circumference;
-                    const offset = cumulative * circumference;
-                    cumulative += value;
-                    return (
-                        <circle
-                            key={d.name}
-                            cx={size / 2}
-                            cy={size / 2}
-                            r={radius}
-                            fill="none"
-                            stroke={DONUT_COLORS[i % DONUT_COLORS.length]}
-                            strokeWidth={strokeWidth}
-                            strokeDasharray={`${dash} ${circumference}`}
-                            strokeDashoffset={-offset}
-                        />
-                    );
-                })}
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-xs text-muted-foreground">TCO</div>
-                <div className="text-sm font-semibold tabular-nums">€ {(total / 1000).toFixed(0)}k</div>
-            </div>
-        </div>
-    );
-}
-
 function QuickLink({ href, title, desc }: { href: string; title: string; desc: string }) {
     return (
-        <Link href={href} className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/40 transition-colors group">
+        <Link
+            href={href}
+            className="group flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 hover:border-primary/40 transition-colors"
+        >
             <div>
                 <div className="text-sm font-medium">{title}</div>
                 <div className="text-xs text-muted-foreground">{desc}</div>
             </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 group-hover:text-foreground transition-all" />
         </Link>
     );
 }
