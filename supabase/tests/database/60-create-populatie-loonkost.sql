@@ -9,6 +9,12 @@ create extension if not exists pgtap;
 
 select plan(6);
 
+-- ISS-085: create_populatie_loonkost roept intern cascade_populatie_snapshot aan
+-- (SECURITY DEFINER met auth.uid() check). Set JWT claim naar Demo BVBA seed owner.
+select set_config('role', 'authenticated', true);
+select set_config('request.jwt.claims',
+    json_build_object('sub','a0000000-0000-0000-0000-000000000001','role','authenticated')::text, true);
+
 
 ------------------------------------------------------------
 -- T1: Function existence
@@ -39,10 +45,17 @@ select lives_ok(
 --     Demo BVBA heeft 27 contracten in seed → 27 × 7 = 189 rijen.
 ------------------------------------------------------------
 
--- Wis vorige inserts uit T2 om schone count te krijgen.
+-- Wis vorige inserts uit T2 om schone count te krijgen. Reset naar postgres
+-- (authenticated heeft geen DELETE grant op fact_loonkost).
+reset role;
 delete from public.fact_loonkost
 where scenario_id = '11111111-1111-1111-1111-111111111111'::uuid
   and periode = '2024-06-01'::date;
+
+-- Set authenticated context terug voor cascade_populatie_snapshot check.
+select set_config('role', 'authenticated', true);
+select set_config('request.jwt.claims',
+    json_build_object('sub','a0000000-0000-0000-0000-000000000001','role','authenticated')::text, true);
 
 -- Roep opnieuw aan.
 select public.create_populatie_loonkost(

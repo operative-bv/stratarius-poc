@@ -15,6 +15,12 @@ create extension if not exists pgtap;
 
 select plan(5);
 
+-- ISS-085: cascade_populatie_snapshot is SECURITY DEFINER met auth.uid() check.
+-- Set JWT claim naar Demo BVBA seed owner om die te passeren.
+select set_config('role', 'authenticated', true);
+select set_config('request.jwt.claims',
+    json_build_object('sub','a0000000-0000-0000-0000-000000000001','role','authenticated')::text, true);
+
 
 ------------------------------------------------------------
 -- T1: nieuwe signature (date, uuid, jsonb)

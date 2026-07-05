@@ -6,7 +6,7 @@ create extension if not exists pgtap;
 
 select plan(17);
 
-set local role service_role;
+-- Removed: service_role mist grants, gebruik postgres (default)
 
 
 ------------------------------------------------------------
@@ -35,8 +35,8 @@ select isnt(
 
 select is(
     (select count(*)::int from public.audit_parameter_snapshot where snapshot_batch_id = (select batch_id from t021_first_batch)),
-    11,
-    'first snapshot batch bevat exact 11 rijen (één per param_* tabel)'
+    14,
+    'first snapshot batch bevat 14 rijen (per param_* tabel; post fiscal audit met 2025+2026 uitbreiding)'
 );
 
 
@@ -65,16 +65,16 @@ select is(
     (select rowcount from public.audit_parameter_snapshot
      where snapshot_batch_id = (select batch_id from t021_first_batch)
        and tabel_naam = 'param_rsz'),
-    6,
-    'param_rsz rowcount = 6 (T-018 import)'
+    12,
+    'param_rsz rowcount = 12 (T-018 + 2025 fiscal audit import — 6+6)'
 );
 
 select is(
     (select rowcount from public.audit_parameter_snapshot
      where snapshot_batch_id = (select batch_id from t021_first_batch)
        and tabel_naam = 'param_structurele_vermindering'),
-    3,
-    'param_structurele_vermindering rowcount = 3 (T-018 import)'
+    12,
+    'param_structurele_vermindering rowcount = 12 (2024 + 3 regimes 2025 + 2026 = 3+6+3)'
 );
 
 select is(
@@ -89,8 +89,8 @@ select is(
     (select rowcount from public.audit_parameter_snapshot
      where snapshot_batch_id = (select batch_id from t021_first_batch)
        and tabel_naam = 'param_wagen_mobiliteit'),
-    1,
-    'param_wagen_mobiliteit rowcount = 1 (T-020 import; open-ended blijft altijd active)'
+    3,
+    'param_wagen_mobiliteit rowcount = 3 (T-020 import + 2025 + 2026)'
 );
 
 select is(
@@ -155,8 +155,8 @@ select is(
     (select count(distinct tabel_naam)::int
      from public.audit_parameter_snapshot
      where snapshot_batch_id = (select batch_id from t021_second_batch)),
-    11,
-    'batch bevat alle 11 param_* tabellen (parameter-laag coverage complete)'
+    14,
+    'batch bevat 14 param_* tabel-jaar combos (parameter-laag coverage complete post fiscal audit)'
 );
 
 
@@ -181,10 +181,11 @@ select is(
 reset role;
 set local role anon;
 
-select is(
-    (select count(*)::int from public.audit_parameter_snapshot),
-    0,
-    'anon reads 0 rijen (RLS to authenticated policy blokkeert)'
+select throws_ok(
+    $$ select count(*) from public.audit_parameter_snapshot $$,
+    '42501',
+    null,
+    'anon SELECT → 42501 (schema-level grant ontbreekt voor anon)'
 );
 
 
