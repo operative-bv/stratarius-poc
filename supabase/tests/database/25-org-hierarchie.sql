@@ -1,29 +1,30 @@
 BEGIN;
+-- ISS-085 refactor: alle inserts als postgres, RLS reads + WITH CHECK
+-- als authenticated. dim_org_unit / map_entiteit_pc_competentie /
+-- bridge_hierarchie hebben géén INSERT grant voor authenticated —
+-- prod-pad = admin scripts / SECURITY DEFINER RPCs.
+
 create extension if not exists pgtap;
 
 select plan(21);
 
--- Setup: two team accounts with a legale entiteit each.
 select tests.create_supabase_user('team_a_owner');
 select tests.create_supabase_user('team_b_owner');
 
-select tests.authenticate_as('team_a_owner');
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('11111111-1111-1111-1111-111111111111', 'Team A', 'team-a', false);
+insert into basejump.accounts (id, name, slug, personal_account, primary_owner_user_id) values
+    ('25250100-1111-1111-1111-111111111111', 'Team A', 'team-a-25', false, tests.get_supabase_uid('team_a_owner')),
+    ('25250100-2222-2222-2222-222222222222', 'Team B', 'team-b-25', false, tests.get_supabase_uid('team_b_owner'));
+insert into basejump.account_user (user_id, account_id, account_role) values
+    (tests.get_supabase_uid('team_a_owner'), '25250100-1111-1111-1111-111111111111', 'owner'),
+    (tests.get_supabase_uid('team_b_owner'), '25250100-2222-2222-2222-222222222222', 'owner');
 
 insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
-    ('aaaaaaaa-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 1, 'Team A BVBA', 'BE');
-
-select tests.authenticate_as('team_b_owner');
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('22222222-2222-2222-2222-222222222222', 'Team B', 'team-b', false);
-
-insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
-    ('aaaaaaaa-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 1, 'Team B BVBA', 'BE');
+    ('25250200-1111-1111-1111-111111111111', '25250100-1111-1111-1111-111111111111', 1, 'Team A BVBA', 'BE'),
+    ('25250200-2222-2222-2222-222222222222', '25250100-2222-2222-2222-222222222222', 1, 'Team B BVBA', 'BE');
 
 
 ------------------------------------------------------------
--- Schema shape (4 assertions)
+-- Schema shape
 ------------------------------------------------------------
 
 select has_table('public', 'dim_hierarchie', 'dim_hierarchie table exists');
@@ -33,7 +34,7 @@ select has_table('public', 'map_entiteit_pc_competentie', 'map_entiteit_pc_compe
 
 
 ------------------------------------------------------------
--- dim_hierarchie seed (3 assertions)
+-- dim_hierarchie seed
 ------------------------------------------------------------
 
 select is(
@@ -56,7 +57,7 @@ select is(
 
 
 ------------------------------------------------------------
--- dim_hierarchie REVOKE writes (1 assertion — sample)
+-- dim_hierarchie REVOKE writes
 ------------------------------------------------------------
 
 select tests.authenticate_as('team_a_owner');
@@ -68,43 +69,41 @@ select throws_ok(
 
 
 ------------------------------------------------------------
--- dim_org_unit RLS insert + kind-consistency CHECK (3 assertions)
+-- dim_org_unit inserts + kind-consistency CHECK als postgres
 ------------------------------------------------------------
 
--- Valid: kind='team' with no legale_entiteit_id
+select tests.clear_authentication();
+
 select lives_ok(
     $$ insert into public.dim_org_unit (org_unit_id, owning_account_id, kind, name)
-       values ('bbbbbbbb-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'team', 'Payroll Team') $$,
-    'team A owner inserts dim_org_unit (kind=team) successfully'
+       values ('25250300-1111-1111-1111-111111111111', '25250100-1111-1111-1111-111111111111', 'team', 'Payroll Team') $$,
+    'dim_org_unit insert (kind=team) succeeds (postgres role)'
 );
 
--- Invalid: kind='legale_entiteit' zonder legale_entiteit_id (biconditional CHECK)
 select throws_ok(
     $$ insert into public.dim_org_unit (owning_account_id, kind, name)
-       values ('11111111-1111-1111-1111-111111111111', 'legale_entiteit', 'Missing FK') $$,
+       values ('25250100-1111-1111-1111-111111111111', 'legale_entiteit', 'Missing FK') $$,
     '23514'
 );
 
--- Invalid: kind='team' MET legale_entiteit_id (biconditional CHECK)
 select throws_ok(
     $$ insert into public.dim_org_unit (owning_account_id, kind, name, legale_entiteit_id)
-       values ('11111111-1111-1111-1111-111111111111', 'team', 'Wrong FK', 'aaaaaaaa-1111-1111-1111-111111111111') $$,
+       values ('25250100-1111-1111-1111-111111111111', 'team', 'Wrong FK', '25250200-1111-1111-1111-111111111111') $$,
     '23514'
 );
 
 
 ------------------------------------------------------------
--- bridge_hierarchie: closure insert (self + parent) (2 assertions)
+-- bridge_hierarchie: closure insert (self + parent) als postgres
 ------------------------------------------------------------
 
--- Create a second org_unit as descendant.
 insert into public.dim_org_unit (org_unit_id, owning_account_id, kind, name)
-    values ('bbbbbbbb-2222-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'departement', 'HR Departement');
+    values ('25250400-1111-1111-1111-111111111111', '25250100-1111-1111-1111-111111111111', 'departement', 'HR Departement');
 
 select lives_ok(
     $$ insert into public.bridge_hierarchie (hierarchie_id, ancestor_org_unit_id, descendant_org_unit_id, afstamming)
-       values ('statutair', 'bbbbbbbb-1111-1111-1111-111111111111', 'bbbbbbbb-1111-1111-1111-111111111111', 0),
-              ('statutair', 'bbbbbbbb-1111-1111-1111-111111111111', 'bbbbbbbb-2222-1111-1111-111111111111', 1) $$,
+       values ('statutair', '25250300-1111-1111-1111-111111111111', '25250300-1111-1111-1111-111111111111', 0),
+              ('statutair', '25250300-1111-1111-1111-111111111111', '25250400-1111-1111-1111-111111111111', 1) $$,
     'closure table: self + parent-child rows insert'
 );
 
@@ -116,7 +115,7 @@ select is(
 
 
 ------------------------------------------------------------
--- Cross-tenant RLS filter on dim_org_unit (1 assertion)
+-- Cross-tenant RLS filter on dim_org_unit
 ------------------------------------------------------------
 
 select tests.authenticate_as('team_b_owner');
@@ -129,32 +128,32 @@ select is(
 
 
 ------------------------------------------------------------
--- map_entiteit_pc_competentie: insert + categorie CHECK + effective-dating CHECK (3 assertions)
+-- map_entiteit_pc_competentie insert + CHECK constraints als postgres
 ------------------------------------------------------------
 
-select tests.authenticate_as('team_a_owner');
+select tests.clear_authentication();
 
 select lives_ok(
     $$ insert into public.map_entiteit_pc_competentie (entiteit_id, activiteit, categorie, pc_id, geldig_van)
-       values ('aaaaaaaa-1111-1111-1111-111111111111', 'boekhouding', 1, '200', '2024-01-01') $$,
-    'team A owner inserts map row'
+       values ('25250200-1111-1111-1111-111111111111', 'boekhouding', 1, '200', '2024-01-01') $$,
+    'map row insert lukt (postgres role)'
 );
 
 select throws_ok(
     $$ insert into public.map_entiteit_pc_competentie (entiteit_id, activiteit, categorie, pc_id, geldig_van)
-       values ('aaaaaaaa-1111-1111-1111-111111111111', 'boekhouding', 4, '200', '2024-01-01') $$,
+       values ('25250200-1111-1111-1111-111111111111', 'boekhouding', 4, '200', '2024-01-01') $$,
     '23514'
 );
 
 select throws_ok(
     $$ insert into public.map_entiteit_pc_competentie (entiteit_id, activiteit, categorie, pc_id, geldig_van, geldig_tot)
-       values ('aaaaaaaa-1111-1111-1111-111111111111', 'boekhouding', 2, '200', '2024-06-01', '2024-01-01') $$,
+       values ('25250200-1111-1111-1111-111111111111', 'boekhouding', 2, '200', '2024-06-01', '2024-01-01') $$,
     '23514'
 );
 
 
 ------------------------------------------------------------
--- Cross-tenant RLS on map + bridge (1 assertion each = 2 assertions)
+-- Cross-tenant RLS on map + bridge
 ------------------------------------------------------------
 
 select tests.authenticate_as('team_b_owner');
@@ -173,21 +172,20 @@ select is(
 
 
 ------------------------------------------------------------
--- Cross-tenant WITH CHECK block: team B attempts write against Team A refs
--- (F2 + F5). Both should raise 42501 via WITH CHECK.
+-- Cross-tenant WITH CHECK block: team B als authenticated probeert
+-- write op Team A refs. bridge_hierarchie en map_entiteit_pc_competentie
+-- geven 42501 (INSERT grant ontbreekt sowieso, matcht productioneel).
 ------------------------------------------------------------
 
--- bridge: team B tries to insert bridge row for Team A's org_unit chain
 select throws_ok(
     $$ insert into public.bridge_hierarchie (hierarchie_id, ancestor_org_unit_id, descendant_org_unit_id, afstamming)
-       values ('statutair', 'bbbbbbbb-1111-1111-1111-111111111111', 'bbbbbbbb-2222-1111-1111-111111111111', 1) $$,
+       values ('statutair', '25250300-1111-1111-1111-111111111111', '25250400-1111-1111-1111-111111111111', 1) $$,
     '42501'
 );
 
--- map: team B tries to insert map row referencing Team A's entiteit
 select throws_ok(
     $$ insert into public.map_entiteit_pc_competentie (entiteit_id, activiteit, categorie, pc_id, geldig_van)
-       values ('aaaaaaaa-1111-1111-1111-111111111111', 'boekhouding', 1, '200', '2024-01-01') $$,
+       values ('25250200-1111-1111-1111-111111111111', 'boekhouding', 1, '200', '2024-01-01') $$,
     '42501'
 );
 

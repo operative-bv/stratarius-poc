@@ -38,8 +38,8 @@ select tests.authenticate_as('test_reader');
 
 select is(
     (select count(*)::int from public.dim_looncomponent),
-    0,
-    'empty table for authenticated user (no seed in T-011; T-012 seeds)'
+    12,
+    'T-012 seeded 12 canonieke looncomponenten (basisloon, bonus, wagen, etc)'
 );
 
 
@@ -60,7 +60,6 @@ select throws_ok(
 ------------------------------------------------------------
 
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.dim_looncomponent (component_id, name, familie, rsz_plichtig, is_werkgeverskost, telt_voor_vakantiegeld, sz_behandeling_id, telt_voor_mu)
@@ -68,7 +67,6 @@ select throws_ok(
     '23503'
 );
 
-reset role;
 
 
 select * from finish();

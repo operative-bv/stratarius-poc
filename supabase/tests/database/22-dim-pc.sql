@@ -74,8 +74,11 @@ select throws_ok(
 -- authenticate_as_service_role() so use raw role switch.
 ------------------------------------------------------------
 
+-- Reset naar postgres (default test session role) → bypasst REVOKE + RLS
+-- om de CHECK / FK constraints direct te bereiken. Was service_role in de
+-- oude test, maar service_role heeft geen INSERT grant op dim_pc (systemisch
+-- op alle dim_* tabellen — noteer voor eventuele grant-fix).
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.dim_pc (pc_id, name, status) values ('998', 'bad status', 'invalid') $$,

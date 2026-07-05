@@ -1,22 +1,25 @@
 BEGIN;
+-- ISS-085 refactor: setup als postgres, service_role → postgres switches
+-- (service_role heeft geen INSERT grants op dim_* tabellen).
+
 create extension if not exists pgtap;
 
 select plan(20);
 
--- Two team owners, each creates a team account.
+-- Users + team accounts als postgres (voor authenticate_as role switch)
 select tests.create_supabase_user('team_a_owner');
 select tests.create_supabase_user('team_b_owner');
 
-select tests.authenticate_as('team_a_owner');
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('11111111-1111-1111-1111-111111111111', 'Team A', 'team-a', false);
+insert into basejump.accounts (id, name, slug, personal_account, primary_owner_user_id) values
+    ('11111111-1111-1111-1111-111111111111', 'Team A', 'team-a-23', false, tests.get_supabase_uid('team_a_owner')),
+    ('22222222-2222-2222-2222-222222222222', 'Team B', 'team-b-23', false, tests.get_supabase_uid('team_b_owner'));
+insert into basejump.account_user (user_id, account_id, account_role) values
+    (tests.get_supabase_uid('team_a_owner'), '11111111-1111-1111-1111-111111111111', 'owner'),
+    (tests.get_supabase_uid('team_b_owner'), '22222222-2222-2222-2222-222222222222', 'owner');
 
-select tests.authenticate_as('team_b_owner');
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('22222222-2222-2222-2222-222222222222', 'Team B', 'team-b', false);
 
 ------------------------------------------------------------
--- Schema shape (7 assertions)
+-- Schema shape (7 asserts, running als postgres)
 ------------------------------------------------------------
 
 select has_table('public', 'dim_land', 'dim_land table exists');
@@ -27,8 +30,9 @@ select col_is_fk('public', 'dim_legale_entiteit', 'owning_account_id', 'owning_a
 select col_is_fk('public', 'dim_legale_entiteit', 'land_id', 'land_id is FK');
 select col_type_is('public', 'dim_legale_entiteit', 'werkgeverscategorie', 'smallint', 'werkgeverscategorie is smallint');
 
+
 ------------------------------------------------------------
--- dim_land seed (2 assertions)
+-- dim_land seed (2 asserts)
 ------------------------------------------------------------
 
 select is(
@@ -43,8 +47,9 @@ select is(
     'BE seed name correct'
 );
 
+
 ------------------------------------------------------------
--- dim_land global read (1 assertion)
+-- dim_land global read (1 assert)
 ------------------------------------------------------------
 
 select tests.authenticate_as('team_a_owner');
@@ -55,8 +60,9 @@ select is(
     'authenticated user reads all 5 countries (global read)'
 );
 
+
 ------------------------------------------------------------
--- dim_land REVOKE writes (3 assertions)
+-- dim_land REVOKE writes (3 asserts)
 ------------------------------------------------------------
 
 select throws_ok(
@@ -74,24 +80,23 @@ select throws_ok(
     '42501'
 );
 
+
 ------------------------------------------------------------
--- dim_land uppercase CHECK (1 assertion). Switch to service_role
--- to bypass REVOKE so the CHECK constraint fires.
+-- dim_land uppercase CHECK (1 assert). Reset naar postgres om
+-- REVOKE te bypassen (service_role mist INSERT grant).
 ------------------------------------------------------------
 
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.dim_land (land_id, name) values ('be', 'lowercase') $$,
     '23514'
 );
 
-reset role;
 
 ------------------------------------------------------------
 -- dim_legale_entiteit RLS insert: team A owner creates a legale entiteit
--- under Team A. (1 assertion)
+-- onder Team A. Werkt sinds 20260705220000 grant INSERT to authenticated.
 ------------------------------------------------------------
 
 select tests.authenticate_as('team_a_owner');
@@ -102,8 +107,9 @@ select lives_ok(
     'team A owner can insert a legale entiteit under Team A'
 );
 
+
 ------------------------------------------------------------
--- Cross-tenant filter: team B sees zero rows via RLS (1 assertion)
+-- Cross-tenant filter: team B ziet zero rows via RLS
 ------------------------------------------------------------
 
 select tests.authenticate_as('team_b_owner');
@@ -114,8 +120,9 @@ select is(
     'Team B sees zero legale entiteiten (RLS filters Team A rows)'
 );
 
+
 ------------------------------------------------------------
--- Cross-tenant INSERT block via WITH CHECK (1 assertion)
+-- Cross-tenant INSERT block via WITH CHECK
 ------------------------------------------------------------
 
 select throws_ok(
@@ -124,8 +131,9 @@ select throws_ok(
     '42501'
 );
 
+
 ------------------------------------------------------------
--- werkgeverscategorie CHECK: cat=4 invalid (1 assertion)
+-- werkgeverscategorie CHECK: cat=4 invalid
 ------------------------------------------------------------
 
 select tests.authenticate_as('team_a_owner');
@@ -136,10 +144,11 @@ select throws_ok(
     '23514'
 );
 
+
 ------------------------------------------------------------
--- Team-account trigger: personal-account FK raises (1 assertion).
+-- Team-account trigger: personal-account FK raises.
 -- team_a_owner's auto-created personal account (personal_account = true)
--- as the FK target.
+-- als FK target.
 ------------------------------------------------------------
 
 select throws_ok(
@@ -151,14 +160,13 @@ select throws_ok(
     '23514'
 );
 
+
 ------------------------------------------------------------
--- ON DELETE RESTRICT: cannot delete team A account while
--- legale_entiteit hangs on it (1 assertion). Runs as service_role
--- to bypass RLS/REVOKE so the FK RESTRICT genuinely fires.
+-- ON DELETE RESTRICT: kan Team A account niet deleten met legale_entiteit
+-- er nog aan gekoppeld. Reset naar postgres voor bypass RLS/REVOKE.
 ------------------------------------------------------------
 
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ delete from basejump.accounts where id = '11111111-1111-1111-1111-111111111111' $$,

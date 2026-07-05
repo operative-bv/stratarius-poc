@@ -110,14 +110,12 @@ select throws_ok(
 ------------------------------------------------------------
 
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.dim_sz_behandeling (sz_behandeling_id, regime_naam, grondslag_type, bron_url) values ('invalid', 'Invalid', 'not_a_valid_type', 'x') $$,
     '23514'
 );
 
-reset role;
 
 
 select * from finish();
