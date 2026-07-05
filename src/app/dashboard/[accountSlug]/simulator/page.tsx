@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -228,7 +229,7 @@ export default async function SimulatorPage({
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="periode">Periode (kwartaal-begin)</Label>
-                            <Input id="periode" name="periode" type="date" defaultValue={params.periode ?? "2024-01-01"} />
+                            <DatePicker id="periode" name="periode" defaultValue={params.periode ?? "2026-01-01"} />
                         </div>
                         <details className="md:col-span-2 rounded-lg border p-3 [&_svg.chev]:open:rotate-180">
                             <summary className="flex items-center gap-2 cursor-pointer list-none text-sm font-medium">
@@ -262,7 +263,7 @@ export default async function SimulatorPage({
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="aanschaf">Aanschaffingsdatum</Label>
-                                    <Input id="aanschaf" name="aanschaf" type="date" defaultValue={params.aanschaf ?? "2023-06-01"} />
+                                    <DatePicker id="aanschaf" name="aanschaf" defaultValue={params.aanschaf ?? "2023-06-01"} />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
                                     <Label htmlFor="lease">Leasekost per maand (patronaal)</Label>

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Users, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -94,9 +95,9 @@ export default async function PopulatiePage({
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-[200px]">
                             <Label htmlFor="periode">Periode</Label>
-                            <Input id="periode" name="periode" type="date" defaultValue={periode} />
+                            <DatePicker id="periode" name="periode" defaultValue={periode} />
                         </div>
                         <div className="space-y-2 min-w-[140px]">
                             <Label htmlFor="view" className="flex items-center gap-1">
