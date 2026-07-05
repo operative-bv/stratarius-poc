@@ -18,8 +18,8 @@ select columns_are('basejump', 'config',
                    Array ['enable_team_accounts', 'enable_personal_account_billing', 'enable_team_account_billing', 'billing_provider'],
                    'Basejump config table should have the correct columns');
 
-select ok(basejump.is_set('enable_personal_account_billing')),
-       'Basejump config should have personal account billing enabled';
+select ok(not basejump.is_set('enable_personal_account_billing')),
+       'Basejump config heeft personal account billing DISABLED (project keuze — team accounts only)';
 select ok(basejump.is_set('enable_team_accounts')), 'Basejump config should have team accounts enabled';
 select ok((basejump.get_config() ->> 'enable_team_account_billing')::boolean = true,
           'Basejump config should have team account billing enabled');
