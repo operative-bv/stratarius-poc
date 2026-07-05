@@ -39,21 +39,24 @@ export async function runOaxacaAction(
         return { result: null, error: "Geen loonkloof-data voor huidige populatie/periode." };
     }
 
-    // dim_persoon.opleidingsniveau is GDPR-protected (T-034). RLS op
-    // dim_persoon filtert al op owning_account_id, dus we hoeven geen
-    // .in("persoon_id", ...) filter mee te sturen — bij 1000+ persoons
-    // zou dat "URI too long" opleveren op de PostgREST GET request.
-    const { data: personen, error: personenErr } = await supabase
-        .from("dim_persoon")
-        .select("persoon_id, opleidingsniveau");
+    // dim_persoon.opleidingsniveau is GDPR-protected (T-034, ISS-086).
+    // Access via RPC met rechtsgrondslag audit. RPC filtert tenant-side.
+    const persoonIds = Array.from(new Set(rows_data.map((r: { persoon_id: string }) => r.persoon_id)));
+    const { data: personen, error: personenErr } = await supabase.rpc(
+        "get_oaxaca_persoon_opleiding",
+        {
+            p_persoon_ids: persoonIds,
+            p_rechtsgrondslag: "loonkloof-analyse Oaxaca-Blinder decompositie (POC demo)",
+        },
+    );
     if (personenErr) {
         return { result: null, error: `Persoon-lookup faalde: ${personenErr.message}` };
     }
-    const opleidingMap = new Map(
-        (personen ?? []).map(
-            (p: { persoon_id: string; opleidingsniveau: string }) => [p.persoon_id, p.opleidingsniveau],
-        ),
-    );
+    const personenRows = (personen ?? []) as Array<{
+        persoon_id: string;
+        opleidingsniveau: string;
+    }>;
+    const opleidingMap = new Map(personenRows.map((p) => [p.persoon_id, p.opleidingsniveau]));
 
     // Parse-boundary: DB waardes zijn `string` op type-niveau maar de
     // Python OaxacaRow verwacht domain unions ("m"|"v", 3 opleidings-

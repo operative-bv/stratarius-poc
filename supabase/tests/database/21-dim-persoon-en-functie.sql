@@ -12,7 +12,7 @@ BEGIN;
 
 create extension if not exists pgtap;
 
-select plan(8);
+select plan(9);
 
 -- Setup users (SECURITY DEFINER creates in auth.users)
 select tests.create_supabase_user('team_a_owner');
@@ -64,11 +64,17 @@ select is(
 );
 
 
--- OPMERKING: GDPR column-level REVOKE op geslacht/opleidingsniveau uit
--- migratie 20260703010000 blijkt achterhaald door 20260703350000 dat een
--- table-level GRANT SELECT deed (die alle kolommen zichtbaar maakt). Zie
--- ISS-086 voor de re-revoke fix. Test asserted die niet meer aangezien
--- huidig gedrag is dat authenticated die kolommen KAN lezen.
+------------------------------------------------------------
+-- GDPR column-level REVOKE hersteld door 20260705230000 (ISS-086).
+-- authenticated kan geslacht/opleidingsniveau niet lezen zonder RPC-pad.
+------------------------------------------------------------
+
+select throws_ok(
+    $$ select geslacht from public.dim_persoon $$,
+    '42501',
+    null,
+    'ISS-086: SELECT geslacht faalt met 42501 (column-level REVOKE hersteld)'
+);
 
 select * from finish();
 ROLLBACK;

@@ -7,8 +7,8 @@
   "phase": null,
   "relatedTickets": [],
   "resolution": null,
-  "resolvedDate": null,
+  "resolvedDate": "2026-07-05",
   "severity": "high",
-  "status": "open",
+  "status": "resolved",
   "title": "GDPR column-REVOKE op dim_persoon.geslacht/opleidingsniveau weggevallen"
 }
