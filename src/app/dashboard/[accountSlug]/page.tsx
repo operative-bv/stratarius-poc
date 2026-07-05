@@ -71,17 +71,20 @@ export default async function TeamDashboardPage({
         }
     }
 
-    const { data: scenariosData } = await supabase
+    // ISS-080: expliciete error propagation — anders toont dashboard "0 headcount"
+    // bij RPC failures wat identiek is aan een echte lege populatie.
+    const { data: scenariosData, error: scenErr } = await supabase
         .from("dim_scenario")
         .select("scenario_id, naam, kind")
         .eq("kind", "baseline")
         .limit(1);
     const baselineId = scenariosData?.[0]?.scenario_id ?? null;
 
-    const { data } = await supabase.rpc("cascade_populatie_snapshot", {
+    const { data, error: cascadeErr } = await supabase.rpc("cascade_populatie_snapshot", {
         p_periode: "2024-06-01",
         p_scenario_id: baselineId,
     });
+    const loadError = scenErr?.message ?? cascadeErr?.message ?? null;
     const rows = (data ?? []) as PopRow[];
 
     const headcount = rows.length;
@@ -113,6 +116,14 @@ export default async function TeamDashboardPage({
                     Baseline scenario · periode juni 2024 · {headcount} medewerkers · demo dataset
                 </p>
             </div>
+
+            {loadError && (
+                <Card className="border-destructive/40">
+                    <CardContent className="pt-6">
+                        <p className="text-sm text-destructive">Data laden faalde: {loadError}</p>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* KPI Section cards — dashboard-01 style */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">

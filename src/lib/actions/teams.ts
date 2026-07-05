@@ -7,7 +7,7 @@ import { createClient } from "../supabase/server";
 export async function createTeam(_prevState: unknown, formData: FormData) {
     const name = formData.get("name") as string;
     const slug = formData.get("slug") as string;
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data, error } = await supabase.rpc("create_account", { name, slug });
 
@@ -22,7 +22,7 @@ export async function createTeam(_prevState: unknown, formData: FormData) {
 export async function editTeamName(_prevState: unknown, formData: FormData) {
     const name = formData.get("name") as string;
     const accountId = formData.get("accountId") as string;
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { error } = await supabase.rpc("update_account", { name, account_id: accountId });
 
@@ -37,7 +37,7 @@ export async function editTeamName(_prevState: unknown, formData: FormData) {
 export async function editTeamSlug(_prevState: unknown, formData: FormData) {
     const slug = formData.get("slug") as string;
     const accountId = formData.get("accountId") as string;
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data, error } = await supabase.rpc("update_account", { slug, account_id: accountId });
 

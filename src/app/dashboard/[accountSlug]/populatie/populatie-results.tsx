@@ -45,7 +45,10 @@ export default async function PopulatieResults({
     });
     const rows = (data ?? []) as PopRow[];
 
-    const [{ data: rszData }, { data: structureleData }] = await Promise.all([
+    // ISS-080: expliciete error propagation ipv `?? []` fallbacks. Als de
+    // param queries falen zou RowDetailSheet renderen met lege drempels
+    // ("berekening loopt niet") wat verwarrend is.
+    const [rszRes, structureleRes] = await Promise.all([
         supabase
             .from("param_rsz")
             .select("status, werkgeverscategorie, basisbijdrage_pct, basisfactor_pct, bron_url, geldig_van, geldig_tot")
@@ -57,18 +60,21 @@ export default async function PopulatieResults({
             .lte("geldig_van", periode)
             .or(`geldig_tot.is.null,geldig_tot.gt.${periode}`),
     ]);
-    const rszParams = (rszData ?? []) as RSZParam[];
-    const structureleParams = (structureleData ?? []) as StructureleParam[];
+    if (rszRes.error) console.error("[populatie-results] param_rsz:", rszRes.error);
+    if (structureleRes.error) console.error("[populatie-results] param_structurele:", structureleRes.error);
+    const rszParams = (rszRes.data ?? []) as RSZParam[];
+    const structureleParams = (structureleRes.data ?? []) as StructureleParam[];
 
     const contractIds = rows.map((r) => r.contract_id);
     const extralegaalMap = new Map<string, ExtralegaalDetail[]>();
     if (contractIds.length > 0 && scenarioId) {
-        const { data: extraData } = await supabase
+        const { data: extraData, error: extraErr } = await supabase
             .from("fact_looncomponent")
             .select("contract_id, component_id, bedrag, bron_ref, dim_looncomponent!inner(name, familie, is_basisloon)")
             .in("contract_id", contractIds)
             .eq("periode", periode)
             .eq("scenario_id", scenarioId);
+        if (extraErr) console.error("[populatie-results] extralegaal fetch:", extraErr);
         for (const row of (extraData ?? []) as unknown as Array<{
             contract_id: string;
             component_id: string;
@@ -91,11 +97,12 @@ export default async function PopulatieResults({
 
     let compareRows: PopRow[] = [];
     if (compare && baselineScenarioId && scenarioId !== baselineScenarioId) {
-        const { data: compData } = await supabase.rpc("cascade_populatie_snapshot", {
+        const { data: compData, error: compErr } = await supabase.rpc("cascade_populatie_snapshot", {
             p_periode: periode,
             p_scenario_id: baselineScenarioId,
             p_filters: filters,
         });
+        if (compErr) console.error("[populatie-results] compare snapshot:", compErr);
         compareRows = (compData ?? []) as PopRow[];
     }
 

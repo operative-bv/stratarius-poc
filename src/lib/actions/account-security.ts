@@ -17,7 +17,7 @@ export async function changePassword(
         return { ok: false, message: "Wachtwoorden komen niet overeen" };
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
         return { ok: false, message: error.message };
@@ -29,7 +29,7 @@ export async function signOutOtherSessions(
     _prev: AccountActionState,
     _formData: FormData,
 ): Promise<AccountActionState> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase.auth.signOut({ scope: "others" });
     if (error) {
         return { ok: false, message: error.message };

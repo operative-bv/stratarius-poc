@@ -8,15 +8,26 @@ import { generateDemoRows, type DemoRow } from "@/lib/demo-dataset";
 async function bulkImport(accountSlug: string, rows: DemoRow[]): Promise<ImportState> {
     const supabase = await createClient();
 
-    const [{ data: entData }, { data: scenData }] = await Promise.all([
+    // ISS-080: expliciet error check ipv silent drop — voorkomt dat "entiteit
+    // ontbreekt" wordt getoond terwijl het eigenlijk een RLS-block of timeout is.
+    const [entRes, scenRes] = await Promise.all([
         supabase.from("dim_legale_entiteit").select("legale_entiteit_id").limit(1),
         supabase.from("dim_scenario").select("scenario_id").eq("kind", "baseline").limit(1),
     ]);
-    const entiteitId = entData?.[0]?.legale_entiteit_id;
-    const baselineId = scenData?.[0]?.scenario_id;
+    if (entRes.error) {
+        return { error: `Tenant lookup faalde: ${entRes.error.message}`, result: null };
+    }
+    if (scenRes.error) {
+        return { error: `Scenario lookup faalde: ${scenRes.error.message}`, result: null };
+    }
+    const entiteitId = entRes.data?.[0]?.legale_entiteit_id;
+    const baselineId = scenRes.data?.[0]?.scenario_id;
 
-    if (!entiteitId || !baselineId) {
-        return { error: "Legale entiteit of baseline scenario ontbreekt", result: null };
+    if (!entiteitId) {
+        return { error: "Nog geen legale entiteit — voltooi eerst de setup wizard.", result: null };
+    }
+    if (!baselineId) {
+        return { error: "Baseline scenario ontbreekt — controleer setup wizard.", result: null };
     }
 
     // Één RPC call ipv 3× per rij HTTP round-trips.

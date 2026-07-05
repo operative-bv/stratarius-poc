@@ -11,15 +11,24 @@ export async function clearPopulatieAction(
 ): Promise<ClearPopulatieState> {
     const supabase = await createClient();
 
-    const { data: entData } = await supabase
+    // ISS-080: expliciet error check — silent drop verbergt RLS/timeout issues
+    const { data: entData, error: entErr } = await supabase
         .from("dim_legale_entiteit")
         .select("legale_entiteit_id")
         .limit(1);
+    if (entErr) {
+        return {
+            ok: false,
+            message: `Tenant lookup faalde: ${entErr.message}`,
+            deletedContracten: null,
+            deletedPersonen: null,
+        };
+    }
     const legaleEntiteitId = entData?.[0]?.legale_entiteit_id;
     if (!legaleEntiteitId) {
         return {
             ok: false,
-            message: "Geen legale entiteit gevonden voor deze tenant.",
+            message: "Nog geen legale entiteit — voltooi eerst de setup wizard.",
             deletedContracten: null,
             deletedPersonen: null,
         };
