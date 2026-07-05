@@ -19,7 +19,16 @@
 -- Deze migration UPDATE de waarden naar de 2024-correcte versie.
 -- Idempotent: als de waarden al kloppen doet de update effectief niets
 -- (kolommen gelijk gezet aan zelfde waarden).
+--
+-- Note: prod heeft mogelijk de OUDE check constraint semantiek
+-- (drempel_s0 <= drempel_s1 uit pre-2024 tijd) die botst met de
+-- nieuwe waarden. We droppen + heraddens de constraint met correcte
+-- 2024 semantiek (drempel_s1 <= drempel_s0, S1 = zeer-lage-lonen).
 -- ================================================================
+
+-- Drop bestaande constraint (oude of nieuwe semantiek, allebei OK om te droppen)
+alter table public.param_structurele_vermindering
+    drop constraint if exists param_structurele_vermindering_drempel_order;
 
 update public.param_structurele_vermindering
 set forfait        = 0.0000,
@@ -47,6 +56,11 @@ set forfait        = 375.0000,
     drempel_s1     = 6807.1800
 where werkgeverscategorie = 3
   and geldig_van = '2024-01-01'::date;
+
+-- Re-add constraint met correcte 2024 semantiek (S1 zeer-lage-lonen <= S0 lage-lonen)
+alter table public.param_structurele_vermindering
+    add constraint param_structurele_vermindering_drempel_order
+    check (drempel_s1 <= drempel_s0);
 
 -- Post-update verificatie
 do $$
