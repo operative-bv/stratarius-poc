@@ -96,7 +96,7 @@ export default async function LoonkloofPage({
         const { data: martData, error: martErr } = await supabase
             .from("mart_loonkloof")
             .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
-            .eq("referentiedatum", "2024-06-30")
+            .eq("referentiedatum", "2026-06-30")
             .in("legale_entiteit_id", entiteitIds);
         if (martErr) error = { message: `Mart-query faalde: ${martErr.message}` };
         rows = (martData ?? []) as MartRow[];
@@ -107,7 +107,7 @@ export default async function LoonkloofPage({
             entiteitIds.map((id) =>
                 supabase.rpc("mart_loonkloof_decomp_read", {
                     p_rechtsgrondslag: "loonkloof analysepagina — decompositie weergave",
-                    p_kwartaal: "2024-Q2",
+                    p_kwartaal: "2026-Q2",
                     p_legale_entiteit_id: id,
                 }),
             ),
@@ -160,7 +160,7 @@ export default async function LoonkloofPage({
             <PageHeader
                 icon={Scale}
                 title="Loonkloof analyse"
-                description={<>Bruto uurloon per geslacht × functieniveau — bron <code className="text-xs">mart_loonkloof</code> Q2 2024</>}
+                description={<>Bruto uurloon per geslacht × functieniveau — bron <code className="text-xs">mart_loonkloof</code> Q2 2026</>}
                 actions={<RefreshMartButton accountSlug={accountSlug} />}
             />
 

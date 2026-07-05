@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-079",
+  "impact": "Tenants met meerdere legale entiteiten zien mismatched cijfers (gemiddeld uurloon over alle entiteiten, decompositie over één). Voor POC met single-entiteit tenants niet zichtbaar, maar wordt breaking zodra iemand een 2e entiteit toevoegt.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": "2026-07-05",
+  "severity": "medium",
+  "status": "resolved",
+  "title": "Multi-entiteit inconsistency: KPIs vs decomp gebruiken verschillende scope"
+}

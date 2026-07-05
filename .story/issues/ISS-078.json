@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-078",
+  "impact": "Ondermijnt de eerder gepushte cross-tenant leak-fix. Als de tenant-lookup silently faalt kunnen we niet onderscheiden tussen \"echt lege tenant\" en \"gebroken query\" — debugging productie-issue onmogelijk. Ook: user vertrouwt op \"geen data\" terwijl er wél data zou moeten zijn.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": "2026-07-05",
+  "severity": "high",
+  "status": "resolved",
+  "title": "Loonkloof tenant-fix ondermijnd door silent error in tenant-lookup"
+}

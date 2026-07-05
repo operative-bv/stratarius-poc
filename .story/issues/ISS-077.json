@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-077",
+  "impact": "User in tenant A ziet Oaxaca decompositie berekend over data van ANDERE tenants zodra hij \"Run Oaxaca\" klikt op de loonkloof page. GDPR-schending (opleidingsniveau) + security-schending (cross-tenant read). Kritiek.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": "2026-07-05",
+  "severity": "high",
+  "status": "resolved",
+  "title": "Oaxaca action lekt cross-tenant data (mart_loonkloof + GDPR kolom)"
+}

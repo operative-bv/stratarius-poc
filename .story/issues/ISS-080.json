@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-080",
+  "impact": "User drukt \"Setup opnieuw\" na een RLS-block error die als \"entiteit ontbreekt\" verscheen → krijgt duplicate-key error (partial-state). Auth signOut kan mislukken zonder dat user het weet → session mogelijk nog valid = security-relevant. Debug logs missen root cause.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": "2026-07-05",
+  "severity": "high",
+  "status": "resolved",
+  "title": "Server actions droppen Supabase errors → misleidende user messages"
+}

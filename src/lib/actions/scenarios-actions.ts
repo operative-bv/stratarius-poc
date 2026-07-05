@@ -24,7 +24,7 @@ export async function createScenarioAction(
         p_legale_entiteit_id: entiteitId,
         p_naam: naam,
         p_baseline_scenario_id: baselineId,
-        p_periode: "2024-06-01",
+        p_periode: "2026-06-01",
         p_mutatie_type: mutatieType,
         p_mutatie_value: mutatieValue,
         p_functie_id: teamId === "all" ? null : teamId,
@@ -61,7 +61,7 @@ export async function createWagenScenarioAction(
         p_legale_entiteit_id: entiteitId,
         p_naam: naam,
         p_baseline_scenario_id: baselineId,
-        p_periode: "2024-06-01",
+        p_periode: "2026-06-01",
         p_functie_id: teamId,
         p_wagen_categorie: wagenCat,
     });

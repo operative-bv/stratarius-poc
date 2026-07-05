@@ -13,34 +13,10 @@
   "version": 2,
   "recipeOverrides": {
     "stages": {
-      "WRITE_TESTS": {
-        "enabled": false
-      },
-      "TEST": {
-        "enabled": false
-      },
       "VERIFY": {
-        "enabled": true,
         "startCommand": "npm run dev",
-        "readinessUrl": "http://localhost:3000"
-      },
-      "BUILD": {
-        "enabled": true,
-        "command": "npm run build"
-      },
-      "PLAN_REVIEW": {
-        "backends": [
-          "lenses",
-          "agent",
-          "codex"
-        ]
-      },
-      "CODE_REVIEW": {
-        "backends": [
-          "lenses",
-          "agent",
-          "codex"
-        ]
+        "readinessUrl": "http://localhost:3000",
+        "enabled": true
       }
     },
     "codexReviewBackends": [
@@ -50,8 +26,8 @@
     "maxTicketsPerSession": 0,
     "reviewBackends": [
       "lenses",
-      "agent",
-      "codex"
+      "codex",
+      "agent"
     ],
     "handoverInterval": 3
   }

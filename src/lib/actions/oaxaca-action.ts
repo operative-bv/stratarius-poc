@@ -29,7 +29,7 @@ export async function runOaxacaAction(
     const { data: martRows, error: martErr } = await supabase
         .from("mart_loonkloof")
         .select("persoon_id, uurloon_bruto, geslacht, functieniveau, ancienniteit_jaren")
-        .eq("referentiedatum", "2024-06-30")
+        .eq("referentiedatum", "2026-06-30")
         .in("legale_entiteit_id", entiteitIds);
     if (martErr) {
         return { result: null, error: `Loonkloof-mart query faalde: ${martErr.message}` };
@@ -73,7 +73,7 @@ export async function runOaxacaAction(
     );
 
     try {
-        const result = await callOaxacaService(rows, "loonkloof analyse Q2 2024 via dashboard");
+        const result = await callOaxacaService(rows, "loonkloof analyse Q2 2026 via dashboard");
         return { result, error: null };
     } catch (e) {
         const msg = e instanceof Error ? e.message : "unknown error";

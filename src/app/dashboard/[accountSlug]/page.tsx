@@ -81,7 +81,7 @@ export default async function TeamDashboardPage({
     const baselineId = scenariosData?.[0]?.scenario_id ?? null;
 
     const { data, error: cascadeErr } = await supabase.rpc("cascade_populatie_snapshot", {
-        p_periode: "2024-06-01",
+        p_periode: "2026-06-01",
         p_scenario_id: baselineId,
     });
     const loadError = scenErr?.message ?? cascadeErr?.message ?? null;
@@ -113,7 +113,7 @@ export default async function TeamDashboardPage({
             <div className="flex flex-col gap-2">
                 <h1 className="text-2xl font-semibold tracking-tight">Werkgeverskost overzicht</h1>
                 <p className="text-sm text-muted-foreground">
-                    Baseline scenario · periode juni 2024 · {headcount} medewerkers · demo dataset
+                    Baseline scenario · periode juni 2026 · {headcount} medewerkers · demo dataset
                 </p>
             </div>
 
@@ -168,7 +168,7 @@ export default async function TeamDashboardPage({
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <div>
-                                <CardTitle>Loonkost trend 2024</CardTitle>
+                                <CardTitle>Loonkost trend 2026</CardTitle>
                                 <p className="text-xs text-muted-foreground mt-1">
                                     Bruto + patronaal gestapeld · pieken tonen seizoenspatroon (vakantiegeld · eindejaarspremie)
                                 </p>

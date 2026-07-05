@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-081",
+  "impact": "Unique-constraint violation en out-of-memory geven dezelfde error output. Client kan niet distinguish tussen \"bad data, retry after fix\" en \"infra issue, escalate to ops\". Prod monitoring alerts niet in te richten.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": "2026-07-05",
+  "severity": "medium",
+  "status": "resolved",
+  "title": "bulk_import_populatie WHEN OTHERS slikt SQLSTATE — data vs infra errors ononderscheidbaar"
+}

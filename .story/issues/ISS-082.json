@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-082",
+  "impact": "User klikt \"Wis populatie\", ziet error, checkt de app → data lijkt weg. Klikt opnieuw → error. Data blijkt er nog te staan want transactie rolde terug. Verwarrend en potentieel data-verlies bij verkeerde interpretatie. Ook: audit-schema drift maakt delete-flow onbruikbaar (precies wat vandaag gebeurde met kolomnaam-verschil).",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": "2026-07-05",
+  "severity": "medium",
+  "status": "resolved",
+  "title": "gdpr_access_log insert kan clear_tenant_populatie transactie rollbacken"
+}

@@ -21,7 +21,7 @@ export default async function PopulatiePage({
     searchParams: Promise<{ periode?: string; scenario?: string; team?: string; compare?: string; view?: string }>;
 }) {
     const params = await searchParams;
-    const periode = params.periode ?? "2024-06-01";
+    const periode = params.periode ?? "2026-06-01";
     const view = params.view === "jaar" ? "jaar" : "maand";
     const factor = view === "jaar" ? 12 : 1;
     const supabase = await createClient();
