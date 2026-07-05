@@ -36,14 +36,37 @@ export default async function PopulatieResults({
     factor: number;
 }) {
     const supabase = await createClient();
-    const filters = teamId ? { functie_ids: [teamId] } : {};
 
-    const { data, error } = await supabase.rpc("cascade_populatie_snapshot", {
-        p_periode: periode,
-        p_scenario_id: scenarioId,
-        p_filters: filters,
-    });
-    const rows = (data ?? []) as PopRow[];
+    // Materialize cache pattern: eerst probe mart_populatie_loonkost cache.
+    // Als leeg voor deze scenario+periode → live cascade fallback.
+    // Team filter wordt client-side toegepast (cache is unfiltered).
+    let cacheQuery = supabase
+        .from("mart_populatie_loonkost")
+        .select("*, refreshed_at")
+        .eq("periode", periode);
+    if (scenarioId) cacheQuery = cacheQuery.eq("scenario_id", scenarioId);
+    if (teamId) cacheQuery = cacheQuery.eq("functie_id", teamId);
+
+    const cacheRes = await cacheQuery;
+    let rows: PopRow[];
+    let refreshedAt: string | null = null;
+    let fromCache = false;
+
+    if (cacheRes.data && cacheRes.data.length > 0) {
+        rows = cacheRes.data as unknown as PopRow[];
+        refreshedAt = (cacheRes.data[0] as { refreshed_at: string }).refreshed_at;
+        fromCache = true;
+    } else {
+        // Cache miss → live cascade fallback.
+        const filters = teamId ? { functie_ids: [teamId] } : {};
+        const { data, error } = await supabase.rpc("cascade_populatie_snapshot", {
+            p_periode: periode,
+            p_scenario_id: scenarioId,
+            p_filters: filters,
+        });
+        if (error) console.error("[populatie-results] cascade fallback:", error);
+        rows = (data ?? []) as PopRow[];
+    }
 
     // ISS-080: expliciete error propagation ipv `?? []` fallbacks. Als de
     // param queries falen zou RowDetailSheet renderen met lege drempels
@@ -97,13 +120,26 @@ export default async function PopulatieResults({
 
     let compareRows: PopRow[] = [];
     if (compare && baselineScenarioId && scenarioId !== baselineScenarioId) {
-        const { data: compData, error: compErr } = await supabase.rpc("cascade_populatie_snapshot", {
-            p_periode: periode,
-            p_scenario_id: baselineScenarioId,
-            p_filters: filters,
-        });
-        if (compErr) console.error("[populatie-results] compare snapshot:", compErr);
-        compareRows = (compData ?? []) as PopRow[];
+        // Compare-modus: probeer eerst cache van baseline scenario, anders live cascade.
+        let compareCacheQuery = supabase
+            .from("mart_populatie_loonkost")
+            .select("*")
+            .eq("periode", periode)
+            .eq("scenario_id", baselineScenarioId);
+        if (teamId) compareCacheQuery = compareCacheQuery.eq("functie_id", teamId);
+        const compareCacheRes = await compareCacheQuery;
+        if (compareCacheRes.data && compareCacheRes.data.length > 0) {
+            compareRows = compareCacheRes.data as unknown as PopRow[];
+        } else {
+            const compareFilters = teamId ? { functie_ids: [teamId] } : {};
+            const { data: compData, error: compErr } = await supabase.rpc("cascade_populatie_snapshot", {
+                p_periode: periode,
+                p_scenario_id: baselineScenarioId,
+                p_filters: compareFilters,
+            });
+            if (compErr) console.error("[populatie-results] compare snapshot:", compErr);
+            compareRows = (compData ?? []) as PopRow[];
+        }
     }
 
     const totals = {
@@ -125,16 +161,6 @@ export default async function PopulatieResults({
               }
             : null;
 
-    if (error) {
-        return (
-            <Card>
-                <CardContent className="pt-6">
-                    <p className="text-red-500">Error: {error.message}</p>
-                </CardContent>
-            </Card>
-        );
-    }
-
     if (rows.length === 0) {
         return (
             <Card>
@@ -145,8 +171,13 @@ export default async function PopulatieResults({
         );
     }
 
+    const cacheStatus = fromCache && refreshedAt
+        ? `Cache: bijgewerkt ${new Date(refreshedAt).toLocaleString("nl-BE", { dateStyle: "short", timeStyle: "short" })}`
+        : "Live cascade (geen cache — gebruik Refresh cache voor snellere loads)";
+
     return (
         <>
+            <div className="text-xs text-muted-foreground">{cacheStatus}</div>
             {compareTotals && (
                 <Card>
                     <CardContent className="pt-6">

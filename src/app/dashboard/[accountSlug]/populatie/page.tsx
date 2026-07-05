@@ -17,10 +17,13 @@ type Scenario = { scenario_id: string; naam: string; kind: string };
 type Functie = { functie_id: string; functienaam: string };
 
 export default async function PopulatiePage({
+    params: routeParams,
     searchParams,
 }: {
+    params: Promise<{ accountSlug: string }>;
     searchParams: Promise<{ periode?: string; scenario?: string; team?: string; compare?: string; view?: string }>;
 }) {
+    const { accountSlug } = await routeParams;
     const params = await searchParams;
     const periode = params.periode ?? "2026-06-01";
     const view = params.view === "jaar" ? "jaar" : "maand";
@@ -145,6 +148,29 @@ export default async function PopulatiePage({
                     </form>
                 </CardContent>
             </Card>
+
+            {scenarioId && (
+                <form
+                    action={async () => {
+                        "use server";
+                        const { refreshPopulatieCacheAction } = await import(
+                            "@/lib/actions/refresh-populatie-cache-action"
+                        );
+                        await refreshPopulatieCacheAction(
+                            accountSlug,
+                            periode,
+                            scenarioId,
+                            { status: "idle" },
+                            new FormData(),
+                        );
+                    }}
+                    className="flex justify-end"
+                >
+                    <Button type="submit" variant="outline" size="sm">
+                        Refresh cache (populatie snapshot persist)
+                    </Button>
+                </form>
+            )}
 
             <Suspense key={suspenseKey} fallback={<PopulatieSkeleton />}>
                 <PopulatieResults
