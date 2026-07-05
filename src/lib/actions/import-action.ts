@@ -5,134 +5,41 @@ import { revalidatePath } from "next/cache";
 import type { ImportState } from "./import-types";
 import { generateDemoRows, type DemoRow } from "@/lib/demo-dataset";
 
-async function importRows(accountSlug: string, rows: DemoRow[]): Promise<ImportState> {
+async function bulkImport(accountSlug: string, rows: DemoRow[]): Promise<ImportState> {
     const supabase = await createClient();
 
-    const [{ data: entData }, { data: funcData }, { data: scenData }] = await Promise.all([
-        supabase.from("dim_legale_entiteit").select("legale_entiteit_id, owning_account_id").limit(1),
-        supabase.from("dim_functie").select("functie_id, functienaam, owning_account_id"),
+    const [{ data: entData }, { data: scenData }] = await Promise.all([
+        supabase.from("dim_legale_entiteit").select("legale_entiteit_id").limit(1),
         supabase.from("dim_scenario").select("scenario_id").eq("kind", "baseline").limit(1),
     ]);
-    const entiteit = entData?.[0];
-    const functies = (funcData ?? []) as {
-        functie_id: string;
-        functienaam: string;
-        owning_account_id: string;
-    }[];
+    const entiteitId = entData?.[0]?.legale_entiteit_id;
     const baselineId = scenData?.[0]?.scenario_id;
 
-    if (!entiteit || !baselineId) {
+    if (!entiteitId || !baselineId) {
         return { error: "Legale entiteit of baseline scenario ontbreekt", result: null };
     }
 
-    const result = { created: 0, skipped: 0, errors: [] as string[] };
+    // Één RPC call ipv 3× per rij HTTP round-trips.
+    const { data, error } = await supabase.rpc("bulk_import_populatie", {
+        p_legale_entiteit_id: entiteitId,
+        p_scenario_id: baselineId,
+        p_rows: rows,
+    });
 
-    for (let i = 0; i < rows.length; i++) {
-        const r = rows[i];
-        const naam = r.naam;
-        const geslacht = r.geslacht;
-        const geboortedatum = r.geboortedatum;
-        const opleidingsniveau = r.opleidingsniveau;
-        const team = r.team;
-        const status = r.status;
-        const pc = r.pc;
-        const bruto = r.bruto;
-
-        if (!naam) {
-            result.errors.push(`Rij ${i + 1}: naam ontbreekt`);
-            result.skipped++;
-            continue;
-        }
-        if (!["m", "v", "x"].includes(geslacht)) {
-            result.errors.push(`Rij ${i + 1} (${naam}): ongeldig geslacht "${geslacht}"`);
-            result.skipped++;
-            continue;
-        }
-        if (!geboortedatum || !/^\d{4}-\d{2}-\d{2}$/.test(geboortedatum)) {
-            result.errors.push(`Rij ${i + 1} (${naam}): geboortedatum moet YYYY-MM-DD zijn`);
-            result.skipped++;
-            continue;
-        }
-        if (bruto <= 0) {
-            result.errors.push(`Rij ${i + 1} (${naam}): bruto moet > 0 zijn`);
-            result.skipped++;
-            continue;
-        }
-
-        let functie = functies.find((f) => f.functienaam.toLowerCase() === team.toLowerCase());
-        if (!functie && team) {
-            const { data: newFunc } = await supabase
-                .from("dim_functie")
-                .insert({ owning_account_id: entiteit.owning_account_id, functienaam: team, functieniveau: 10 })
-                .select("functie_id, functienaam, owning_account_id")
-                .single();
-            if (newFunc) {
-                functie = newFunc;
-                functies.push(functie);
-            }
-        }
-        if (!functie) {
-            result.errors.push(`Rij ${i + 1} (${naam}): team "${team}" niet gevonden`);
-            result.skipped++;
-            continue;
-        }
-
-        const { data: persoonInsert, error: persoonErr } = await supabase
-            .from("dim_persoon")
-            .insert({
-                owning_account_id: entiteit.owning_account_id,
-                geslacht,
-                geboortedatum,
-                opleidingsniveau,
-            })
-            .select("persoon_id")
-            .single();
-
-        if (persoonErr || !persoonInsert) {
-            result.errors.push(`Rij ${i + 1} (${naam}): persoon insert faalde — ${persoonErr?.message}`);
-            result.skipped++;
-            continue;
-        }
-
-        const { data: contractInsert, error: contractErr } = await supabase
-            .from("dim_contract")
-            .insert({
-                persoon_id: persoonInsert.persoon_id,
-                legale_entiteit_id: entiteit.legale_entiteit_id,
-                functie_id: functie.functie_id,
-                pc_id: pc,
-                status,
-                fte_breuk: 1.0,
-                geldig_van: "2023-01-01",
-            })
-            .select("contract_id")
-            .single();
-
-        if (contractErr || !contractInsert) {
-            result.errors.push(`Rij ${i + 1} (${naam}): contract insert faalde — ${contractErr?.message}`);
-            result.skipped++;
-            continue;
-        }
-
-        const { error: factErr } = await supabase.from("fact_looncomponent").insert({
-            contract_id: contractInsert.contract_id,
-            periode: "2024-06-01",
-            component_id: "basisloon",
-            scenario_id: baselineId,
-            bedrag: bruto,
-        });
-
-        if (factErr) {
-            result.errors.push(`Rij ${i + 1} (${naam}): fact_looncomponent faalde — ${factErr.message}`);
-            result.skipped++;
-            continue;
-        }
-
-        result.created++;
+    if (error) {
+        return { error: `Import faalde: ${error.message}`, result: null };
     }
 
+    const row = (data ?? [])[0] as { created: number; skipped: number; errors: string[] } | undefined;
     revalidatePath(`/dashboard/${accountSlug}`);
-    return { error: null, result };
+    return {
+        error: null,
+        result: {
+            created: row?.created ?? 0,
+            skipped: row?.skipped ?? 0,
+            errors: row?.errors ?? [],
+        },
+    };
 }
 
 export async function importCsvAction(
@@ -175,7 +82,7 @@ export async function importCsvAction(
         });
     }
 
-    return importRows(accountSlug, rows);
+    return bulkImport(accountSlug, rows);
 }
 
 export async function loadDemoDatasetAction(
@@ -184,5 +91,5 @@ export async function loadDemoDatasetAction(
     _formData: FormData,
 ): Promise<ImportState> {
     const rows = generateDemoRows(1000);
-    return importRows(accountSlug, rows);
+    return bulkImport(accountSlug, rows);
 }
