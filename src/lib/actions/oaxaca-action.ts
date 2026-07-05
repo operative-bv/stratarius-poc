@@ -1,14 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { callOaxacaService, type OaxacaResult, type OaxacaRow } from "@/lib/oaxaca-client";
-
-export type OaxacaState = {
-    result: OaxacaResult | null;
-    error: string | null;
-};
-
-export const initialOaxacaState: OaxacaState = { result: null, error: null };
+import { callOaxacaService, type OaxacaRow } from "@/lib/oaxaca-client";
+import type { OaxacaState } from "./oaxaca-types";
 
 export async function runOaxacaAction(
     _prev: OaxacaState,

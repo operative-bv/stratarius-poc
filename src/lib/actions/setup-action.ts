@@ -3,12 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-export type SetupState = {
-    error: string | null;
-};
-
-export const initialSetupState: SetupState = { error: null };
+import type { SetupState } from "./setup-types";
 
 export async function completeSetupAction(
     accountSlug: string,

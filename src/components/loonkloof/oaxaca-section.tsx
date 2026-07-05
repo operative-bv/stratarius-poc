@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RefreshCw, Sigma } from "lucide-react";
-import { initialOaxacaState, runOaxacaAction } from "@/lib/actions/oaxaca-action";
+import { runOaxacaAction } from "@/lib/actions/oaxaca-action";
+import { initialOaxacaState } from "@/lib/actions/oaxaca-types";
 import type { OaxacaResult } from "@/lib/oaxaca-client";
 
 function fmtEur(v: number): string {

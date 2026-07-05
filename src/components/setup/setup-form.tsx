@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Building2, Info, Check, Loader2 } from "lucide-react";
-import { completeSetupAction, initialSetupState } from "@/lib/actions/setup-action";
+import { completeSetupAction } from "@/lib/actions/setup-action";
+import { initialSetupState } from "@/lib/actions/setup-types";
 
 function SubmitBtn() {
     const { pending } = useFormStatus();

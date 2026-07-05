@@ -2,13 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-
-export type RefreshMartState = {
-    ok: boolean | null;
-    message: string | null;
-};
-
-export const initialRefreshMartState: RefreshMartState = { ok: null, message: null };
+import type { RefreshMartState } from "./refresh-mart-types";
 
 export async function refreshMartAction(
     accountSlug: string,

@@ -2,13 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-
-export type ImportState = {
-    error: string | null;
-    result: { created: number; skipped: number; errors: string[] } | null;
-};
-
-export const initialImportState: ImportState = { error: null, result: null };
+import type { ImportState } from "./import-types";
 
 export async function importCsvAction(
     accountSlug: string,

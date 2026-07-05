@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileSpreadsheet, Info, Upload, CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { importCsvAction, initialImportState } from "@/lib/actions/import-action";
+import { importCsvAction } from "@/lib/actions/import-action";
+import { initialImportState } from "@/lib/actions/import-types";
 
 function Btn() {
     const { pending } = useFormStatus();

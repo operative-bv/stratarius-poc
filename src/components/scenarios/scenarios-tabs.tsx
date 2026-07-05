@@ -12,12 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Car, Percent, AlertTriangle, Loader2 } from "lucide-react";
-import {
-    createScenarioAction,
-    createWagenScenarioAction,
-    initialScenarioState,
-    type ScenarioState,
-} from "@/lib/actions/scenarios-actions";
+import { createScenarioAction, createWagenScenarioAction } from "@/lib/actions/scenarios-actions";
+import { initialScenarioState, type ScenarioState } from "@/lib/actions/scenarios-types";
 
 type Scenario = { scenario_id: string; naam: string; kind: string; created_at: string };
 type Functie = { functie_id: string; functienaam: string };

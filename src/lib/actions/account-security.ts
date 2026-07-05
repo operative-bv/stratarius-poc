@@ -1,13 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-
-export type AccountActionState = {
-    ok: boolean | null;
-    message: string | null;
-};
-
-export const initialAccountActionState: AccountActionState = { ok: null, message: null };
+import type { AccountActionState } from "./account-security-types";
 
 export async function changePassword(
     _prev: AccountActionState,

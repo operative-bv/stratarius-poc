@@ -1,14 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-
-export type ScenarioState = {
-    error: string | null;
-    redirectTo: string | null;
-    successMessage: string | null;
-};
-
-export const initialScenarioState: ScenarioState = { error: null, redirectTo: null, successMessage: null };
+import { initialScenarioState, type ScenarioState } from "./scenarios-types";
 
 export async function createScenarioAction(
     accountSlug: string,

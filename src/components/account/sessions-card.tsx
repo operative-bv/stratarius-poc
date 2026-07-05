@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { signOutOtherSessions, initialAccountActionState } from "@/lib/actions/account-security";
+import { signOutOtherSessions } from "@/lib/actions/account-security";
+import { initialAccountActionState } from "@/lib/actions/account-security-types";
 
 function Btn() {
     const { pending } = useFormStatus();

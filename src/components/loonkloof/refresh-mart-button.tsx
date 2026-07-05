@@ -5,7 +5,8 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Loader2 } from "lucide-react";
-import { initialRefreshMartState, refreshMartAction } from "@/lib/actions/refresh-mart-action";
+import { refreshMartAction } from "@/lib/actions/refresh-mart-action";
+import { initialRefreshMartState } from "@/lib/actions/refresh-mart-types";
 
 function Btn() {
     const { pending } = useFormStatus();
