@@ -18,6 +18,7 @@ import {
 import {
     LayoutDashboard,
     Users,
+    UsersRound,
     FlaskConical,
     Scale,
     Upload,
@@ -47,7 +48,11 @@ export default function AppSidebar({ accountSlug, accountId }: { accountSlug: st
     const data: Item[] = [
         { name: "Import", href: `/dashboard/${accountSlug}/import`, icon: Upload },
         { name: "Setup", href: `/dashboard/${accountSlug}/setup`, icon: Wrench },
-        { name: "Settings", href: `/dashboard/${accountSlug}/settings`, icon: Settings },
+    ];
+
+    const settings: Item[] = [
+        { name: "Organisatie", href: `/dashboard/${accountSlug}/settings`, icon: Settings },
+        { name: "Leden", href: `/dashboard/${accountSlug}/settings/members`, icon: UsersRound },
     ];
 
     const isActive = (href: string) => {
@@ -95,7 +100,8 @@ export default function AppSidebar({ accountSlug, accountId }: { accountSlug: st
             <SidebarContent>
                 {renderGroup("Analyse", analytics)}
                 {renderGroup("Modellering", modeling)}
-                {renderGroup("Data & config", data)}
+                {renderGroup("Data", data)}
+                {renderGroup("Settings", settings)}
             </SidebarContent>
 
             <SidebarFooter className="border-t">
