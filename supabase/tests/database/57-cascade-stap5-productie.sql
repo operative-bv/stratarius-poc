@@ -87,8 +87,8 @@ select is(
         4000.0000,
         '2024-06-01'::date
     ),
-    310.4000::numeric(18, 4),
-    'T2 klein bedrijf 1 wnr: fso/bev geskipt; asbest + loonmatiging = 310.40; geen centenindex'
+    0.4000::numeric(18, 4),
+    'T2 klein bedrijf 1 wnr: fso/bev geskipt; alleen asbest 0.01%. Loonmatiging tarief=0 (moved naar stap 2).'
 );
 
 
@@ -105,8 +105,8 @@ select is(
         5000.0000,
         '2024-06-01'::date
     ),
-    888.0000::numeric(18, 4),
-    'T3 bruto 5000 boven drempel: 388 (tarieven) + 500 (centenindex 0.5×1000) = 888.00'
+    500.5000::numeric(18, 4),
+    'T3 bruto 5000: asbest 0.5 + centenindex 0.5×1000=500 = 500.50 (loonmatiging tarief nul)'
 );
 
 
@@ -142,8 +142,8 @@ select is(
         4000.0000,
         '2024-06-01'::date
     ),
-    316.8000::numeric(18, 4),
-    'T4 middelgroot 10 wnrs: fso geskipt, bev NU toegepast; totaal 0.0792 × 4000 = 316.80'
+    6.8000::numeric(18, 4),
+    'T4 middelgroot 10 wnrs: fso geskipt, bev NU toegepast; (asbest+bev) 0.0017 × 4000 = 6.80'
 );
 
 
@@ -180,8 +180,8 @@ select is(
         4000.0000,
         '2024-06-01'::date
     ),
-    320.8000::numeric(18, 4),
-    'T5 groot bedrijf 20 wnrs: fso + bev + asbest + loonmatiging = 320.80 (matcht T-043 sum-all)'
+    10.8000::numeric(18, 4),
+    'T5 groot bedrijf 20 wnrs: fso + bev + asbest = 0.0027 × 4000 = 10.80 (loonmatiging al in stap 2)'
 );
 
 

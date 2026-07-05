@@ -18,7 +18,7 @@ BEGIN;
 
 create extension if not exists pgtap;
 
-select plan(18);
+select plan(19);
 
 
 ------------------------------------------------------------

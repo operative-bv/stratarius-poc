@@ -1,7 +1,9 @@
 BEGIN;
 -- T-042 HOTFIX: param_structurele_vermindering krijgt drempel_s0 en drempel_s1
--- numeric(18,4) NOT NULL kolommen met CHECK (drempel_s0 <= drempel_s1).
--- Backfill 2024 waardes: S0=7207.20, S1=12435.31 (bron: socialsecurity.be).
+-- numeric(18,4) NOT NULL kolommen. Semantiek gewijzigd na fiscal audit
+-- (20260703260000): coefficient_b repurposed als γ zeer-lage-lonen ipv δ hoog-lonen.
+-- Waarde 2024 cat 1: S0=10797.67 (lage-lonen α drempel), S1=6807.18 (zeer-lage
+-- γ drempel). Cross-checked easypay-group.com.
 
 create extension if not exists pgtap;
 
@@ -24,8 +26,8 @@ select results_eq(
         where werkgeverscategorie = 1
           and geldig_van = '2024-01-01'::date
     $sql$,
-    $sql$ values (7207.2000::numeric(18,4), 12435.3100::numeric(18,4)) $sql$,
-    'S3 HOTFIX backfill: cat 1 2024 heeft S0=7207.20 en S1=12435.31'
+    $sql$ values (10797.6700::numeric(18,4), 6807.1800::numeric(18,4)) $sql$,
+    'S3 fiscal audit: cat 1 2024 heeft S0=10797.67 (α), S1=6807.18 (γ zeer-lage-lonen)'
 );
 
 select * from finish();
