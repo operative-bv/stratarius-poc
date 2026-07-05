@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-083",
+  "impact": "User in tenant A kan aggregate loonkloof-cijfers zien van tenant B (gemiddelde uurlonen per geslacht, n_m/n_v counts, raw gap). Gepersonaliseerde data niet — het is aggregated — maar GDPR-schending want de user weet dat je bij tenant B werkt en kan de statistieken interpreteren. Voor pitch niet blocking, voor prod kritiek.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": "2026-07-05",
+  "severity": "high",
+  "status": "resolved",
+  "title": "mart_loonkloof_decomp_read RPC: p_legale_entiteit_id geen has_role_on_account check"
+}

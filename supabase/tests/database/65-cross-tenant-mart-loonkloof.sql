@@ -7,6 +7,10 @@
 -- + 20260705180000: expliciete tenant filter + RPC guard.
 --
 -- Deze test lockt beide fixes vast.
+--
+-- ISS-084 aanteknening: setup gebeurt als postgres (voor tests.authenticate_as
+-- switch de role naar authenticated). basejump.account_user rijen worden
+-- handmatig ingevoegd want auth.uid()-trigger doet niks buiten user-context.
 -- ================================================================
 
 BEGIN;
@@ -15,17 +19,37 @@ create extension if not exists pgtap;
 select plan(4);
 
 ------------------------------------------------------------
--- Setup: 2 team owners + team A tenant met 1 loon-rij
+-- Setup ALS postgres: users, accounts, membership + team A tenant data
 ------------------------------------------------------------
 
 select tests.create_supabase_user('mart_team_a_owner');
 select tests.create_supabase_user('mart_team_b_owner');
 
-select tests.authenticate_as('mart_team_a_owner');
+-- Team A account + koppel team A owner als primary_owner
+insert into basejump.accounts (id, name, slug, personal_account, primary_owner_user_id) values (
+    'aa000000-0000-0000-0000-000000000001'::uuid,
+    'Mart Team A', 'mart-team-a', false,
+    tests.get_supabase_uid('mart_team_a_owner')
+);
+insert into basejump.account_user (user_id, account_id, account_role) values (
+    tests.get_supabase_uid('mart_team_a_owner'),
+    'aa000000-0000-0000-0000-000000000001'::uuid,
+    'owner'
+);
 
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('aa000000-0000-0000-0000-000000000001'::uuid, 'Mart Team A', 'mart-team-a', false);
+-- Team B account + koppel team B owner
+insert into basejump.accounts (id, name, slug, personal_account, primary_owner_user_id) values (
+    'bb000000-0000-0000-0000-000000000001'::uuid,
+    'Mart Team B', 'mart-team-b', false,
+    tests.get_supabase_uid('mart_team_b_owner')
+);
+insert into basejump.account_user (user_id, account_id, account_role) values (
+    tests.get_supabase_uid('mart_team_b_owner'),
+    'bb000000-0000-0000-0000-000000000001'::uuid,
+    'owner'
+);
 
+-- Team A tenant data
 insert into public.dim_legale_entiteit (
     legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id
 ) values (
@@ -69,21 +93,22 @@ insert into public.fact_looncomponent (contract_id, periode, component_id, scena
     3500
 );
 
--- Refresh mart via de SECURITY DEFINER RPC (team A is authenticated)
+------------------------------------------------------------
+-- Refresh mart als team A (authenticated) via SECURITY DEFINER RPC
+------------------------------------------------------------
+
+select tests.authenticate_as('mart_team_a_owner');
 select public.refresh_mart_loonkloof('pgTAP test setup');
 
 ------------------------------------------------------------
--- Team B setup
+-- Switch naar team B → assertions
 ------------------------------------------------------------
 
 select tests.authenticate_as('mart_team_b_owner');
 
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('bb000000-0000-0000-0000-000000000001'::uuid, 'Mart Team B', 'mart-team-b', false);
-
 ------------------------------------------------------------
--- Sanity: Team B ziet 0 entiteiten in dim_legale_entiteit RLS'd view.
--- Als dit faalt is er een REAL leak op dim_legale_entiteit RLS.
+-- Sanity: Team B ziet 0 entiteiten in dim_legale_entiteit RLS'd view
+-- (bewijst dat authenticate_as role-switch werkt + RLS actief is)
 ------------------------------------------------------------
 
 select is(
@@ -93,7 +118,7 @@ select is(
 );
 
 ------------------------------------------------------------
--- Assertion: Team B ziet ZERO rijen via de app-side filter pattern
+-- Assertion 1: Team B ziet ZERO rijen via de app-side filter pattern
 -- (loonkloof/page.tsx + oaxaca-action.ts pattern: filter mart op
 -- legale_entiteit_id IN (select ... from dim_legale_entiteit) waar
 -- dim_legale_entiteit RLS de subquery leeg maakt voor team B).

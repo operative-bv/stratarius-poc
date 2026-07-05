@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-084",
+  "impact": "Test framework limitation (niet productie). tests.authenticate_as zette wel request.jwt.claims maar liet current_user op postgres staan → RLS bypassed → cross-tenant asserts gaven false-positives.\n\nProd NIET affected: echte authenticated users krijgen role=authenticated via JWT, niet postgres.\n\nFix (20260705200000_fix_test_helpers_role_switch.sql):\n- tests.authenticate_as doet nu ook set_config('role', 'authenticated', true) — matcht upstream basejump\n- tests.clear_authentication reset role naar postgres\n\nBijeffect: onthulde 2 echte stille prod-bugs, gefixt in 20260705210000_restore_mart_loonkloof_grants.sql:\n- mart_loonkloof grant to authenticated weggevallen bij drop-cascade in 20260705170000\n- mart_loonkloof_decomp_read execute-grant niet hersteld na 20260704001350 prod-drift-repair\n\nVerder bijeffect: ~60 bestaande tests worden nu rood (waren false-positives die stiekem doorliepen als postgres). Aparte tickets nodig voor test-suite refactor per file.\n\nRegression guard: pgTAP test 65-cross-tenant-mart-loonkloof.sql = 4/4 groen na fix.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": "2026-07-05",
+  "severity": "low",
+  "status": "resolved",
+  "title": "tests.authenticate_as switchte niet naar authenticated role — pgTAP false-positives, geen prod-bug"
+}

@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-085",
+  "impact": "Na ISS-084 fix (shim role-switch) worden ~60 bestaande pgTAP tests rood. Alle draaien nu als authenticated role — hun setup inserts en param_* reads werken niet zonder grants of zonder setup-als-postgres pattern.\n\nDeze tests waren voorheen misleidend groen: postgres bypasste RLS en had alle grants. Ze testten dus niet wat ze claimden te testen.\n\nVolgende stap: per test file (35-52, 56, 57) beslissen:\n- Setup als postgres, dan tests.authenticate_as switch voor assertions (zoals 65 nu)\n- Of: docs schrijven dat testonly grants nodig zijn\n- Of: cascade functions echt als authenticated laten runnen\n\nZie 65-cross-tenant-mart-loonkloof.sql als template voor de nieuwe structuur.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "medium",
+  "status": "open",
+  "title": "pgTAP suite refactor — ~60 tests waren false-positives onder postgres-superuser"
+}
