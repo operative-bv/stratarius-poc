@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, TrendingUp, TrendingDown } from "lucide-react";
+import { Users, TrendingUp, TrendingDown, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
     RowDetailSheet,
     type PopRow,
@@ -28,10 +29,12 @@ function sum(rows: PopRow[], key: keyof PopRow): number {
 export default async function PopulatiePage({
     searchParams,
 }: {
-    searchParams: Promise<{ periode?: string; scenario?: string; team?: string; compare?: string }>;
+    searchParams: Promise<{ periode?: string; scenario?: string; team?: string; compare?: string; view?: string }>;
 }) {
     const params = await searchParams;
     const periode = params.periode ?? "2024-06-01";
+    const view = params.view === "jaar" ? "jaar" : "maand";
+    const factor = view === "jaar" ? 12 : 1;
     const supabase = await createClient();
 
     // Load scenarios + teams (functies) voor dropdowns
@@ -183,6 +186,32 @@ export default async function PopulatiePage({
                             <Label htmlFor="periode">Periode</Label>
                             <Input id="periode" name="periode" type="date" defaultValue={periode} />
                         </div>
+                        <div className="space-y-2 min-w-[140px]">
+                            <Label htmlFor="view" className="flex items-center gap-1">
+                                Weergave
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" className="max-w-xs">
+                                            <p className="text-xs">
+                                                <strong>Maand</strong>: cascade-accrual voor de gekozen datum.<br />
+                                                <strong>Jaar</strong>: 12 × maand-accrual.
+                                                Aanname: heel jaar hetzelfde contract. Wijkt af bij mid-year starts/eindes of piek-uitbetaalde componenten (vakantiegeld mei, eindejaarspremie december).
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </Label>
+                            <Select name="view" defaultValue={view}>
+                                <SelectTrigger id="view"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="maand">Maandkost</SelectItem>
+                                    <SelectItem value="jaar">Jaarkost (× 12)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="space-y-2">
                             <Label htmlFor="compare" className="text-xs">Vergelijk met baseline</Label>
                             <div className="flex items-center h-9">
@@ -199,9 +228,9 @@ export default async function PopulatiePage({
                 <Card>
                     <CardContent className="pt-6">
                         <div className="grid grid-cols-3 gap-4">
-                            <DeltaBox label="Δ Bruto (populatie)" baseline={compareTotals.bruto} current={totals.bruto} />
-                            <DeltaBox label="Δ Patronale kost" baseline={compareTotals.pat} current={totals.pat} />
-                            <DeltaBox label="Δ TCO totaal" baseline={compareTotals.tco} current={totals.tco} highlight />
+                            <DeltaBox label={`Δ Bruto (populatie, ${view})`} baseline={compareTotals.bruto * factor} current={totals.bruto * factor} />
+                            <DeltaBox label={`Δ Patronale kost (${view})`} baseline={compareTotals.pat * factor} current={totals.pat * factor} />
+                            <DeltaBox label={`Δ TCO totaal (${view})`} baseline={compareTotals.tco * factor} current={totals.tco * factor} highlight />
                         </div>
                     </CardContent>
                 </Card>
@@ -243,14 +272,14 @@ export default async function PopulatiePage({
                                             <Badge variant={r.status === "arbeider" ? "outline" : "secondary"}>{r.status}</Badge>
                                         </TableCell>
                                         <TableCell>{r.pc_id}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.bruto)}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap2_basis_rsz)}</TableCell>
-                                        <TableCell className="text-right tabular-nums text-green-600">−€ {roundFinal(r.stap3_vermindering)}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap5_bijzondere)}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap6_vakantiegeld)}</TableCell>
-                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap7_extralegaal)}</TableCell>
-                                        <TableCell className="text-right tabular-nums font-semibold">€ {roundFinal(r.totaal_patronale_kost)}</TableCell>
-                                        <TableCell className="text-right tabular-nums font-semibold">€ {roundFinal(r.tco)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.bruto * factor)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap2_basis_rsz * factor)}</TableCell>
+                                        <TableCell className="text-right tabular-nums text-green-600">−€ {roundFinal(r.stap3_vermindering * factor)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap5_bijzondere * factor)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap6_vakantiegeld * factor)}</TableCell>
+                                        <TableCell className="text-right tabular-nums">€ {roundFinal(r.stap7_extralegaal * factor)}</TableCell>
+                                        <TableCell className="text-right tabular-nums font-semibold">€ {roundFinal(r.totaal_patronale_kost * factor)}</TableCell>
+                                        <TableCell className="text-right tabular-nums font-semibold">€ {roundFinal(r.tco * factor)}</TableCell>
                                         <TableCell className="text-right">
                                             <RowDetailSheet
                                                 row={r}
@@ -258,6 +287,7 @@ export default async function PopulatiePage({
                                                 structureleParams={structureleParams}
                                                 extralegaalDetails={extralegaalMap.get(r.contract_id) ?? []}
                                                 periode={periode}
+                                                viewMode={view}
                                             />
                                         </TableCell>
                                     </TableRow>
@@ -265,15 +295,15 @@ export default async function PopulatiePage({
                             </TableBody>
                             <TableFooter>
                                 <TableRow>
-                                    <TableCell colSpan={4}>Totaal populatie ({rows.length})</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.bruto)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.rsz)}</TableCell>
-                                    <TableCell className="text-right tabular-nums text-green-600">−€ {roundFinal(totals.verm)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.bijz)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.vak)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.extra)}</TableCell>
-                                    <TableCell className="text-right tabular-nums text-primary">€ {roundFinal(totals.pat)}</TableCell>
-                                    <TableCell className="text-right tabular-nums text-primary">€ {roundFinal(totals.tco)}</TableCell>
+                                    <TableCell colSpan={4}>Totaal populatie ({rows.length}) — {view === "jaar" ? "jaarbasis" : "maandbasis"}</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.bruto * factor)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.rsz * factor)}</TableCell>
+                                    <TableCell className="text-right tabular-nums text-green-600">−€ {roundFinal(totals.verm * factor)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.bijz * factor)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.vak * factor)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">€ {roundFinal(totals.extra * factor)}</TableCell>
+                                    <TableCell className="text-right tabular-nums text-primary">€ {roundFinal(totals.pat * factor)}</TableCell>
+                                    <TableCell className="text-right tabular-nums text-primary">€ {roundFinal(totals.tco * factor)}</TableCell>
                                     <TableCell />
                                 </TableRow>
                             </TableFooter>

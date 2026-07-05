@@ -66,12 +66,14 @@ export function RowDetailSheet({
     structureleParams,
     extralegaalDetails,
     periode,
+    viewMode = "maand",
 }: {
     row: PopRow;
     rszParams: RSZParam[];
     structureleParams: StructureleParam[];
     extralegaalDetails: ExtralegaalDetail[];
     periode: string;
+    viewMode?: "maand" | "jaar";
 }) {
     const rsz = rszParams.find(
         (p) => p.status === row.status && p.werkgeverscategorie === row.werkgeverscategorie,
@@ -145,9 +147,11 @@ export function RowDetailSheet({
                         <Badge variant={row.status === "arbeider" ? "outline" : "secondary"}>{row.status}</Badge>
                         <Badge variant="outline">PC {row.pc_id}</Badge>
                         <Badge variant="outline">cat {row.werkgeverscategorie}</Badge>
+                        <Badge variant="secondary">maandbasis</Badge>
                     </SheetTitle>
                     <p className="text-xs text-muted-foreground font-mono">
                         contract {row.contract_id.slice(0, 8)} · periode {periode}
+                        {viewMode === "jaar" && " · tabelrij toont × 12 = jaarkost"}
                     </p>
                 </SheetHeader>
 
