@@ -47,12 +47,31 @@ export async function completeSetupAction(
         .from("dim_scenario")
         .insert({
             legale_entiteit_id: entiteitData.legale_entiteit_id,
-            naam: "Baseline 2024",
+            naam: "Baseline 2026",
             kind: "baseline",
         });
 
     if (scenarioErr) {
-        return { error: `Entiteit aangemaakt maar baseline scenario faalde: ${scenarioErr.message}` };
+        // Compensating delete: entiteit zonder scenario is een half-af state.
+        // User zou vast zitten op retry (unique constraint). Rollback zodat
+        // hij opnieuw kan setup'en.
+        const { error: rollbackErr } = await supabase
+            .from("dim_legale_entiteit")
+            .delete()
+            .eq("legale_entiteit_id", entiteitData.legale_entiteit_id);
+        if (rollbackErr) {
+            console.error(
+                "[setup] scenario faalde EN rollback faalde:",
+                scenarioErr.message,
+                rollbackErr.message,
+            );
+            return {
+                error: `Setup faalde (${scenarioErr.message}) en cleanup mislukte (${rollbackErr.message}). Neem contact op met support.`,
+            };
+        }
+        return {
+            error: `Setup faalde bij baseline scenario: ${scenarioErr.message}. Je kunt opnieuw proberen.`,
+        };
     }
 
     revalidatePath(`/dashboard/${accountSlug}`);
