@@ -200,6 +200,8 @@ select throws_ok(
 -- Anon users should not have access to any of these functions
 
 select tests.clear_authentication();
+-- ISS-085: expliciete anon role (clear_authentication → postgres nu).
+set local role anon;
 
 select throws_ok(
                $$select get_account('00000000-0000-0000-0000-000000000000')$$,
@@ -223,6 +225,7 @@ select throws_ok(
 
 
 ---- some functions should work for service_role users
+reset role;
 select tests.authenticate_as_service_role();
 
 select is(
