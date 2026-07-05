@@ -21,7 +21,7 @@ export default async function ImportPage({
             <PageHeader
                 icon={Upload}
                 title="Data import"
-                description={`Bulk-import contracten + baseline lonen. Momenteel ${totalContracts} contracten in populatie.`}
+                description={`Importeer medewerkers en basislonen. Momenteel ${totalContracts} medewerkers geregistreerd.`}
             />
 
             <ClearPopulatieCard accountSlug={accountSlug} totalContracts={totalContracts} />
@@ -49,7 +49,8 @@ export default async function ImportPage({
                         </div>
 
                         <p className="text-xs text-muted-foreground mt-4">
-                            Elk connector-type mapt HR-velden naar Stratarius schema (dim_persoon, dim_contract, fact_looncomponent). Rechtsgrondslag wordt gelogd per sync via <code>gdpr_access_log</code>.
+                            Elke connector mapt HR-velden naar Stratarius. Elke synchronisatie wordt gelogd met
+                            rechtsgrondslag voor GDPR-audit.
                         </p>
                     </CardContent>
                 </Card>

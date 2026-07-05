@@ -119,7 +119,8 @@ export default function SetupForm({
                             <Info className="h-4 w-4" />
                             <AlertTitle>Wat gebeurt hierna</AlertTitle>
                             <AlertDescription className="text-xs">
-                                We maken een <code>dim_legale_entiteit</code> aan én een baseline scenario &quot;Baseline 2024&quot; waar al je contracten standaard onder vallen. Daarna kun je meteen contracten importeren via CSV of hand-in-hand toevoegen.
+                                We maken je organisatie aan en een basisscenario waar al je contracten standaard onder
+                                vallen. Daarna kun je meteen medewerkers importeren via CSV of handmatig toevoegen.
                             </AlertDescription>
                         </Alert>
 

@@ -189,7 +189,8 @@ export default async function SimulatorPage({
                         <Badge variant="secondary">{periodeDate.toISOString().slice(0, 10)}</Badge>
                     </AlertTitle>
                     <AlertDescription>
-                        Parameter-datum ligt in de toekomst. Cascade gebruikt aangekondigde tarieven (rijen met geldig_van ≤ {periodeDate.toISOString().slice(0, 10)}). Principe I: effective-dating ondersteunt dit natively.
+                        Deze datum ligt in de toekomst. De berekening gebruikt de laatst aangekondigde tarieven
+                        die van kracht zijn per {periodeDate.toISOString().slice(0, 10)}.
                     </AlertDescription>
                 </Alert>
             )}
@@ -236,7 +237,7 @@ export default async function SimulatorPage({
                                 <ChevronDown className="h-4 w-4 transition-transform chev" />
                                 <Car className="h-4 w-4" />
                                 Bedrijfswagen (optioneel)
-                                <Badge variant="outline" className="ml-auto text-xs">stap 8 — VAA-valkuil demo</Badge>
+                                <Badge variant="outline" className="ml-auto text-xs">CO2-solidariteitsbijdrage</Badge>
                             </summary>
                             <div className="grid md:grid-cols-2 gap-4 mt-4 pt-4 border-t">
                                 <div className="space-y-2">
@@ -342,7 +343,7 @@ export default async function SimulatorPage({
                                         </div>
                                         <Alert>
                                             <AlertTriangle className="h-4 w-4" />
-                                            <AlertTitle className="text-xs">VAA-valkuil — Principe II</AlertTitle>
+                                            <AlertTitle className="text-xs">Voordeel alle aard — let op</AlertTitle>
                                             <AlertDescription className="text-xs">
                                                 VAA is een <strong>fiscaal voordeel voor de werknemer</strong> (belast in personenbelasting) — <strong>geen werkgeverskost</strong>. Alleen de lease-fee telt patronaal mee. Deze scheiding is de meest voorkomende classificatie-fout bij interne payroll-berekeningen.
                                             </AlertDescription>
@@ -351,7 +352,9 @@ export default async function SimulatorPage({
                                 )}
 
                                 <p className="text-xs text-muted-foreground mt-4">
-                                    Simulator toont stap 2, 3, 5 en 6 (ad-hoc scenario zonder tenant-context). Stap 4 doelgroep, stap 7 extralegaal, stap 8 wagen-solidariteit en stap 9 arbeidsongevallen worden getoond in /populatie waar tenant-context beschikbaar is. Bedragen via <code>round_final(display)</code> banker&apos;s rounding.
+                                    Simulator toont basis RSZ, structurele vermindering, bijzondere bijdragen en
+                                    vakantiegeld. Doelgroepverminderingen, extralegaal, bedrijfswagen en arbeidsongevallen
+                                    komen terug op de populatie-pagina waar contract-context beschikbaar is.
                                 </p>
                             </div>
                         )}

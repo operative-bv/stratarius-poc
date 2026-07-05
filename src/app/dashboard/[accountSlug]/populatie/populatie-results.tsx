@@ -308,9 +308,8 @@ export default async function PopulatieResults({
                         </TableFooter>
                     </Table>
                     <p className="text-xs text-muted-foreground mt-4">
-                        Cascade 9 stappen actief inclusief stap 4 doelgroepverminderingen (non-cumulatie), stap 8 wagen
-                        CO2-solidariteitsbijdrage, stap 9 arbeidsongevallen. Bedragen via banker&apos;s rounding. RLS filtert
-                        automatisch op tenant.
+                        Werkgeverskost inclusief RSZ, doelgroepverminderingen, vakantiegeld, extralegale voordelen,
+                        bedrijfswagen en arbeidsongevallen.
                     </p>
                 </CardContent>
             </Card>

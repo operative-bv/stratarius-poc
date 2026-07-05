@@ -40,7 +40,7 @@ export default function OaxacaSection() {
                     <Sigma className="h-5 w-5" />
                     Oaxaca-Blinder regressie
                     <Badge variant="outline" className="text-xs font-normal">
-                        Python /api/oaxaca · {result?.runtime ?? "mock"}
+                        Statistisch model
                     </Badge>
                 </CardTitle>
             </CardHeader>
@@ -48,7 +48,8 @@ export default function OaxacaSection() {
                 {!result && !error && (
                     <form action={formAction} className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                            Volwaardige decompositie via externe Python-service met OLS-coëfficiënten per variabele + p-values. Draait op Vercel Python Serverless (Frankfurt region, GDPR-safe).
+                            Diepgaande analyse per variabele met coëfficiënten en significantie. Draait in een
+                            beveiligde omgeving binnen de EU.
                         </p>
                         <RunButton label="Run Oaxaca-Blinder" />
                     </form>
@@ -156,7 +157,7 @@ function OaxacaResultView({
             )}
 
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div>Rechtsgrondslag: {result.rechtsgrondslag ?? "—"}</div>
+                <div>Grondslag: {result.rechtsgrondslag ?? "—"}</div>
                 <form action={formAction}>
                     <RunButton label="Herbereken" variant="ghost" size="sm" />
                 </form>

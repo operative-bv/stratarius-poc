@@ -296,7 +296,8 @@ export function RowDetailSheet({
                     </div>
 
                     <p className="text-xs text-muted-foreground">
-                        Cascade 9 stappen actief inclusief stap 4 doelgroepverminderingen, stap 8 wagen solidariteitsbijdrage, stap 9 arbeidsongevallen. Cijfers via banker&apos;s rounding.
+                        Volledige RSZ-cascade inclusief doelgroepverminderingen, bedrijfswagen-solidariteitsbijdrage
+                        en arbeidsongevallen.
                     </p>
                 </div>
             </SheetContent>

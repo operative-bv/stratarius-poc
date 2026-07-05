@@ -32,7 +32,8 @@ export default async function SetupPage({
                 </div>
                 <h1 className="text-3xl font-bold">Welkom bij Stratarius</h1>
                 <p className="text-muted-foreground mt-2">
-                    Nog één stap: vertel ons over je Belgische legale entiteit. Dit bepaalt welke RSZ-tarieven, doelgroepverminderingen en cascade-parameters gebruikt worden.
+                    Nog één stap: vertel ons over je Belgische legale entiteit. Dit bepaalt welke RSZ-tarieven en
+                    verminderingen worden toegepast.
                 </p>
             </div>
 

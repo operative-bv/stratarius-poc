@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Users, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -125,20 +126,20 @@ export default async function PopulatiePage({
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
+                        <div className="flex flex-col gap-2">
                             <Label htmlFor="compare" className="text-xs">
                                 Vergelijk met baseline
                             </Label>
-                            <div className="flex items-center h-9">
-                                <input
+                            <div className="flex items-center h-9 gap-2">
+                                <Checkbox
                                     id="compare"
                                     name="compare"
-                                    type="checkbox"
                                     value="1"
                                     defaultChecked={params.compare === "1"}
-                                    className="h-4 w-4"
                                 />
-                                <span className="ml-2 text-sm">Toon delta</span>
+                                <Label htmlFor="compare" className="text-sm font-normal">
+                                    Toon delta
+                                </Label>
                             </div>
                         </div>
                         <Button type="submit">Herbereken</Button>

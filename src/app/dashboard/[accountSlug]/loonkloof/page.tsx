@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Scale, TrendingUp, TrendingDown, Minus, SplitSquareHorizontal } from "lucide-react";
 import OaxacaSection from "@/components/loonkloof/oaxaca-section";
+import EntiteitFilter from "@/components/loonkloof/entiteit-filter";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 type MartRow = {
@@ -193,39 +194,17 @@ export default async function LoonkloofPage({
             <PageHeader
                 icon={Scale}
                 title="Loonkloof analyse"
-                description={<>Bruto uurloon per geslacht × functieniveau — bron <code className="text-xs">mart_loonkloof</code> Q2 2026</>}
+                description="Bruto uurloon per geslacht × functieniveau — referentieperiode Q2 2026"
             />
 
             {isMultiEntiteit && (
                 <Card>
-                    <CardContent className="pt-6 flex flex-col sm:flex-row sm:items-center gap-3">
-                        <label className="text-xs uppercase text-muted-foreground shrink-0" htmlFor="entiteit-filter">
-                            Legale entiteit
-                        </label>
-                        <form action={async (formData: FormData) => {
-                            "use server";
-                            const { redirect } = await import("next/navigation");
-                            const val = String(formData.get("entiteit") ?? "");
-                            const suffix = val && val !== "all" ? `?entiteit=${encodeURIComponent(val)}` : "";
-                            redirect(`/dashboard/${accountSlug}/loonkloof${suffix}`);
-                        }} className="flex flex-wrap items-center gap-2 flex-1">
-                            <select
-                                id="entiteit-filter"
-                                name="entiteit"
-                                defaultValue={activeEntiteitId ?? "all"}
-                                className="border rounded-md text-sm px-2 py-1 bg-background"
-                            >
-                                <option value="all">Alle {entiteitIds.length} entiteiten (aggregate)</option>
-                                {entiteiten.map((e) => (
-                                    <option key={e.legale_entiteit_id} value={e.legale_entiteit_id}>
-                                        {e.naam}
-                                    </option>
-                                ))}
-                            </select>
-                            <button type="submit" className="text-xs px-3 py-1 border rounded-md bg-background hover:bg-muted">
-                                Toepassen
-                            </button>
-                        </form>
+                    <CardContent className="pt-6">
+                        <EntiteitFilter
+                            accountSlug={accountSlug}
+                            entiteiten={entiteiten}
+                            activeEntiteitId={activeEntiteitId}
+                        />
                     </CardContent>
                 </Card>
             )}
@@ -277,14 +256,13 @@ export default async function LoonkloofPage({
                 </Card>
             </div>
 
-            {/* Kitagawa decomposition — T-033 */}
             {decomp && (decomp.n_m > 0 && decomp.n_v > 0) && (
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <SplitSquareHorizontal className="h-5 w-5" />
                             Loonkloof decompositie
-                            <Badge variant="outline" className="text-xs font-normal">Kitagawa · POC</Badge>
+                            <Badge variant="outline" className="text-xs font-normal">Vereenvoudigd model</Badge>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -358,7 +336,8 @@ export default async function LoonkloofPage({
             </Card>
 
             <div className="text-xs text-muted-foreground">
-                GDPR: dim_persoon.geslacht + opleidingsniveau zijn beschermde kolommen. Deze pagina roept mart_loonkloof aan via geagregeerde views — direct SELECT op dim_persoon protected columns is REVOKED (T-004 + T-034). Access-log via <code>gdpr_access_log</code>.
+                GDPR: geslacht en opleidingsniveau zijn beschermde velden. Deze pagina toont enkel geaggregeerde cijfers
+                — geen individuele records. Elke raadpleging wordt gelogd met rechtsgrondslag.
             </div>
         </div>
     );
@@ -437,13 +416,15 @@ function DecompositionCard({ decomp }: { decomp: DecompRow }) {
 
             <div className="text-xs text-muted-foreground space-y-1">
                 <p>
-                    <strong>Methode</strong>: stratified Kitagawa-decompositie. Strata = functieniveau × opleidingsniveau × ancienniteit-bucket. Populatie in matched strata: {decomp.matched_stratum_pop} contracten.
+                    <strong>Methode</strong>: vergelijking op functieniveau, opleidingsniveau en ervaring. Populatie:
+                    {" "}{decomp.matched_stratum_pop} medewerkers.
                 </p>
                 <p>
-                    <strong>Interpretatie</strong>: het <span className="text-blue-600 dark:text-blue-400">blauwe</span> deel verdwijnt als M en V dezelfde functie-/opleidings-/ervaringsverdeling hadden. Het {Math.abs(residual) > ci ? <span className="text-orange-600">oranje</span> : "grijze"} deel blijft over — hoe kleiner, hoe minder onverklaard.
+                    <strong>Interpretatie</strong>: het <span className="text-blue-600 dark:text-blue-400">blauwe</span> deel verdwijnt als mannen en vrouwen dezelfde profielverdeling hadden. Het {Math.abs(residual) > ci ? <span className="text-orange-600">oranje</span> : "grijze"} deel blijft over — hoe kleiner, hoe minder onverklaard.
                 </p>
                 <p>
-                    <strong>Beperking</strong>: geen individuele coëfficiënten of p-values per variabele — dit vereist multivariate OLS (post-POC via externe R/Python service). CI via normale benadering (mag afwijken bij kleine n).
+                    <strong>Beperking</strong>: dit is een vereenvoudigd model. Individuele wegingen per variabele
+                    komen in een volgende iteratie.
                 </p>
             </div>
         </div>

@@ -147,7 +147,8 @@ export default function ScenariosTabs({
                             <SubmitBtn label="Maak scenario → open in populatie" />
 
                             <p className="text-xs text-muted-foreground">
-                                Bij submit: nieuw scenario wordt aangemaakt, fact_looncomponent wordt gedupliceerd met mutatie, en je wordt geredirect naar populatie-view met vergelijk-modus.
+                                Er wordt een nieuw scenario aangemaakt met aangepaste lonen. Je gaat direct naar de
+                                populatie-vergelijking.
                             </p>
                         </form>
                     </CardContent>
@@ -218,7 +219,8 @@ export default function ScenariosTabs({
                             <SubmitBtn label="Maak wagen-scenario" variant="outline" icon={<Car className="h-4 w-4 mr-2" />} />
 
                             <p className="text-xs text-muted-foreground">
-                                Voegt bedrijfswagen_tco (lease patronaal) + bedrijfswagen_vaa (fiscaal) toe voor elk contract in het gekozen team.
+                                Voegt patronale leasekost en fiscaal voordeel alle aard toe voor elk contract in het
+                                gekozen team.
                             </p>
                         </form>
                     </CardContent>

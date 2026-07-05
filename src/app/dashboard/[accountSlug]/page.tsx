@@ -139,7 +139,7 @@ export default async function TeamDashboardPage({
                     value={`€ ${roundFinal(totalBruto)}`}
                     icon={Euro}
                     trend={{ direction: "up", pct: "+2.1%", note: "vs vorige periode" }}
-                    footer="Som van fact_looncomponent basisloon"
+                    footer="Optelsom bruto basislonen"
                 />
                 <SectionCard
                     label="Patronale kost"
@@ -150,7 +150,7 @@ export default async function TeamDashboardPage({
                         pct: `${patronalePct.toFixed(1)}%`,
                         note: "van bruto loonsom",
                     }}
-                    footer="Cascade stap 2-9 (RSZ + vermindering + vakantiegeld + wagen + arbeidsongevallen)"
+                    footer="RSZ, verminderingen, vakantiegeld, wagen en arbeidsongevallen"
                 />
                 <SectionCard
                     label="Totale werkgeverskost"
@@ -242,14 +242,14 @@ export default async function TeamDashboardPage({
                         <QuickLink
                             href={`/dashboard/${accountSlug}/loonkloof`}
                             title="Loonkloof analyse"
-                            desc="Kitagawa + Oaxaca decompositie"
+                            desc="Statistische decompositie van man/vrouw-verschillen"
                         />
                     </div>
                 </CardContent>
             </Card>
 
             <p className="text-xs text-muted-foreground">
-                Cascade Laag 4b · 9 stappen actief · multi-tenant · POC_UNVERIFIED tarieven vereisen cross-check vóór productie
+                Tarieven kunnen afwijken van officiële RSZ-publicatie — verifieer vóór productiegebruik.
             </p>
         </div>
     );
