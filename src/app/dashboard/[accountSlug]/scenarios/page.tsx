@@ -37,7 +37,7 @@ export default async function ScenariosPage({
     const functies = (functiesData ?? []) as Functie[];
 
     return (
-        <div className="mx-auto max-w-5xl space-y-6">
+        <div className="space-y-6">
             <PageHeader
                 icon={FlaskConical}
                 title="Scenario editor"

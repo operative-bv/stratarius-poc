@@ -103,7 +103,7 @@ export default async function LoonkloofPage({
         .sort((a, b) => a.niveau - b.niveau);
 
     return (
-        <div className="mx-auto max-w-6xl space-y-6">
+        <div className="space-y-6">
             <PageHeader
                 icon={Scale}
                 title="Loonkloof analyse"

@@ -105,7 +105,7 @@ export default async function TeamDashboardPage({
     const chartData = buildMonthlySeries(totalBruto, totalPatronale);
 
     return (
-        <div className="mx-auto max-w-7xl space-y-6">
+        <div className="space-y-6">
             {/* Page header */}
             <div className="flex flex-col gap-2">
                 <h1 className="text-2xl font-semibold tracking-tight">Werkgeverskost overzicht</h1>

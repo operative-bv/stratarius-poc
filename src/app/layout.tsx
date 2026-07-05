@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
             <body className="bg-background text-foreground">
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                    <main className="min-h-screen flex flex-col items-center">{children}</main>
+                    {children}
                     <Toaster position="top-right" richColors />
                 </ThemeProvider>
             </body>

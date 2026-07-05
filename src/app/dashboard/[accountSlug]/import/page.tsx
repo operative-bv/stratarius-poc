@@ -16,7 +16,7 @@ export default async function ImportPage({
     const totalContracts = count ?? 0;
 
     return (
-        <div className="mx-auto max-w-5xl space-y-6">
+        <div className="space-y-6">
             <PageHeader
                 icon={Upload}
                 title="Data import"
