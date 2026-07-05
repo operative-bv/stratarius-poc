@@ -43,6 +43,32 @@ function avgOr(arr: number[], fallback = 0): number {
     return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
+// ISS-079: aggregeert decomp rijen over meerdere entiteiten. Voor
+// single-entiteit tenants (huidige POC-normaal) retourneert dit gewoon
+// de enige rij. Voor multi-entiteit: weighted average op count (n_m + n_v).
+function aggregateDecomp(rows: DecompRow[]): DecompRow | null {
+    if (rows.length === 0) return null;
+    if (rows.length === 1) return rows[0];
+    const totalWeight = rows.reduce((s, r) => s + r.n_m + r.n_v, 0);
+    if (totalWeight === 0) return rows[0];
+    const weighted = (key: keyof DecompRow) =>
+        rows.reduce((s, r) => s + Number(r[key]) * (r.n_m + r.n_v), 0) / totalWeight;
+    return {
+        legale_entiteit_id: rows[0].legale_entiteit_id,
+        referentiedatum: rows[0].referentiedatum,
+        kwartaal: rows[0].kwartaal,
+        n_m: rows.reduce((s, r) => s + r.n_m, 0),
+        n_v: rows.reduce((s, r) => s + r.n_v, 0),
+        gem_uurloon_m: weighted("gem_uurloon_m"),
+        gem_uurloon_v: weighted("gem_uurloon_v"),
+        raw_gap: weighted("raw_gap"),
+        residual_gap: weighted("residual_gap"),
+        endowment_gap: weighted("endowment_gap"),
+        raw_gap_ci95_halfwidth: weighted("raw_gap_ci95_halfwidth"),
+        matched_stratum_pop: rows.reduce((s, r) => s + r.matched_stratum_pop, 0),
+    };
+}
+
 export default async function LoonkloofPage({
     params,
 }: {
@@ -51,35 +77,46 @@ export default async function LoonkloofPage({
     const { accountSlug } = await params;
     const supabase = await createClient();
 
-    // Tenant lookup: mart_loonkloof is een materialized view die RLS bypasst.
-    // We filteren daarom expliciet op de legale_entiteit(en) van de huidige
-    // tenant. dim_legale_entiteit heeft wél RLS dus deze query retourneert
-    // alleen entiteiten die deze user mag zien.
-    const { data: entiteitenData } = await supabase
+    // ISS-078: tenant-lookup error EXPLICIET checken — silent failure zou
+    // de cross-tenant leak-fix uit 79b22f4 ondermijnen (entiteitIds=[]
+    // fallback ziet er uit als "lege tenant" maar kan een echte error zijn).
+    const { data: entiteitenData, error: entiteitErr } = await supabase
         .from("dim_legale_entiteit")
         .select("legale_entiteit_id");
     const entiteitIds = (entiteitenData ?? []).map((e: { legale_entiteit_id: string }) => e.legale_entiteit_id);
-    const primaryEntiteitId = entiteitIds[0] ?? null;
+    const showsMultiEntiteitWarning = entiteitIds.length > 1;
 
-    // Load mart_loonkloof gefilterd op tenant + kwartaal
-    const martQuery = supabase
-        .from("mart_loonkloof")
-        .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
-        .eq("referentiedatum", "2024-06-30");
-    const { data: martData, error } = entiteitIds.length > 0
-        ? await martQuery.in("legale_entiteit_id", entiteitIds)
-        : { data: [], error: null };
-    const rows = (martData ?? []) as MartRow[];
+    let error: { message: string } | null = entiteitErr
+        ? { message: `Tenant lookup faalde: ${entiteitErr.message}` }
+        : null;
+    let rows: MartRow[] = [];
+    let decomp: DecompRow | null = null;
 
-    // Load Kitagawa-decompositie via GDPR-safe RPC (T-033) mét tenant filter
-    const { data: decompData } = primaryEntiteitId
-        ? await supabase.rpc("mart_loonkloof_decomp_read", {
-            p_rechtsgrondslag: "loonkloof analysepagina — decompositie weergave",
-            p_kwartaal: "2024-Q2",
-            p_legale_entiteit_id: primaryEntiteitId,
-        })
-        : { data: [] };
-    const decomp = ((decompData ?? []) as DecompRow[])[0] ?? null;
+    if (!error && entiteitIds.length > 0) {
+        const { data: martData, error: martErr } = await supabase
+            .from("mart_loonkloof")
+            .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
+            .eq("referentiedatum", "2024-06-30")
+            .in("legale_entiteit_id", entiteitIds);
+        if (martErr) error = { message: `Mart-query faalde: ${martErr.message}` };
+        rows = (martData ?? []) as MartRow[];
+
+        // ISS-079: multi-entiteit — RPC is single-entiteit; loop + aggregate
+        // Voor POC met single-entiteit tenants is dit één call.
+        const decompResults = await Promise.all(
+            entiteitIds.map((id) =>
+                supabase.rpc("mart_loonkloof_decomp_read", {
+                    p_rechtsgrondslag: "loonkloof analysepagina — decompositie weergave",
+                    p_kwartaal: "2024-Q2",
+                    p_legale_entiteit_id: id,
+                }),
+            ),
+        );
+        const decompErr = decompResults.find((r) => r.error)?.error;
+        if (decompErr && !error) error = { message: `Decomp-RPC faalde: ${decompErr.message}` };
+        const allDecomps = decompResults.flatMap((r) => (r.data ?? []) as DecompRow[]);
+        decomp = aggregateDecomp(allDecomps);
+    }
 
     // Aggregate per geslacht
     const m = rows.filter((r) => r.geslacht === "m");
@@ -126,6 +163,17 @@ export default async function LoonkloofPage({
                 description={<>Bruto uurloon per geslacht × functieniveau — bron <code className="text-xs">mart_loonkloof</code> Q2 2024</>}
                 actions={<RefreshMartButton accountSlug={accountSlug} />}
             />
+
+            {showsMultiEntiteitWarning && (
+                <Card>
+                    <CardContent className="pt-6">
+                        <p className="text-xs text-muted-foreground">
+                            Multi-entiteit tenant gedetecteerd ({entiteitIds.length} entiteiten). Decompositie is een
+                            weighted average over alle entiteiten. Per-entiteit view komt in een volgende iteratie.
+                        </p>
+                    </CardContent>
+                </Card>
+            )}
 
             {error && (
                 <Card>
