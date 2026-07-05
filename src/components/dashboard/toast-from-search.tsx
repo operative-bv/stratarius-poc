@@ -21,8 +21,8 @@ export function ToastFromSearch() {
         const error = searchParams.get("toast_error");
         if (!success && !error) return;
 
-        if (success) toast.success(decodeURIComponent(success));
-        if (error) toast.error(decodeURIComponent(error));
+        if (success) toast.success(success);
+        if (error) toast.error(error);
 
         const params = new URLSearchParams(searchParams);
         params.delete("toast_success");
