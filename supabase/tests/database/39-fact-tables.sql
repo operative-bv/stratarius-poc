@@ -11,33 +11,42 @@ create extension if not exists pgtap;
 
 select plan(41);
 
--- Setup: 2 team accounts + legale entiteit + contract + scenario per tenant
+-- Setup als postgres (ISS-085 pattern)
+-- Schema updates: dim_persoon nu owning_account_id required, dim_contract 'status'
+-- ipv 'statuut', dim_scenario.kind ∈ (baseline, what_if), geslacht lowercase.
+-- dim_contract needs functie_id (added later in schema).
 select tests.create_supabase_user('tenant_a_owner');
 select tests.create_supabase_user('tenant_b_owner');
 
-select tests.authenticate_as('tenant_a_owner');
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('a1111111-1111-1111-1111-111111111111', 'Tenant A', 'tenant-a', false);
-insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
-    ('aaaaaaaa-1111-1111-1111-111111111111', 'a1111111-1111-1111-1111-111111111111', 1, 'Tenant A BVBA', 'BE');
-insert into public.dim_persoon (persoon_id, geslacht, geboortedatum) values
-    ('a2222222-1111-1111-1111-111111111111', 'V', '1985-01-01');
-insert into public.dim_contract (contract_id, persoon_id, legale_entiteit_id, pc_id, statuut, fte_breuk, geldig_van) values
-    ('a3333333-1111-1111-1111-111111111111', 'a2222222-1111-1111-1111-111111111111',
-     'aaaaaaaa-1111-1111-1111-111111111111', '200', 'bediende', 1.0000, '2024-01-01');
-insert into public.dim_scenario (scenario_id, legale_entiteit_id, naam, kind) values
-    ('a4444444-1111-1111-1111-111111111111', 'aaaaaaaa-1111-1111-1111-111111111111', 'Actual A', 'actual');
+insert into basejump.accounts (id, name, slug, personal_account, primary_owner_user_id) values
+    ('39390100-1111-1111-1111-111111111111', 'Tenant A', 'tenant-a-39', false, tests.get_supabase_uid('tenant_a_owner')),
+    ('39390100-2222-2222-2222-222222222222', 'Tenant B', 'tenant-b-39', false, tests.get_supabase_uid('tenant_b_owner'));
+insert into basejump.account_user (user_id, account_id, account_role) values
+    (tests.get_supabase_uid('tenant_a_owner'), '39390100-1111-1111-1111-111111111111', 'owner'),
+    (tests.get_supabase_uid('tenant_b_owner'), '39390100-2222-2222-2222-222222222222', 'owner');
 
-select tests.authenticate_as('tenant_b_owner');
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('b1111111-2222-2222-2222-222222222222', 'Tenant B', 'tenant-b', false);
 insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
-    ('bbbbbbbb-2222-2222-2222-222222222222', 'b1111111-2222-2222-2222-222222222222', 1, 'Tenant B BVBA', 'BE');
-insert into public.dim_persoon (persoon_id, geslacht, geboortedatum) values
-    ('b2222222-2222-2222-2222-222222222222', 'M', '1985-01-01');
-insert into public.dim_contract (contract_id, persoon_id, legale_entiteit_id, pc_id, statuut, fte_breuk, geldig_van) values
+    ('39390200-1111-1111-1111-111111111111', '39390100-1111-1111-1111-111111111111', 1, 'Tenant A BVBA', 'BE'),
+    ('39390200-2222-2222-2222-222222222222', '39390100-2222-2222-2222-222222222222', 1, 'Tenant B BVBA', 'BE');
+
+insert into public.dim_persoon (persoon_id, owning_account_id, geslacht, geboortedatum) values
+    ('a2222222-1111-1111-1111-111111111111', '39390100-1111-1111-1111-111111111111', 'v', '1985-01-01'),
+    ('b2222222-2222-2222-2222-222222222222', '39390100-2222-2222-2222-222222222222', 'm', '1985-01-01');
+
+insert into public.dim_functie (functie_id, owning_account_id, functienaam) values
+    ('39390400-1111-1111-1111-111111111111', '39390100-1111-1111-1111-111111111111', 'Tenant A Functie'),
+    ('39390400-2222-2222-2222-222222222222', '39390100-2222-2222-2222-222222222222', 'Tenant B Functie');
+
+insert into public.dim_contract (contract_id, persoon_id, legale_entiteit_id, functie_id, pc_id, status, fte_breuk, geldig_van) values
+    ('a3333333-1111-1111-1111-111111111111', 'a2222222-1111-1111-1111-111111111111',
+     '39390200-1111-1111-1111-111111111111', '39390400-1111-1111-1111-111111111111',
+     '200', 'bediende', 1.0000, '2024-01-01'),
     ('b3333333-2222-2222-2222-222222222222', 'b2222222-2222-2222-2222-222222222222',
-     'bbbbbbbb-2222-2222-2222-222222222222', '200', 'bediende', 1.0000, '2024-01-01');
+     '39390200-2222-2222-2222-222222222222', '39390400-2222-2222-2222-222222222222',
+     '200', 'bediende', 1.0000, '2024-01-01');
+
+insert into public.dim_scenario (scenario_id, legale_entiteit_id, naam, kind) values
+    ('a4444444-1111-1111-1111-111111111111', '39390200-1111-1111-1111-111111111111', 'Baseline A', 'baseline');
 
 
 ------------------------------------------------------------
@@ -80,7 +89,6 @@ select col_not_null('public', 'fact_loonkost', 'scenario_id', 'fact_loonkost.sce
 ------------------------------------------------------------
 
 select tests.clear_authentication();
-set local role service_role;
 
 -- Maand-begin CHECK per fact-tabel (4)
 select throws_ok(
@@ -92,7 +100,7 @@ select throws_ok(
 
 select throws_ok(
     $$ insert into public.fact_prestatie (contract_id, periode, prestatiecode_id, uren, dagen)
-       values ('a3333333-1111-1111-1111-111111111111', '2024-03-15', 'normale_uren', 8.0000, 1.0000) $$,
+       values ('a3333333-1111-1111-1111-111111111111', '2024-03-15', 'normaal_gewerkt', 8.0000, 1.0000) $$,
     '23514'
 );
 
@@ -131,7 +139,6 @@ select throws_ok(
     '23514'
 );
 
-reset role;
 
 
 ------------------------------------------------------------
@@ -151,7 +158,7 @@ select lives_ok(
 
 select lives_ok(
     $$ insert into public.fact_prestatie (contract_id, periode, prestatiecode_id, uren, dagen)
-       values ('a3333333-1111-1111-1111-111111111111', '2024-03-01', 'normale_uren', 164.0000, 21.0000) $$,
+       values ('a3333333-1111-1111-1111-111111111111', '2024-03-01', 'normaal_gewerkt', 164.0000, 21.0000) $$,
     'tenant A owner INSERT eigen fact_prestatie lives_ok'
 );
 
@@ -220,7 +227,6 @@ select throws_ok(
 
 -- Service_role INSERT → lives_ok (bypass REVOKE)
 select tests.clear_authentication();
-set local role service_role;
 
 select lives_ok(
     $$ insert into public.fact_loonkost (contract_id, periode, kostenblok, scenario_id, bedrag, snapshot_batch_id)
@@ -268,7 +274,6 @@ select throws_ok(
     '23503'
 );
 
-reset role;
 
 
 select * from finish();
