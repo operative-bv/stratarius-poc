@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { FileSpreadsheet, Info, Upload, CheckCircle2, XCircle, Loader2, Sparkles } from "lucide-react";
+import { FileSpreadsheet, Info, Upload, XCircle, Loader2, Sparkles } from "lucide-react";
 import { importCsvAction, loadDemoDatasetAction } from "@/lib/actions/import-action";
 import { initialImportState } from "@/lib/actions/import-types";
 
@@ -43,39 +43,37 @@ export default function ImportForm({ accountSlug }: { accountSlug: string }) {
 
     useEffect(() => {
         if (state.result && state.result.created > 0) {
-            toast.success(`${state.result.created} contract${state.result.created === 1 ? "" : "en"} geïmporteerd`);
+            toast.success(
+                `${state.result.created} contract${state.result.created === 1 ? "" : "en"} geïmporteerd${state.result.skipped > 0 ? ` (${state.result.skipped} overgeslagen)` : ""}`,
+            );
         }
         if (state.error) {
             toast.error(state.error);
         }
     }, [state]);
 
+    const hasErrors = state.result && state.result.errors.length > 0;
+
     return (
         <>
-            {state.result && (
-                <Alert className="mb-4">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <AlertTitle>Import compleet</AlertTitle>
-                    <AlertDescription>
-                        {state.result.created} contract{state.result.created !== 1 ? "en" : ""} aangemaakt · {state.result.skipped} overgeslagen
-                        {state.result.errors.length > 0 && (
-                            <div className="mt-2 text-xs">
-                                <strong>Fouten (eerste {Math.min(5, state.result.errors.length)}):</strong>
-                                <ul className="list-disc list-inside mt-1">
-                                    {state.result.errors.slice(0, 5).map((e, i) => (
-                                        <li key={i}>{e}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </AlertDescription>
-                </Alert>
-            )}
-            {state.error && (
+            {hasErrors && state.result && (
                 <Alert variant="destructive" className="mb-4">
                     <XCircle className="h-4 w-4" />
-                    <AlertTitle>Fout</AlertTitle>
-                    <AlertDescription>{state.error}</AlertDescription>
+                    <AlertTitle>{state.result.skipped} rijen overgeslagen</AlertTitle>
+                    <AlertDescription>
+                        <div className="mt-1 text-xs">
+                            <ul className="list-disc list-inside space-y-0.5">
+                                {state.result.errors.slice(0, 5).map((e, i) => (
+                                    <li key={i}>{e}</li>
+                                ))}
+                                {state.result.errors.length > 5 && (
+                                    <li className="text-muted-foreground">
+                                        …en nog {state.result.errors.length - 5} andere fouten
+                                    </li>
+                                )}
+                            </ul>
+                        </div>
+                    </AlertDescription>
                 </Alert>
             )}
 

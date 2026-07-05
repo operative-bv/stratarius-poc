@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Link2 } from "lucide-react";
 import ImportForm from "@/components/import/import-form";
+import ClearPopulatieCard from "@/components/import/clear-populatie-card";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default async function ImportPage({
@@ -22,6 +23,8 @@ export default async function ImportPage({
                 title="Data import"
                 description={`Bulk-import contracten + baseline lonen. Momenteel ${totalContracts} contracten in populatie.`}
             />
+
+            <ClearPopulatieCard accountSlug={accountSlug} totalContracts={totalContracts} />
 
             <div className="grid gap-6 md:grid-cols-2">
                 <ImportForm accountSlug={accountSlug} />
