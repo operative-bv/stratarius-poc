@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "discoveredDate": "2026-07-05",
+  "id": "ISS-086",
+  "impact": "Migratie 20260703010000 revoked SELECT op (geslacht, opleidingsniveau) van authenticated (GDPR bescherming — T-004 F3). Migratie 20260703350000 \"fix_domain_table_grants\" deed daarna een table-level `grant select on dim_persoon to authenticated` wat de column-REVOKE undoed.\n\nHuidig gedrag: authenticated kan direct `SELECT geslacht, opleidingsniveau from dim_persoon` — dat matcht wat oaxaca-action.ts doet, dus app werkt. Maar de GDPR-intent (protected access enkel via RPC met rechtsgrondslag audit) is niet meer afgedwongen op DB-niveau.\n\nOntdekt via pilot refactor test 21 (ISS-085). Test 21-oud verwachtte 42501 op deze SELECT — nu geen exception.\n\nFix: nieuwe migratie doet `revoke select (geslacht, opleidingsniveau) on public.dim_persoon from authenticated;` opnieuw en repareer oaxaca-action om via query_mart_loonkloof RPC te gaan (of andere SECURITY DEFINER wrapper).\n\nImpact als niet gefixt: elke authenticated user in tenant kan gender + opleiding data van collega's zien in leftover queries. Voor POC-demo laag risico, voor prod release blocker.",
+  "location": [],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": null,
+  "resolvedDate": null,
+  "severity": "high",
+  "status": "open",
+  "title": "GDPR column-REVOKE op dim_persoon.geslacht/opleidingsniveau weggevallen"
+}
