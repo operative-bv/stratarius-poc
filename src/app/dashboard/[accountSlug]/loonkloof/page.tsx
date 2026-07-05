@@ -94,11 +94,27 @@ export default async function LoonkloofPage({
     if (!error && entiteitIds.length > 0) {
         // mart_loonkloof is nu een tabel met RLS op owning_account_id — Postgres filtert
         // automatisch tot caller's eigen tenant. Geen expliciete .in() filter meer nodig.
-        const { data: martData, error: martErr } = await supabase
+        let { data: martData, error: martErr } = await supabase
             .from("mart_loonkloof")
             .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
             .eq("referentiedatum", "2026-06-30");
         if (martErr) error = { message: `Mart-query faalde: ${martErr.message}` };
+
+        // Auto-populate cache bij eerste visit (of na invalidation door bulk_import/clear).
+        if (!error && (martData ?? []).length === 0) {
+            const { error: refreshErr } = await supabase.rpc("refresh_mart_loonkloof", {
+                p_rechtsgrondslag: "loonkloof pagina eerste visit — auto-populate cache",
+            });
+            if (refreshErr) {
+                console.error("[loonkloof] mart refresh failed:", refreshErr);
+            } else {
+                const requery = await supabase
+                    .from("mart_loonkloof")
+                    .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
+                    .eq("referentiedatum", "2026-06-30");
+                martData = requery.data;
+            }
+        }
         rows = (martData ?? []) as MartRow[];
 
         // ISS-079: multi-entiteit — RPC is single-entiteit; loop + aggregate
