@@ -39,28 +39,30 @@ select col_not_null('public', 'param_rsz', 'basisbijdrage_pct', 'param_rsz.basis
 -- Seed one row per table as service_role, then read as authenticated.
 ------------------------------------------------------------
 
-set local role service_role;
 
+-- Unique test IDs voorkomen conflict met seed + 2024/2025 fiscal audit rijen.
 insert into public.param_plafond (param_plafond_id, land_id, bijdragetype, geldig_van, geldig_tot, jaarplafond, bron_url) values
-    ('cao90_jaar_2024', 'BE', 'cao90', '2024-01-01', '2025-01-01', 4020.0000, 'https://www.socialsecurity.be/');
+    ('t32_cao90_test', 'BE', 'cao90', '2027-01-01', '2028-01-01', 4020.0000, 'https://www.socialsecurity.be/');
 
+-- Delete 2025 open-ended om ruimte te maken voor 2027 test row (exclusion).
+delete from public.param_rsz where status='bediende' and werkgeverscategorie=1 and geldig_van='2025-01-01';
 insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url) values
-    ('bediende', 1, '2024-01-01', '2025-01-01', 0.2540, null, 'https://www.socialsecurity.be/');
+    ('bediende', 1, '2027-01-01', '2028-01-01', 0.2540, 1.0000, 'https://www.socialsecurity.be/');
 
-reset role;
 
 select tests.authenticate_as('test_reader');
 
+-- Seed 2 + 1 test = 3 param_plafond; 12 seed - 1 delete + 1 test = 12 param_rsz.
 select is(
     (select count(*)::int from public.param_plafond),
-    1,
-    'authenticated user reads param_plafond (global read via to authenticated policy)'
+    3,
+    'authenticated reads 3 param_plafond (2 seed 2025/2026 + 1 test row)'
 );
 
 select is(
     (select count(*)::int from public.param_rsz),
-    1,
-    'authenticated user reads param_rsz (global read via to authenticated policy)'
+    12,
+    'authenticated reads 12 param_rsz na seed - delete + test row'
 );
 
 
@@ -72,19 +74,22 @@ select is(
 select tests.clear_authentication();
 set local role anon;
 
-select is(
-    (select count(*)::int from public.param_plafond),
-    0,
-    'anon reads 0 rows from param_plafond (RLS blocks — S2)'
+select throws_ok(
+    $$ select count(*) from public.param_plafond $$,
+    '42501',
+    null,
+    'anon SELECT param_plafond → 42501'
 );
 
-select is(
-    (select count(*)::int from public.param_rsz),
-    0,
-    'anon reads 0 rows from param_rsz (RLS blocks — S2)'
+select throws_ok(
+    $$ select count(*) from public.param_rsz $$,
+    '42501',
+    null,
+    'anon SELECT param_rsz → 42501'
 );
 
 reset role;
+
 
 
 ------------------------------------------------------------
@@ -112,32 +117,38 @@ select throws_ok(
 ------------------------------------------------------------
 
 select tests.clear_authentication();
-set local role service_role;
 
--- Failure paths: (bediende + factor) and (arbeider + NULL)
+-- Post fiscal audit: basisfactor_pct is NOT NULL + range CHECK [1, 2].
+-- De biconditional (bediende=NULL, arbeider=NOT NULL) uit T-015 is vervangen
+-- door identity=1.0000 voor bediende, 1.0800 voor arbeider.
+
+-- Failure paths (schema drift): NULL basisfactor_pct blokkeert bij BEIDE.
 select throws_ok(
     $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_pct, bron_url)
-       values ('bediende', 2, '2024-01-01', 0.2540, 1.0800, 'x') $$,
+       values ('bediende', 2, '2029-01-01', 0.2540, null, 'x') $$,
+    '23502'
+);
+
+-- Range CHECK: waarde buiten [1,2] faalt
+select throws_ok(
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_pct, bron_url)
+       values ('arbeider', 2, '2029-01-01', 0.2540, 0.5, 'x') $$,
     '23514'
 );
 
-select throws_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_pct, bron_url)
-       values ('arbeider', 2, '2024-01-01', 0.2540, null, 'x') $$,
-    '23514'
-);
-
--- Success paths: (bediende + NULL) and (arbeider + factor)
+-- Success paths: delete existing 2025 open-ended eerst, dan test row.
+delete from public.param_rsz where status='bediende' and werkgeverscategorie=2 and geldig_van='2025-01-01';
 select lives_ok(
     $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_pct, bron_url)
-       values ('bediende', 3, '2024-01-01', 0.2540, null, 'x') $$,
-    'bediende met basisfactor_pct NULL is toegestaan (biconditional success)'
+       values ('bediende', 2, '2030-01-01', 0.2540, 1.0000, 'x') $$,
+    'bediende met basisfactor_pct 1.0000 identity toegestaan (post fiscal audit)'
 );
 
+delete from public.param_rsz where status='arbeider' and werkgeverscategorie=2 and geldig_van='2025-01-01';
 select lives_ok(
     $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, basisbijdrage_pct, basisfactor_pct, bron_url)
-       values ('arbeider', 3, '2024-01-01', 0.2540, 1.0800, 'x') $$,
-    'arbeider met basisfactor_pct 1.08 is toegestaan (biconditional success)'
+       values ('arbeider', 2, '2030-01-01', 0.2540, 1.0800, 'x') $$,
+    'arbeider met basisfactor_pct 1.08 toegestaan'
 );
 
 
@@ -146,8 +157,8 @@ select lives_ok(
 ------------------------------------------------------------
 
 select throws_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
-       values ('bediende', 1, '2024-06-01', '2024-01-01', 0.2540, 'x') $$,
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url)
+       values ('bediende', 1, '2024-06-01', '2024-01-01', 0.2540, 1.0000, 'x') $$,
     '23514'
 );
 
@@ -158,8 +169,8 @@ select throws_ok(
 );
 
 select throws_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
-       values ('bediende', 1, '2024-06-01', '2024-06-01', 0.2540, 'x') $$,
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url)
+       values ('bediende', 1, '2024-06-01', '2024-06-01', 0.2540, 1.0000, 'x') $$,
     '23514'
 );
 
@@ -229,17 +240,20 @@ select lives_ok(
 -- Exclusion constraint on param_rsz (5 assertions — E1, E4, EE5)
 ------------------------------------------------------------
 
+-- Delete overlapping seed rows first (2024 + 2025 exclusion coverage).
+delete from public.param_rsz where werkgeverscategorie in (1, 2, 3);
+
 -- 1) Non-overlapping same (status, categorie) — allowed
 select lives_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
-       values ('bediende', 1, '2025-01-01', '2026-01-01', 0.2600, 'x') $$,
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url)
+       values ('bediende', 1, '2024-01-01', '2025-01-01', 0.2540, 1.0000, 'x') $$,
     'non-overlapping periode allowed voor zelfde (status, werkgeverscategorie)'
 );
 
 -- 2) Overlapping same (status, categorie) — blocked
 select throws_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
-       values ('bediende', 1, '2024-06-01', '2025-06-01', 0.2600, 'x') $$,
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url)
+       values ('bediende', 1, '2024-06-01', '2025-06-01', 0.2600, 1.0000, 'x') $$,
     '23P01'
 );
 
@@ -252,18 +266,18 @@ select lives_ok(
 
 -- 4) Same period, different werkgeverscategorie — allowed (cross-cat disambiguation E1)
 select lives_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
-       values ('bediende', 2, '2024-06-01', '2025-01-01', 0.2555, 'x') $$,
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url)
+       values ('bediende', 2, '2024-06-01', '2025-01-01', 0.2555, 1.0000, 'x') $$,
     'zelfde periode + status maar andere werkgeverscategorie: allowed (cross-cat E1)'
 );
 
--- 5) Two open-ended rows same (status, werkgeverscategorie) — blocked (EE5, symmetric with param_plafond E4)
-insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
-    values ('bediende', 3, '2024-01-01', null, 0.2540, 'x');
+-- 5) Two open-ended rows same (status, werkgeverscategorie) — blocked (EE5)
+insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url)
+    values ('bediende', 3, '2024-01-01', null, 0.2540, 1.0000, 'x');
 
 select throws_ok(
-    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, bron_url)
-       values ('bediende', 3, '2025-06-01', null, 0.2540, 'x') $$,
+    $$ insert into public.param_rsz (status, werkgeverscategorie, geldig_van, geldig_tot, basisbijdrage_pct, basisfactor_pct, bron_url)
+       values ('bediende', 3, '2025-06-01', null, 0.2540, 1.0000, 'x') $$,
     '23P01'
 );
 
@@ -289,11 +303,10 @@ select throws_ok(
 -- 3) Positive path: valid cap_param_plafond_id (uit seeded param_plafond) → success (E6)
 select lives_ok(
     $$ insert into public.dim_sz_behandeling (sz_behandeling_id, regime_naam, grondslag_type, cap_param_plafond_id, bron_url)
-       values ('valid_fk', 'Valid FK test', 'gunstig_tot_plafond', 'cao90_jaar_2024', 'x') $$,
+       values ('valid_fk', 'Valid FK test', 'gunstig_tot_plafond', 't32_cao90_test', 'x') $$,
     'dim_sz_behandeling INSERT met valid cap_param_plafond_id succeeds (E6 positive-path)'
 );
 
-reset role;
 
 
 select * from finish();

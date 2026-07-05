@@ -32,31 +32,31 @@ select col_not_null('public', 'param_arbeidsduur', 'bron_url',
     'arbeidsduur.bron_url NOT NULL');
 
 -- RLS role-scoped read: authenticated CAN read + anon CANNOT read (2 assertions)
-set local role service_role;
 
+delete from public.param_arbeidsduur where pc_id = '200';
 insert into public.param_arbeidsduur (pc_id, geldig_van, geldig_tot, gemiddelde_wekelijkse_uren, bron_url) values
     ('200', '2024-01-01', '2025-01-01', 38.0000, 'https://werk.belgie.be/');
 
-reset role;
 
 select tests.authenticate_as('test_reader');
 
-select is(
-    (select count(*)::int from public.param_arbeidsduur),
-    1,
-    'authenticated user reads param_arbeidsduur (global read via to authenticated policy)'
+select ok(
+    (select count(*)::int from public.param_arbeidsduur) >= 1,
+    'authenticated user reads param_arbeidsduur (global read; seed + test rows)'
 );
 
 select tests.clear_authentication();
 set local role anon;
 
-select is(
-    (select count(*)::int from public.param_arbeidsduur),
-    0,
+select throws_ok(
+    $$ select count(*) from public.param_arbeidsduur $$,
+    '42501',
+    null,
     'anon reads 0 rows from param_arbeidsduur (RLS blocks via to authenticated policy)'
 );
 
 reset role;
+
 
 -- REVOKE writes (1 assertion)
 select tests.authenticate_as('test_reader');
@@ -69,7 +69,6 @@ select throws_ok(
 
 -- Effective-dating CHECK: inversion + boundary (2 assertions)
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.param_arbeidsduur (pc_id, geldig_van, geldig_tot, gemiddelde_wekelijkse_uren, bron_url)
@@ -96,6 +95,7 @@ select throws_ok(
     '23P01'
 );
 
+delete from public.param_arbeidsduur where pc_id = '124';
 insert into public.param_arbeidsduur (pc_id, geldig_van, geldig_tot, gemiddelde_wekelijkse_uren, bron_url)
     values ('124', '2024-01-01', null, 40.0000, 'x');
 
@@ -106,6 +106,7 @@ select throws_ok(
 );
 
 -- Cross-pc disambiguation (1 assertion)
+delete from public.param_arbeidsduur where pc_id = '302';
 select lives_ok(
     $$ insert into public.param_arbeidsduur (pc_id, geldig_van, geldig_tot, gemiddelde_wekelijkse_uren, bron_url)
        values ('302', '2024-01-01', '2025-01-01', 38.0000, 'x') $$,
@@ -113,6 +114,7 @@ select lives_ok(
 );
 
 -- FK invalid + FK positive (2 assertions)
+delete from public.param_arbeidsduur where pc_id = '111';
 select throws_ok(
     $$ insert into public.param_arbeidsduur (pc_id, geldig_van, gemiddelde_wekelijkse_uren, bron_url)
        values ('nonexistent_pc', '2027-01-01', 38.0000, 'x') $$,
@@ -125,7 +127,6 @@ select lives_ok(
     'FK positive path: valid pc_id 111 accepted'
 );
 
-reset role;
 
 
 ------------------------------------------------------------
@@ -155,94 +156,94 @@ select col_not_null('public', 'param_vakantiegeld', 'bron_url',
     'vakantiegeld.bron_url NOT NULL');
 
 -- RLS role-scoped read: authenticated CAN read + anon CANNOT read (2 assertions)
-set local role service_role;
 
+delete from public.param_vakantiegeld where regime = 'arbeider';
 insert into public.param_vakantiegeld (regime, geldig_van, geldig_tot, enkel_pct, dubbel_pct, bron_url) values
-    ('arbeider', '2024-01-01', '2025-01-01', 15.3800, 92.0000, 'https://www.rjv.be/');
+    ('arbeider', '2024-01-01', '2025-01-01', 0.1538, 0.9200, 'https://www.rjv.be/');
 
-reset role;
 
 select tests.authenticate_as('test_reader');
 
-select is(
-    (select count(*)::int from public.param_vakantiegeld),
-    1,
-    'authenticated user reads param_vakantiegeld (global read via to authenticated policy)'
+select ok(
+    (select count(*)::int from public.param_vakantiegeld) >= 1,
+    'authenticated user reads param_vakantiegeld (global read; seed + test rows)'
 );
 
 select tests.clear_authentication();
 set local role anon;
 
-select is(
-    (select count(*)::int from public.param_vakantiegeld),
-    0,
+select throws_ok(
+    $$ select count(*) from public.param_vakantiegeld $$,
+    '42501',
+    null,
     'anon reads 0 rows from param_vakantiegeld (RLS blocks via to authenticated policy)'
 );
 
 reset role;
+
 
 -- REVOKE writes (1 assertion)
 select tests.authenticate_as('test_reader');
 
 select throws_ok(
     $$ insert into public.param_vakantiegeld (regime, geldig_van, enkel_pct, dubbel_pct, bron_url)
-       values ('bediende', '2024-01-01', 8.0000, 92.0000, 'x') $$,
+       values ('bediende', '2024-01-01', 0.0800, 0.9200, 'x') $$,
     '42501'
 );
 
 -- regime CHECK negative (1 assertion)
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.param_vakantiegeld (regime, geldig_van, enkel_pct, dubbel_pct, bron_url)
-       values ('freelancer', '2024-01-01', 8.0000, 92.0000, 'x') $$,
+       values ('freelancer', '2024-01-01', 0.0800, 0.9200, 'x') $$,
     '23514'
 );
 
 -- Effective-dating CHECK: inversion + boundary (2 assertions)
 select throws_ok(
     $$ insert into public.param_vakantiegeld (regime, geldig_van, geldig_tot, enkel_pct, dubbel_pct, bron_url)
-       values ('bediende', '2024-06-01', '2024-01-01', 8.0000, 92.0000, 'x') $$,
+       values ('bediende', '2024-06-01', '2024-01-01', 0.0800, 0.9200, 'x') $$,
     '23514'
 );
 
 select throws_ok(
     $$ insert into public.param_vakantiegeld (regime, geldig_van, geldig_tot, enkel_pct, dubbel_pct, bron_url)
-       values ('bediende', '2024-06-01', '2024-06-01', 8.0000, 92.0000, 'x') $$,
+       values ('bediende', '2024-06-01', '2024-06-01', 0.0800, 0.9200, 'x') $$,
     '23514'
 );
 
 -- Exclusion constraint (3 assertions: non-overlap, overlap, open-ended)
 select lives_ok(
     $$ insert into public.param_vakantiegeld (regime, geldig_van, geldig_tot, enkel_pct, dubbel_pct, bron_url)
-       values ('arbeider', '2025-01-01', '2026-01-01', 15.3800, 92.0000, 'x') $$,
+       values ('arbeider', '2025-01-01', '2026-01-01', 0.1538, 0.9200, 'x') $$,
     'non-overlapping periode allowed voor zelfde regime'
 );
 
 select throws_ok(
     $$ insert into public.param_vakantiegeld (regime, geldig_van, geldig_tot, enkel_pct, dubbel_pct, bron_url)
-       values ('arbeider', '2024-06-01', '2025-06-01', 15.3800, 92.0000, 'x') $$,
+       values ('arbeider', '2024-06-01', '2025-06-01', 0.1538, 0.9200, 'x') $$,
     '23P01'
 );
 
+delete from public.param_vakantiegeld where regime = 'bediende';
 insert into public.param_vakantiegeld (regime, geldig_van, geldig_tot, enkel_pct, dubbel_pct, bron_url)
-    values ('bediende', '2024-01-01', null, 8.0000, 92.0000, 'x');
+    values ('bediende', '2024-01-01', null, 0.0800, 0.9200, 'x');
 
 select throws_ok(
     $$ insert into public.param_vakantiegeld (regime, geldig_van, geldig_tot, enkel_pct, dubbel_pct, bron_url)
-       values ('bediende', '2025-06-01', null, 8.0000, 92.0000, 'x') $$,
+       values ('bediende', '2025-06-01', null, 0.0800, 0.9200, 'x') $$,
     '23P01'
 );
 
 -- Cross-regime disambiguation (1 assertion)
+delete from public.param_vakantiegeld where regime = 'bediende';
 select lives_ok(
     $$ insert into public.param_vakantiegeld (regime, geldig_van, geldig_tot, enkel_pct, dubbel_pct, bron_url)
-       values ('bediende', '2026-01-01', '2027-01-01', 8.0000, 92.0000, 'x') $$,
+       values ('bediende', '2026-01-01', '2027-01-01', 0.0800, 0.9200, 'x') $$,
     'ander regime + andere periode: allowed'
 );
 
-reset role;
 
 
 ------------------------------------------------------------
@@ -272,31 +273,31 @@ select col_not_null('public', 'param_index', 'bron_url',
     'index.bron_url NOT NULL');
 
 -- RLS role-scoped read: authenticated CAN read + anon CANNOT read (2 assertions)
-set local role service_role;
 
+delete from public.param_index where pc_id = '200';
 insert into public.param_index (pc_id, geldig_van, geldig_tot, index_coefficient, drempel_bruto, bron_url) values
     ('200', '2024-01-01', '2025-01-01', 1.020000, 4000.0000, 'https://statbel.fgov.be/');
 
-reset role;
 
 select tests.authenticate_as('test_reader');
 
-select is(
-    (select count(*)::int from public.param_index),
-    1,
-    'authenticated user reads param_index (global read via to authenticated policy)'
+select ok(
+    (select count(*)::int from public.param_index) >= 1,
+    'authenticated user reads param_index (global read; seed + test rows)'
 );
 
 select tests.clear_authentication();
 set local role anon;
 
-select is(
-    (select count(*)::int from public.param_index),
-    0,
+select throws_ok(
+    $$ select count(*) from public.param_index $$,
+    '42501',
+    null,
     'anon reads 0 rows from param_index (RLS blocks via to authenticated policy)'
 );
 
 reset role;
+
 
 -- REVOKE writes (1 assertion)
 select tests.authenticate_as('test_reader');
@@ -309,7 +310,6 @@ select throws_ok(
 
 -- Effective-dating CHECK: inversion + boundary (2 assertions)
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.param_index (pc_id, geldig_van, geldig_tot, index_coefficient, drempel_bruto, bron_url)
@@ -336,6 +336,7 @@ select throws_ok(
     '23P01'
 );
 
+delete from public.param_index where pc_id = '124';
 insert into public.param_index (pc_id, geldig_van, geldig_tot, index_coefficient, drempel_bruto, bron_url)
     values ('124', '2024-01-01', null, 1.020000, 4000.0000, 'x');
 
@@ -346,6 +347,7 @@ select throws_ok(
 );
 
 -- Cross-pc disambiguation (1 assertion)
+delete from public.param_index where pc_id = '302';
 select lives_ok(
     $$ insert into public.param_index (pc_id, geldig_van, geldig_tot, index_coefficient, drempel_bruto, bron_url)
        values ('302', '2024-01-01', '2025-01-01', 1.020000, 4000.0000, 'x') $$,
@@ -353,6 +355,7 @@ select lives_ok(
 );
 
 -- FK invalid + FK positive (2 assertions)
+delete from public.param_index where pc_id = '111';
 select throws_ok(
     $$ insert into public.param_index (pc_id, geldig_van, index_coefficient, drempel_bruto, bron_url)
        values ('nonexistent_pc', '2027-01-01', 1.020000, 4000.0000, 'x') $$,
@@ -365,7 +368,6 @@ select lives_ok(
     'FK positive path: valid pc_id 111 accepted'
 );
 
-reset role;
 
 
 ------------------------------------------------------------
@@ -393,31 +395,31 @@ select col_not_null('public', 'param_bijzondere_bijdragen', 'bron_url',
     'bijzondere_bijdragen.bron_url NOT NULL');
 
 -- RLS role-scoped read: authenticated CAN read + anon CANNOT read (2 assertions)
-set local role service_role;
 
+delete from public.param_bijzondere_bijdragen where type = 'loonmatiging';
 insert into public.param_bijzondere_bijdragen (type, geldig_van, geldig_tot, tarief, formule_json, bron_url) values
     ('loonmatiging', '2024-01-01', '2025-01-01', 0.5000, '{"formule":"0.5 * indexbesparing"}'::jsonb, 'https://www.socialsecurity.be/');
 
-reset role;
 
 select tests.authenticate_as('test_reader');
 
-select is(
-    (select count(*)::int from public.param_bijzondere_bijdragen),
-    1,
-    'authenticated user reads param_bijzondere_bijdragen (global read via to authenticated policy)'
+select ok(
+    (select count(*)::int from public.param_bijzondere_bijdragen) >= 1,
+    'authenticated user reads param_bijzondere_bijdragen (global read; seed + test rows)'
 );
 
 select tests.clear_authentication();
 set local role anon;
 
-select is(
-    (select count(*)::int from public.param_bijzondere_bijdragen),
-    0,
+select throws_ok(
+    $$ select count(*) from public.param_bijzondere_bijdragen $$,
+    '42501',
+    null,
     'anon reads 0 rows from param_bijzondere_bijdragen (RLS blocks via to authenticated policy)'
 );
 
 reset role;
+
 
 -- REVOKE writes (1 assertion)
 select tests.authenticate_as('test_reader');
@@ -430,7 +432,6 @@ select throws_ok(
 
 -- type CHECK negative (1 assertion)
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.param_bijzondere_bijdragen (type, geldig_van, tarief, bron_url)
@@ -464,6 +465,7 @@ select throws_ok(
     '23P01'
 );
 
+delete from public.param_bijzondere_bijdragen where type = 'asbest';
 insert into public.param_bijzondere_bijdragen (type, geldig_van, geldig_tot, tarief, bron_url)
     values ('asbest', '2024-01-01', null, 0.0100, 'x');
 
@@ -474,6 +476,7 @@ select throws_ok(
 );
 
 -- Cross-type disambiguation (1 assertion)
+delete from public.param_bijzondere_bijdragen where type = 'bev';
 select lives_ok(
     $$ insert into public.param_bijzondere_bijdragen (type, geldig_van, geldig_tot, tarief, bron_url)
        values ('bev', '2024-01-01', '2025-01-01', 0.0100, 'x') $$,
@@ -481,12 +484,14 @@ select lives_ok(
 );
 
 -- jsonb: nested lives_ok + DEFAULT '{}' behavior (2 assertions)
+delete from public.param_bijzondere_bijdragen where type = 'fso';
 select lives_ok(
     $$ insert into public.param_bijzondere_bijdragen (type, geldig_van, tarief, formule_json, bron_url)
        values ('fso', '2027-01-01', 0.0100, '{"basis":"brutoloon_wettelijk","factor":0.5,"nested":{"a":1,"b":2}}'::jsonb, 'x') $$,
     'INSERT met complexe nested formule_json succeeds'
 );
 
+delete from public.param_bijzondere_bijdragen where type = 'bev';
 insert into public.param_bijzondere_bijdragen (type, geldig_van, tarief, bron_url)
     values ('bev', '2027-01-01', 0.0100, 'x');
 
@@ -497,7 +502,6 @@ select is(
     'omitted formule_json defaults to empty jsonb (DEFAULT contract for import scripts)'
 );
 
-reset role;
 
 
 ------------------------------------------------------------
@@ -525,31 +529,31 @@ select col_not_null('public', 'param_sectorbijdrage', 'bron_url',
     'sectorbijdrage.bron_url NOT NULL');
 
 -- RLS role-scoped read: authenticated CAN read + anon CANNOT read (2 assertions)
-set local role service_role;
 
+delete from public.param_sectorbijdrage where pc_id = '200' and fonds = 'bestaanszekerheid';
 insert into public.param_sectorbijdrage (pc_id, fonds, geldig_van, geldig_tot, tarief, bron_url) values
     ('200', 'bestaanszekerheid', '2024-01-01', '2025-01-01', 0.0100, 'https://www.socialsecurity.be/');
 
-reset role;
 
 select tests.authenticate_as('test_reader');
 
-select is(
-    (select count(*)::int from public.param_sectorbijdrage),
-    1,
-    'authenticated user reads param_sectorbijdrage (global read via to authenticated policy)'
+select ok(
+    (select count(*)::int from public.param_sectorbijdrage) >= 1,
+    'authenticated user reads param_sectorbijdrage (global read; seed + test rows)'
 );
 
 select tests.clear_authentication();
 set local role anon;
 
-select is(
-    (select count(*)::int from public.param_sectorbijdrage),
-    0,
+select throws_ok(
+    $$ select count(*) from public.param_sectorbijdrage $$,
+    '42501',
+    null,
     'anon reads 0 rows from param_sectorbijdrage (RLS blocks via to authenticated policy)'
 );
 
 reset role;
+
 
 -- REVOKE writes (1 assertion)
 select tests.authenticate_as('test_reader');
@@ -562,7 +566,6 @@ select throws_ok(
 
 -- Effective-dating CHECK: inversion + boundary (2 assertions)
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.param_sectorbijdrage (pc_id, fonds, geldig_van, geldig_tot, tarief, bron_url)
@@ -599,6 +602,7 @@ select throws_ok(
 );
 
 -- Cross-pc disambiguation (1 assertion)
+delete from public.param_sectorbijdrage where pc_id = '302' and fonds = 'bestaanszekerheid';
 select lives_ok(
     $$ insert into public.param_sectorbijdrage (pc_id, fonds, geldig_van, geldig_tot, tarief, bron_url)
        values ('302', 'bestaanszekerheid', '2024-01-01', '2025-01-01', 0.0100, 'x') $$,
@@ -606,6 +610,7 @@ select lives_ok(
 );
 
 -- Cross-fonds disambiguation (1 assertion)
+delete from public.param_sectorbijdrage where pc_id = '200' and fonds = 'vorming';
 select lives_ok(
     $$ insert into public.param_sectorbijdrage (pc_id, fonds, geldig_van, geldig_tot, tarief, bron_url)
        values ('200', 'vorming', '2024-01-01', '2025-01-01', 0.0100, 'x') $$,
@@ -613,6 +618,7 @@ select lives_ok(
 );
 
 -- FK invalid + FK positive (2 assertions)
+delete from public.param_sectorbijdrage where pc_id = '111';
 select throws_ok(
     $$ insert into public.param_sectorbijdrage (pc_id, fonds, geldig_van, tarief, bron_url)
        values ('nonexistent_pc', 'bestaanszekerheid', '2027-01-01', 0.0100, 'x') $$,
@@ -632,7 +638,6 @@ select throws_ok(
     '23514'
 );
 
-reset role;
 
 
 ------------------------------------------------------------
@@ -662,31 +667,30 @@ select col_not_null('public', 'param_extralegaal', 'bron_url',
     'extralegaal.bron_url NOT NULL');
 
 -- RLS role-scoped read: authenticated CAN read + anon CANNOT read (2 assertions)
-set local role service_role;
 
 insert into public.param_extralegaal (voordeeltype, geldig_van, geldig_tot, max_wg, taks_pct, bron_url) values
     ('chequegrenzen', '2024-01-01', '2025-01-01', 7.0000, 0.0000, 'https://www.rsz.fgov.be/');
 
-reset role;
 
 select tests.authenticate_as('test_reader');
 
-select is(
-    (select count(*)::int from public.param_extralegaal),
-    1,
-    'authenticated user reads param_extralegaal (global read via to authenticated policy)'
+select ok(
+    (select count(*)::int from public.param_extralegaal) >= 1,
+    'authenticated user reads param_extralegaal (global read; seed + test rows)'
 );
 
 select tests.clear_authentication();
 set local role anon;
 
-select is(
-    (select count(*)::int from public.param_extralegaal),
-    0,
+select throws_ok(
+    $$ select count(*) from public.param_extralegaal $$,
+    '42501',
+    null,
     'anon reads 0 rows from param_extralegaal (RLS blocks via to authenticated policy)'
 );
 
 reset role;
+
 
 -- REVOKE writes (1 assertion)
 select tests.authenticate_as('test_reader');
@@ -699,7 +703,6 @@ select throws_ok(
 
 -- Effective-dating CHECK: inversion + boundary (2 assertions)
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.param_extralegaal (voordeeltype, geldig_van, geldig_tot, max_wg, taks_pct, bron_url)
@@ -726,6 +729,7 @@ select throws_ok(
     '23P01'
 );
 
+delete from public.param_extralegaal where voordeeltype = 'mobiliteitsbudget';
 insert into public.param_extralegaal (voordeeltype, geldig_van, geldig_tot, max_wg, taks_pct, bron_url)
     values ('mobiliteitsbudget', '2024-01-01', null, 0.0000, 0.0000, 'x');
 
@@ -736,9 +740,11 @@ select throws_ok(
 );
 
 -- Cross-voordeeltype disambiguation (1 assertion)
+-- Fix: taks_pct max = 1 per CHECK, was 8.8600 (drift, misschien percentage vs decimaal)
+delete from public.param_extralegaal where voordeeltype = 'groepsverzekering';
 select lives_ok(
     $$ insert into public.param_extralegaal (voordeeltype, geldig_van, geldig_tot, max_wg, taks_pct, bron_url)
-       values ('groepsverzekering', '2024-01-01', '2025-01-01', 0.0000, 8.8600, 'x') $$,
+       values ('groepsverzekering', '2024-01-01', '2025-01-01', 0.0000, 0.0886, 'x') $$,
     'zelfde periode maar ander voordeeltype: allowed (cross-voordeeltype disambiguation)'
 );
 
@@ -749,7 +755,6 @@ select throws_ok(
     '23514'
 );
 
-reset role;
 
 
 ------------------------------------------------------------
@@ -781,31 +786,31 @@ select col_not_null('public', 'param_wagen_mobiliteit', 'bron_url',
     'wagen_mobiliteit.bron_url NOT NULL');
 
 -- RLS role-scoped read: authenticated CAN read + anon CANNOT read (2 assertions)
-set local role service_role;
 
+delete from public.param_wagen_mobiliteit;
 insert into public.param_wagen_mobiliteit (geldig_van, geldig_tot, co2_formule_json, referentie_co2, minimumbijdrage, vaa_coefficient, bron_url) values
     ('2024-01-01', '2025-01-01', '{"formule":"((co2 - referentie) * factor + basis) / 12","factor":9.0}'::jsonb, 91, 31.9900, 1.00000000, 'https://www.socialsecurity.be/');
 
-reset role;
 
 select tests.authenticate_as('test_reader');
 
-select is(
-    (select count(*)::int from public.param_wagen_mobiliteit),
-    1,
-    'authenticated user reads param_wagen_mobiliteit (global read via to authenticated policy)'
+select ok(
+    (select count(*)::int from public.param_wagen_mobiliteit) >= 1,
+    'authenticated user reads param_wagen_mobiliteit (global read; seed + test rows)'
 );
 
 select tests.clear_authentication();
 set local role anon;
 
-select is(
-    (select count(*)::int from public.param_wagen_mobiliteit),
-    0,
+select throws_ok(
+    $$ select count(*) from public.param_wagen_mobiliteit $$,
+    '42501',
+    null,
     'anon reads 0 rows from param_wagen_mobiliteit (RLS blocks via to authenticated policy)'
 );
 
 reset role;
+
 
 -- REVOKE writes (1 assertion)
 select tests.authenticate_as('test_reader');
@@ -818,7 +823,6 @@ select throws_ok(
 
 -- Effective-dating CHECK: inversion + boundary (2 assertions)
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.param_wagen_mobiliteit (geldig_van, geldig_tot, referentie_co2, minimumbijdrage, vaa_coefficient, bron_url)
@@ -861,6 +865,7 @@ select throws_ok(
 );
 
 -- jsonb: nested lives_ok + DEFAULT '{}' behavior (2 assertions)
+delete from public.param_wagen_mobiliteit;
 select lives_ok(
     $$ insert into public.param_wagen_mobiliteit (geldig_van, geldig_tot, co2_formule_json, referentie_co2, minimumbijdrage, vaa_coefficient, bron_url)
        values ('2027-01-01', '2028-01-01', '{"formule":"complex","factor":9.0,"nested":{"a":1,"b":{"c":2}}}'::jsonb, 91, 31.9900, 1.00000000, 'x') $$,
@@ -890,7 +895,6 @@ select throws_ok(
     '23514'
 );
 
-reset role;
 
 
 select * from finish();

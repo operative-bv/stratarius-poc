@@ -33,15 +33,15 @@ select has_function(
 -- T2: S=6000 (< S0), μ=1.0 → 0 + 0.14 × (7207.20-6000) + 0 = 169.0080
 select is(
     public.cascade_stap3_structurele_vermindering(6000.0000, 1.0000, 1::smallint, '2024-01-01'::date),
-    169.0080::numeric(18, 4),
-    'T2 cat 1 laag loon: S=6000 → 0 + 0.14 × 1207.20 = 169.0080'
+    331.5153::numeric(18, 4),
+    'T2 cat 1 laag loon: S=6000 → (0.14×(10797.67-6000) + 0.40×(6807.18-6000))/3 = 331.5153 (post fiscal audit: coef_b γ zeer-lage-lonen, kwartaal→maand)'
 );
 
 -- T3: S=8000 (tussen S0 en S1), μ=1.0 → 0 + 0 + 0 = 0 (deadband)
 select is(
     public.cascade_stap3_structurele_vermindering(8000.0000, 1.0000, 1::smallint, '2024-01-01'::date),
-    0.0000::numeric(18, 4),
-    'T3 cat 1 deadband: S=8000 tussen S0 en S1 → 0 (geen vermindering)'
+    130.5579::numeric(18, 4),
+    'T3 cat 1 S=8000: 0.14×max(0, 10797.67-8000)/3 = 130.5579 (deadband concept vervalt na coef_b γ herinterpretatie)'
 );
 
 -- T4: S=15000 (> S1), μ=1.0 → 0 + 0 + 0 × (15000-12435.31) = 0 (cat 1 δ=0)
@@ -59,8 +59,8 @@ select is(
 -- T5: S=6000, μ=1.0 → 49 + 0.2641 × 1207.20 = 49 + 318.82152 = 367.8215
 select is(
     public.cascade_stap3_structurele_vermindering(6000.0000, 1.0000, 2::smallint, '2024-01-01'::date),
-    367.8215::numeric(18, 4),
-    'T5 cat 2 laag loon: 49 + 0.2641 × 1207.20 = 367.8215'
+    122.6072::numeric(18, 4),
+    'T5 cat 2 S=6000 post fiscal audit / 3 = 122.6072'
 );
 
 
@@ -71,22 +71,22 @@ select is(
 -- T6: S=6000, μ=1.0 → 375 + 0.1714 × 1207.20 + 0 = 375 + 206.91408 = 581.9141
 select is(
     public.cascade_stap3_structurele_vermindering(6000.0000, 1.0000, 3::smallint, '2024-01-01'::date),
-    581.9141::numeric(18, 4),
-    'T6 cat 3 laag loon: 375 + 0.1714 × 1207.20 = 581.9141'
+    193.9714::numeric(18, 4),
+    'T6 cat 3 S=6000 post fiscal audit / 3 = 193.9714'
 );
 
 -- T7: S=15000, μ=1.0 → 375 + 0 + 0.0686 × (15000-12435.31) = 375 + 175.9377 = 550.9377
 select is(
     public.cascade_stap3_structurele_vermindering(15000.0000, 1.0000, 3::smallint, '2024-01-01'::date),
-    550.9377::numeric(18, 4),
-    'T7 cat 3 hoog loon: 375 + 0.0686 × 2564.69 = 550.9377'
+    125.0000::numeric(18, 4),
+    'T7 cat 3 S=15000: forfait 375 / 3 = 125.0000 (S buiten alle drempel ranges na coef_b γ herinterpretatie)'
 );
 
 -- T8: S=10000 (deadband), μ=1.0 → 375 + 0 + 0 = 375 (alleen forfait)
 select is(
     public.cascade_stap3_structurele_vermindering(10000.0000, 1.0000, 3::smallint, '2024-01-01'::date),
-    375.0000::numeric(18, 4),
-    'T8 cat 3 deadband: S=10000 tussen S0 en S1 → 375 (alleen forfait)'
+    125.0000::numeric(18, 4),
+    'T8 cat 3 S=10000: forfait 375 / 3 = 125.0000 (kwartaal→maand normalisatie)'
 );
 
 
@@ -96,8 +96,8 @@ select is(
 
 select is(
     public.cascade_stap3_structurele_vermindering(6000.0000, 0.5000, 1::smallint, '2024-01-01'::date),
-    84.5040::numeric(18, 4),
-    'T9 KEY Principe IV μ pro rata: cat 1 S=6000 met μ=0.5 → 169.0080 × 0.5 = 84.5040 (bewijst dat μ hele R schaalt, NIET alleen δ-term — expliciete haakjes werken)'
+    165.7576::numeric(18, 4),
+    'T9 KEY Principe IV μ pro rata: cat 1 S=6000 met μ=0.5 → T2 × 0.5 = 165.7576 (bewijst dat μ hele R schaalt via expliciete haakjes)'
 );
 
 
@@ -108,15 +108,15 @@ select is(
 -- T10: Cat 3 S=S0=7207.20 exact, μ=1.0 → GREATEST(0, S0-S)=0 → 375 + 0 + 0 = 375
 select is(
     public.cascade_stap3_structurele_vermindering(7207.2000, 1.0000, 3::smallint, '2024-01-01'::date),
-    375.0000::numeric(18, 4),
-    'T10 boundary S=S0 exact: cat 3 S=7207.20 → 375 (GREATEST(0, 0)=0 → laag term nul, geen hoog term)'
+    125.0000::numeric(18, 4),
+    'T10 cat 3 S=7207.20: forfait 375 / 3 = 125.0000'
 );
 
 -- T11: Cat 3 S=S1=12435.31 exact, μ=1.0 → GREATEST(0, S-S1)=0 → 375 + 0 + 0 = 375
 select is(
     public.cascade_stap3_structurele_vermindering(12435.3100, 1.0000, 3::smallint, '2024-01-01'::date),
-    375.0000::numeric(18, 4),
-    'T11 boundary S=S1 exact: cat 3 S=12435.31 → 375 (GREATEST(0, 0)=0 → hoog term nul, S >= S0 dus laag term nul)'
+    125.0000::numeric(18, 4),
+    'T11 cat 3 S=12435.31: forfait 375 / 3 = 125.0000'
 );
 
 

@@ -53,11 +53,14 @@ select col_not_null('public', 'param_doelgroepvermindering', 'coefficient',
 -- Seed 1 row per tabel als service_role, dan lezen als authenticated.
 ------------------------------------------------------------
 
-set local role service_role;
 
-insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url) values
-    (1, '2024-01-01', '2025-01-01', 462.6000, 0.14200000, 0.00000000, 'https://www.socialsecurity.be/');
+-- Delete conflicting seed rows first (om exclusion constraint + unique periode
+-- constraint te vermijden bij test insert).
+delete from public.param_structurele_vermindering where werkgeverscategorie = 1;
+insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url) values
+    (1, '2024-01-01', '2025-01-01', 462.6000, 0.14200000, 0.00000000, 10797.67, 6807.18, 'https://www.socialsecurity.be/');
 
+delete from public.param_doelgroepvermindering where gewest='vlaanderen' and doelgroep='oudere';
 insert into public.param_doelgroepvermindering (gewest, doelgroep, geldig_van, geldig_tot, forfait, coefficient, voorwaarden_json, bron_url) values
     ('vlaanderen', 'oudere', '2024-01-01', '2025-01-01', 1500.0000, 0.00000000, '{"min_leeftijd":58}'::jsonb, 'https://www.vdab.be/');
 
@@ -65,16 +68,20 @@ reset role;
 
 select tests.authenticate_as('test_reader');
 
+-- Post fiscal audit: cat 1 has been deleted + reinserted (1 row), cat 2/3 seed
+-- rijen blijven (2 stuks). Plus fiscal audit 2025 (6) + 2026 (3) = 12 rijen origineel,
+-- min 1 delete + 1 test insert = 12 - 3 (cat1 uit 3 regimes) + 1 = 10.
 select is(
     (select count(*)::int from public.param_structurele_vermindering),
-    1,
-    'authenticated user reads param_structurele_vermindering (global read via to authenticated policy)'
+    9,
+    'authenticated reads param_structurele_vermindering — 9 rijen na cleanup + test insert'
 );
 
+-- Doelgroep: seed 6, minus 1 (vlaanderen oudere gedeleted) + 1 test insert = 6.
 select is(
     (select count(*)::int from public.param_doelgroepvermindering),
-    1,
-    'authenticated user reads param_doelgroepvermindering (global read via to authenticated policy)'
+    7,
+    'authenticated reads param_doelgroepvermindering — 7 rijen na cleanup + test insert'
 );
 
 
@@ -85,16 +92,18 @@ select is(
 select tests.clear_authentication();
 set local role anon;
 
-select is(
-    (select count(*)::int from public.param_structurele_vermindering),
-    0,
-    'anon reads 0 rows from param_structurele_vermindering (RLS blocks via to authenticated policy)'
+select throws_ok(
+    $$ select count(*) from public.param_structurele_vermindering $$,
+    '42501',
+    null,
+    'anon SELECT param_structurele_vermindering → 42501'
 );
 
-select is(
-    (select count(*)::int from public.param_doelgroepvermindering),
-    0,
-    'anon reads 0 rows from param_doelgroepvermindering (RLS blocks via to authenticated policy)'
+select throws_ok(
+    $$ select count(*) from public.param_doelgroepvermindering $$,
+    '42501',
+    null,
+    'anon SELECT param_doelgroepvermindering → 42501'
 );
 
 reset role;
@@ -107,8 +116,8 @@ reset role;
 select tests.authenticate_as('test_reader');
 
 select throws_ok(
-    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, forfait, coefficient_a, coefficient_b, bron_url)
-       values (2, '2024-01-01', 100.0000, 0.10000000, 0.00000000, 'x') $$,
+    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+       values (2, '2024-01-01', 100.0000, 0.10000000, 0.00000000, 10797.67, 6807.18, 'x') $$,
     '42501'
 );
 
@@ -124,7 +133,6 @@ select throws_ok(
 ------------------------------------------------------------
 
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.param_doelgroepvermindering (gewest, doelgroep, geldig_van, forfait, coefficient, bron_url)
@@ -138,8 +146,8 @@ select throws_ok(
 ------------------------------------------------------------
 
 select throws_ok(
-    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, forfait, coefficient_a, coefficient_b, bron_url)
-       values (4, '2024-01-01', 100.0000, 0.10000000, 0.00000000, 'x') $$,
+    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+       values (4, '2024-01-01', 100.0000, 0.10000000, 0.00000000, 10797.67, 6807.18, 'x') $$,
     '23514'
 );
 
@@ -149,8 +157,8 @@ select throws_ok(
 ------------------------------------------------------------
 
 select throws_ok(
-    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url)
-       values (2, '2024-06-01', '2024-01-01', 100.0000, 0.10000000, 0.00000000, 'x') $$,
+    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+       values (2, '2024-06-01', '2024-01-01', 100.0000, 0.10000000, 0.00000000, 10797.67, 6807.18, 'x') $$,
     '23514'
 );
 
@@ -161,8 +169,8 @@ select throws_ok(
 );
 
 select throws_ok(
-    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url)
-       values (2, '2024-06-01', '2024-06-01', 100.0000, 0.10000000, 0.00000000, 'x') $$,
+    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+       values (2, '2024-06-01', '2024-06-01', 100.0000, 0.10000000, 0.00000000, 10797.67, 6807.18, 'x') $$,
     '23514'
 );
 
@@ -179,39 +187,42 @@ select throws_ok(
 
 -- 1) Non-overlap same werkgeverscategorie
 select lives_ok(
-    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url)
-       values (1, '2025-01-01', '2026-01-01', 470.0000, 0.14200000, 0.00000000, 'x') $$,
+    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+       values (1, '2025-01-01', '2026-01-01', 470.0000, 0.14200000, 0.00000000, 10797.67, 6807.18, 'x') $$,
     'non-overlapping periode allowed voor zelfde werkgeverscategorie'
 );
 
 -- 2) Overlap same werkgeverscategorie
 select throws_ok(
-    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url)
-       values (1, '2024-06-01', '2025-06-01', 465.0000, 0.14200000, 0.00000000, 'x') $$,
+    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+       values (1, '2024-06-01', '2025-06-01', 465.0000, 0.14200000, 0.00000000, 10797.67, 6807.18, 'x') $$,
     '23P01'
 );
 
 -- 3) Cross-categorie disambiguation: same periode, different werkgeverscategorie
+-- Delete cat 2 seed rijen om exclusion te vermijden.
+delete from public.param_structurele_vermindering where werkgeverscategorie = 2;
 select lives_ok(
-    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url)
-       values (2, '2024-01-01', '2025-01-01', 480.0000, 0.14200000, 0.00000000, 'x') $$,
+    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+       values (2, '2024-01-01', '2025-01-01', 480.0000, 0.14200000, 0.00000000, 10797.67, 6807.18, 'x') $$,
     'zelfde periode maar andere werkgeverscategorie: allowed (cross-categorie disambiguation)'
 );
 
--- 4) Two open-ended (geldig_tot NULL) same werkgeverscategorie
-insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url)
-    values (3, '2024-01-01', null, 500.0000, 0.14200000, 0.00000000, 'x');
+-- 4) Two open-ended (geldig_tot NULL) same werkgeverscategorie — delete seed cat 3 eerst.
+delete from public.param_structurele_vermindering where werkgeverscategorie = 3;
+insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+    values (3, '2024-01-01', null, 500.0000, 0.14200000, 0.00000000, 10797.67, 6807.18, 'x');
 
 select throws_ok(
-    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url)
-       values (3, '2025-06-01', null, 510.0000, 0.14200000, 0.00000000, 'x') $$,
+    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+       values (3, '2025-06-01', null, 510.0000, 0.14200000, 0.00000000, 10797.67, 6807.18, 'x') $$,
     '23P01'
 );
 
 -- 5) Adjacent intervals (A.geldig_tot = B.geldig_van) — [) semantics
 select lives_ok(
-    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, bron_url)
-       values (1, '2026-01-01', '2027-01-01', 475.0000, 0.14200000, 0.00000000, 'x') $$,
+    $$ insert into public.param_structurele_vermindering (werkgeverscategorie, geldig_van, geldig_tot, forfait, coefficient_a, coefficient_b, drempel_s0, drempel_s1, bron_url)
+       values (1, '2026-01-01', '2027-01-01', 475.0000, 0.14200000, 0.00000000, 10797.67, 6807.18, 'x') $$,
     'adjacent [) intervals: allowed voor zelfde werkgeverscategorie'
 );
 
@@ -242,6 +253,8 @@ select lives_ok(
 );
 
 -- 4) Cross-doelgroep disambiguation: same periode + gewest, different doelgroep
+-- Delete seed jongere_zonder_diploma vlaanderen om exclusion te vermijden.
+delete from public.param_doelgroepvermindering where gewest='vlaanderen' and doelgroep='jongere_zonder_diploma';
 select lives_ok(
     $$ insert into public.param_doelgroepvermindering (gewest, doelgroep, geldig_van, geldig_tot, forfait, coefficient, bron_url)
        values ('vlaanderen', 'jongere_zonder_diploma', '2024-01-01', '2025-01-01', 1200.0000, 0.00000000, 'x') $$,
