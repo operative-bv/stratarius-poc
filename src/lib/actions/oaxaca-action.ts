@@ -56,21 +56,32 @@ export async function runOaxacaAction(
         ),
     );
 
-    const rows: OaxacaRow[] = rows_data.map(
-        (r: {
-            persoon_id: string;
-            uurloon_bruto: number;
-            geslacht: string;
-            functieniveau: number;
-            ancienniteit_jaren: number;
-        }) => ({
-            uurloon: Number(r.uurloon_bruto),
-            geslacht: r.geslacht,
-            functieniveau: Number(r.functieniveau),
-            ancienniteit: Number(r.ancienniteit_jaren),
-            opleidingsniveau: opleidingMap.get(r.persoon_id) ?? "onbekend",
-        }),
-    );
+    // Parse-boundary: DB waardes zijn `string` op type-niveau maar de
+    // Python OaxacaRow verwacht domain unions ("m"|"v", 3 opleidings-
+    // niveaus). Filter rijen die niet passen ipv onveilig te casten.
+    const validOpleidingen = new Set(["laaggeschoold", "middel_geschoold", "hooggeschoold"]);
+    const rows: OaxacaRow[] = [];
+    for (const raw of rows_data as Array<{
+        persoon_id: string;
+        uurloon_bruto: number;
+        geslacht: string;
+        functieniveau: number;
+        ancienniteit_jaren: number;
+    }>) {
+        if (raw.geslacht !== "m" && raw.geslacht !== "v") continue;
+        const opl = opleidingMap.get(raw.persoon_id);
+        if (!opl || !validOpleidingen.has(opl)) continue;
+        rows.push({
+            uurloon: Number(raw.uurloon_bruto),
+            geslacht: raw.geslacht,
+            functieniveau: Number(raw.functieniveau),
+            ancienniteit: Number(raw.ancienniteit_jaren),
+            opleidingsniveau: opl as OaxacaRow["opleidingsniveau"],
+        });
+    }
+    if (rows.length === 0) {
+        return { result: null, error: "Geen valide loonkloof-rijen (geslacht + opleidingsniveau checks)." };
+    }
 
     try {
         const result = await callOaxacaService(rows, "loonkloof analyse Q2 2026 via dashboard");

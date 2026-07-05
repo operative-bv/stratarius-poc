@@ -1,12 +1,13 @@
 import crypto from "node:crypto";
 import { headers as requestHeaders } from "next/headers";
+import type { Geslacht, Opleidingsniveau } from "./domain-types";
 
 export type OaxacaRow = {
-    uurloon: number;
-    geslacht: string;
-    functieniveau: number;
-    ancienniteit: number;
-    opleidingsniveau: string;
+    uurloon: number; // > 0 (Python service crasht op ≤ 0)
+    geslacht: Geslacht;
+    functieniveau: number; // 1..10 (dim_functie band)
+    ancienniteit: number; // >= 0 jaren
+    opleidingsniveau: Opleidingsniveau;
 };
 
 export type OaxacaCoefficient = {

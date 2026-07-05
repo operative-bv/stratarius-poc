@@ -1,13 +1,15 @@
 // Deterministische generator voor demo populatie (POC). Zelfde output elke run.
 // Belgische naam-pool + realistische distributie functies/opleiding/leeftijd/salaris.
 
+import type { Geslacht, Opleidingsniveau, Status } from "./domain-types";
+
 export type DemoRow = {
     naam: string;
-    geslacht: "m" | "v";
+    geslacht: Geslacht;
     geboortedatum: string; // YYYY-MM-DD
-    opleidingsniveau: "laaggeschoold" | "middel_geschoold" | "hooggeschoold";
+    opleidingsniveau: Opleidingsniveau;
     team: string;
-    status: "bediende" | "arbeider";
+    status: Status;
     pc: string;
     bruto: number;
 };
