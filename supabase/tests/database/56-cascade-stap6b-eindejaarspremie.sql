@@ -111,13 +111,14 @@ select is(
 
 
 ------------------------------------------------------------
--- T8: UPPER boundary — periode = geldig_tot EXCLUSIEF → NULL
+-- T8: Temporele boundary 2024↔2025 — 2025-param toegevoegd via
+--     fiscal audit; tarief PC 200 bleef ongewijzigd → zelfde output
 ------------------------------------------------------------
 
 select is(
     public.cascade_stap6b_eindejaarspremie(4000.0000, '200', '2025-01-01'::date),
-    null::numeric(18, 4),
-    'T8 UPPER exclusief: periode = geldig_tot 2025-01-01 → NULL (valt buiten [geldig_van, geldig_tot))'
+    333.3333::numeric(18, 4),
+    'T8 boundary 2024↔2025: periode 2025-01-01 → 2025-param, tarief PC 200 ongewijzigd'
 );
 
 

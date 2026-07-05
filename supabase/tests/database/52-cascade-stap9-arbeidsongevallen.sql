@@ -119,13 +119,14 @@ select is(
 
 
 ------------------------------------------------------------
--- T9: UPPER boundary — periode = geldig_tot (2025-01-01) EXCLUSIEF → NULL
+-- T9: Temporele boundary 2024↔2025 — 2025-param toegevoegd via
+--     fiscal audit (20260705160000), tarief bleef zelfde voor PC 200
 ------------------------------------------------------------
 
 select is(
     public.cascade_stap9_arbeidsongevallen(4000.0000, '200', '2025-01-01'::date),
-    null::numeric(18, 4),
-    'T9 UPPER exclusief: periode = geldig_tot 2025-01-01 → NULL (valt buiten [geldig_van, geldig_tot))'
+    12.0000::numeric(18, 4),
+    'T9 boundary 2024↔2025: periode 2025-01-01 → 2025-param (tarief PC 200 bleef 0.30%)'
 );
 
 

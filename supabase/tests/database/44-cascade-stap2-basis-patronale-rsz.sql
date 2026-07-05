@@ -104,14 +104,17 @@ select is(
 
 
 ------------------------------------------------------------
--- T9: Temporele join UPPER boundary EXCLUSIEF
---     periode = geldig_tot (2025-01-01) → NULL (grens exclusief; 2025 heeft geen seed)
+-- T9: Temporele boundary op 2024↔2025 knip
+--     periode = geldig_tot (2025-01-01) valt buiten 2024-param en
+--     matcht 2025-param (van 20260705160000 fiscal audit). 2025 basis
+--     RSZ cat 1 = 25.00% ipv 25.07% → 4000 × 0.2500 = 1000.00 (was
+--     4000 × 0.2507 = 1002.80 in 2024).
 ------------------------------------------------------------
 
 select is(
     public.cascade_stap2_basis_patronale_rsz(4000.0000, 'bediende', 1::smallint, '2025-01-01'::date),
-    null::numeric(18, 4),
-    'T9 temporele UPPER exclusief: periode = geldig_tot 2025-01-01 → NULL (valt buiten interval [geldig_van, geldig_tot))'
+    1000.0000::numeric(18, 4),
+    'T9 temporele boundary: periode 2025-01-01 → 2025-param (25.00%, tax-shift)'
 );
 
 
