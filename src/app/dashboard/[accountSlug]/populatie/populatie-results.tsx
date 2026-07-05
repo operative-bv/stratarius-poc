@@ -197,8 +197,8 @@ export default async function PopulatieResults({
     }
 
     const cacheStatus = fromCache && refreshedAt
-        ? `Cache: bijgewerkt ${new Date(refreshedAt).toLocaleString("nl-BE", { dateStyle: "short", timeStyle: "short" })}`
-        : "Live cascade (geen cache — gebruik Refresh cache voor snellere loads)";
+        ? `Snapshot: ${new Date(refreshedAt).toLocaleString("nl-BE", { dateStyle: "short", timeStyle: "short" })}`
+        : "Live berekening";
 
     return (
         <>
