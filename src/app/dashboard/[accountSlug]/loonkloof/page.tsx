@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Scale, TrendingUp, TrendingDown, Minus, SplitSquareHorizontal } from "lucide-react";
 import OaxacaSection from "@/components/loonkloof/oaxaca-section";
-import RefreshMartButton from "@/components/loonkloof/refresh-mart-button";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 type MartRow = {
@@ -93,11 +92,12 @@ export default async function LoonkloofPage({
     let decomp: DecompRow | null = null;
 
     if (!error && entiteitIds.length > 0) {
+        // mart_loonkloof is nu een tabel met RLS op owning_account_id — Postgres filtert
+        // automatisch tot caller's eigen tenant. Geen expliciete .in() filter meer nodig.
         const { data: martData, error: martErr } = await supabase
             .from("mart_loonkloof")
             .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
-            .eq("referentiedatum", "2026-06-30")
-            .in("legale_entiteit_id", entiteitIds);
+            .eq("referentiedatum", "2026-06-30");
         if (martErr) error = { message: `Mart-query faalde: ${martErr.message}` };
         rows = (martData ?? []) as MartRow[];
 
@@ -161,7 +161,6 @@ export default async function LoonkloofPage({
                 icon={Scale}
                 title="Loonkloof analyse"
                 description={<>Bruto uurloon per geslacht × functieniveau — bron <code className="text-xs">mart_loonkloof</code> Q2 2026</>}
-                actions={<RefreshMartButton accountSlug={accountSlug} />}
             />
 
             {showsMultiEntiteitWarning && (

@@ -26,11 +26,11 @@ export async function runOaxacaAction(
         return { result: null, error: "Geen legale entiteit voor deze tenant." };
     }
 
+    // mart_loonkloof heeft nu RLS op owning_account_id — Postgres filtert automatisch.
     const { data: martRows, error: martErr } = await supabase
         .from("mart_loonkloof")
         .select("persoon_id, uurloon_bruto, geslacht, functieniveau, ancienniteit_jaren")
-        .eq("referentiedatum", "2026-06-30")
-        .in("legale_entiteit_id", entiteitIds);
+        .eq("referentiedatum", "2026-06-30");
     if (martErr) {
         return { result: null, error: `Loonkloof-mart query faalde: ${martErr.message}` };
     }

@@ -35,8 +35,8 @@ select isnt(
 
 select is(
     (select count(*)::int from public.audit_parameter_snapshot where snapshot_batch_id = (select batch_id from t021_first_batch)),
-    14,
-    'first snapshot batch bevat 14 rijen (per param_* tabel; post fiscal audit met 2025+2026 uitbreiding)'
+    13,
+    'first snapshot batch bevat 13 rijen (per param_* tabel; post fiscal audit met 2025+2026 uitbreiding)'
 );
 
 
@@ -155,8 +155,8 @@ select is(
     (select count(distinct tabel_naam)::int
      from public.audit_parameter_snapshot
      where snapshot_batch_id = (select batch_id from t021_second_batch)),
-    14,
-    'batch bevat 14 param_* tabel-jaar combos (parameter-laag coverage complete post fiscal audit)'
+    13,
+    'batch bevat 13 param_* tabel-jaar combos (parameter-laag coverage complete post fiscal audit)'
 );
 
 

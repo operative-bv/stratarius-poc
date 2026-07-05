@@ -80,8 +80,52 @@ BEGIN
     END LOOP;
 END $DEMO$;
 
--- Refresh mart_loonkloof zodat /loonkloof pagina direct data toont na db reset.
-REFRESH MATERIALIZED VIEW public.mart_loonkloof;
+-- Populate mart_loonkloof cache voor Demo BVBA — was REFRESH MATERIALIZED VIEW,
+-- nu insert-select via de refresh RPC (per-tenant). Draait als postgres in seed.
+INSERT INTO public.mart_loonkloof (
+    persoon_id, legale_entiteit_id, owning_account_id,
+    referentiedatum, kwartaal,
+    uurloon_bruto, basis_vte, variabele_vte,
+    geslacht, functieniveau, ancienniteit_jaren
+)
+WITH kwartaal_eindes AS (
+    SELECT generate_series('2024-03-31'::date, '2026-12-31'::date, interval '3 months')::date AS referentiedatum
+),
+contract_op_referentie AS (
+    SELECT c.contract_id, c.persoon_id, c.pc_id, c.geldig_van, c.legale_entiteit_id,
+        le.owning_account_id, f.functieniveau, p.geslacht, k.referentiedatum
+    FROM public.dim_contract c
+    JOIN public.dim_legale_entiteit le ON le.legale_entiteit_id = c.legale_entiteit_id
+    JOIN public.dim_functie f ON f.functie_id = c.functie_id
+    JOIN public.dim_persoon p ON p.persoon_id = c.persoon_id
+    CROSS JOIN kwartaal_eindes k
+    WHERE c.geldig_van <= k.referentiedatum
+      AND (c.geldig_tot IS NULL OR c.geldig_tot > k.referentiedatum)
+),
+lonen_maand AS (
+    SELECT cr.persoon_id, cr.referentiedatum, cr.pc_id, cr.functieniveau, cr.geslacht,
+        cr.geldig_van, cr.legale_entiteit_id, cr.owning_account_id,
+        coalesce(sum(fl.bedrag) FILTER (WHERE dl.is_basisloon), 0)::numeric(18, 4) AS basis_vte,
+        coalesce(sum(fl.bedrag) FILTER (WHERE dl.rsz_plichtig AND NOT dl.is_basisloon), 0)::numeric(18, 4) AS variabele_vte
+    FROM contract_op_referentie cr
+    LEFT JOIN public.fact_looncomponent fl
+        ON fl.contract_id = cr.contract_id
+        AND fl.periode = date_trunc('month', cr.referentiedatum)::date
+        AND fl.scenario_id IN (
+            SELECT s.scenario_id FROM public.dim_scenario s
+            WHERE s.kind = 'baseline' AND s.legale_entiteit_id = cr.legale_entiteit_id
+        )
+    LEFT JOIN public.dim_looncomponent dl ON dl.component_id = fl.component_id
+    GROUP BY cr.persoon_id, cr.referentiedatum, cr.pc_id, cr.functieniveau, cr.geslacht, cr.geldig_van, cr.legale_entiteit_id, cr.owning_account_id
+)
+SELECT lm.persoon_id, lm.legale_entiteit_id, lm.owning_account_id,
+    lm.referentiedatum,
+    extract(year FROM lm.referentiedatum)::text || '-Q' || extract(quarter FROM lm.referentiedatum)::text,
+    public.uurloon_van_maandloon(lm.basis_vte, lm.pc_id, lm.referentiedatum),
+    lm.basis_vte, lm.variabele_vte,
+    lm.geslacht, lm.functieniveau,
+    round(((lm.referentiedatum - lm.geldig_van)::numeric / 365.25), 2)::numeric(6, 2)
+FROM lonen_maand lm;
 
 SELECT 'Setup:' as status;
 SELECT functienaam, count(*) as headcount FROM dim_contract c JOIN dim_functie f ON f.functie_id = c.functie_id GROUP BY functienaam;

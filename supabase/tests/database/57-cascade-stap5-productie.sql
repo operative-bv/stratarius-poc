@@ -39,10 +39,6 @@ delete from public.fact_wagen where contract_id in (
     select c.contract_id from public.dim_contract c
     where c.legale_entiteit_id = 'aaaaaaaa-1111-1111-1111-111111111111'::uuid
 );
-delete from public.fact_loonkost where contract_id in (
-    select c.contract_id from public.dim_contract c
-    where c.legale_entiteit_id = 'aaaaaaaa-1111-1111-1111-111111111111'::uuid
-);
 delete from public.dim_contract where legale_entiteit_id = 'aaaaaaaa-1111-1111-1111-111111111111'::uuid;
 
 

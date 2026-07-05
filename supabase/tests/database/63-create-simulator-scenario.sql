@@ -6,7 +6,7 @@ BEGIN;
 
 create extension if not exists pgtap;
 
-select plan(6);
+select plan(5);
 
 -- ISS-085: create_simulator_scenario roept intern cascade_populatie_snapshot aan
 -- die nu SECURITY DEFINER is met auth.uid() check. Set JWT claim direct naar
@@ -119,31 +119,9 @@ select is(
 );
 
 
-------------------------------------------------------------
--- T6: fact_loonkost 7 kostenblokken voor de synthetic contract.
---     create_populatie_loonkost draait voor alle tenant contracten (27 seed +
---     1 synthetic × 7 = 196 total). We assert de 7 kostenblokken van juist
---     de synthetic contract via contract_id.
-------------------------------------------------------------
-
-select is(
-    (select count(*)::int from public.fact_loonkost fl
-     where fl.scenario_id = (select scenario_id from _t051_scenarios where label = 'main')
-       and fl.periode = '2024-06-01'::date
-       and fl.contract_id = (
-           select c.contract_id from public.dim_contract c
-           where c.legale_entiteit_id = 'aaaaaaaa-1111-1111-1111-111111111111'::uuid
-             and exists (
-                 select 1 from public.fact_looncomponent flc
-                 where flc.contract_id = c.contract_id
-                   and flc.scenario_id = (select scenario_id from _t051_scenarios where label = 'main')
-                   and flc.bron_ref like 'simulator_v1_%'
-             )
-       )),
-    7,
-    'T6 fact_loonkost 7 kostenblokken voor synthetic contract (via create_populatie_loonkost)'
-);
-
+-- T6 verwijderd: fact_loonkost + create_populatie_loonkost zijn vervangen
+-- door mart_populatie_loonkost (met auto-populate on first page-visit).
+-- create_simulator_scenario roept die cascade-persist niet meer aan.
 
 select * from finish();
 ROLLBACK;
