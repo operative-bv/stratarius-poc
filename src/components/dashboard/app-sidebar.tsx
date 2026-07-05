@@ -1,20 +1,3 @@
-"use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarRail,
-} from "@/components/ui/sidebar";
 import {
     LayoutDashboard,
     Users,
@@ -26,11 +9,7 @@ import {
     Settings,
     Sparkles,
 } from "lucide-react";
-import UserAccountButton from "@/components/basejump/user-account-button";
-import { TeamSwitcher } from "@/components/dashboard/team-switcher";
-import { SidebarThemeToggle } from "@/components/theme-toggle";
-
-type Item = { name: string; href: string; icon: React.ComponentType<{ className?: string }> };
+import SidebarShell, { type SidebarNavGroup } from "@/components/dashboard/sidebar-shell";
 
 export default function AppSidebar({
     accountSlug,
@@ -43,78 +22,47 @@ export default function AppSidebar({
     userName?: string;
     userEmail?: string;
 }) {
-    const pathname = usePathname();
+    const homeHref = `/dashboard/${accountSlug}`;
 
-    const analytics: Item[] = [
-        { name: "Overview", href: `/dashboard/${accountSlug}`, icon: LayoutDashboard },
-        { name: "Populatie", href: `/dashboard/${accountSlug}/populatie`, icon: Users },
-        { name: "Loonkloof", href: `/dashboard/${accountSlug}/loonkloof`, icon: Scale },
+    const groups: SidebarNavGroup[] = [
+        {
+            label: "Analyse",
+            items: [
+                { name: "Overview", href: homeHref, icon: LayoutDashboard },
+                { name: "Populatie", href: `${homeHref}/populatie`, icon: Users },
+                { name: "Loonkloof", href: `${homeHref}/loonkloof`, icon: Scale },
+            ],
+        },
+        {
+            label: "Modellering",
+            items: [
+                { name: "Scenarios", href: `${homeHref}/scenarios`, icon: FlaskConical },
+                { name: "Simulator", href: `${homeHref}/simulator`, icon: Sparkles },
+            ],
+        },
+        {
+            label: "Data",
+            items: [
+                { name: "Import", href: `${homeHref}/import`, icon: Upload },
+                { name: "Setup", href: `${homeHref}/setup`, icon: Wrench },
+            ],
+        },
+        {
+            label: "Settings",
+            items: [
+                { name: "Organisatie", href: `${homeHref}/settings`, icon: Settings },
+                { name: "Leden", href: `${homeHref}/settings/members`, icon: UsersRound },
+            ],
+        },
     ];
-
-    const modeling: Item[] = [
-        { name: "Scenarios", href: `/dashboard/${accountSlug}/scenarios`, icon: FlaskConical },
-        { name: "Simulator", href: `/dashboard/${accountSlug}/simulator`, icon: Sparkles },
-    ];
-
-    const data: Item[] = [
-        { name: "Import", href: `/dashboard/${accountSlug}/import`, icon: Upload },
-        { name: "Setup", href: `/dashboard/${accountSlug}/setup`, icon: Wrench },
-    ];
-
-    const settings: Item[] = [
-        { name: "Organisatie", href: `/dashboard/${accountSlug}/settings`, icon: Settings },
-        { name: "Leden", href: `/dashboard/${accountSlug}/settings/members`, icon: UsersRound },
-    ];
-
-    const isActive = (href: string) => {
-        if (href === `/dashboard/${accountSlug}`) return pathname === href;
-        return pathname === href || pathname.startsWith(`${href}/`);
-    };
-
-    const renderGroup = (label: string, items: Item[]) => (
-        <SidebarGroup>
-            <SidebarGroupLabel>{label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-                <SidebarMenu>
-                    {items.map((item) => (
-                        <SidebarMenuItem key={item.href}>
-                            <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                                <Link href={item.href}>
-                                    <item.icon className="h-4 w-4" />
-                                    <span>{item.name}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroupContent>
-        </SidebarGroup>
-    );
 
     return (
-        <Sidebar collapsible="icon">
-            <SidebarHeader>
-                <TeamSwitcher activeAccountId={accountId} />
-            </SidebarHeader>
-
-            <SidebarContent>
-                {renderGroup("Analyse", analytics)}
-                {renderGroup("Modellering", modeling)}
-                {renderGroup("Data", data)}
-                {renderGroup("Settings", settings)}
-            </SidebarContent>
-
-            <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarThemeToggle />
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <UserAccountButton name={userName} email={userEmail} />
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarFooter>
-            <SidebarRail />
-        </Sidebar>
+        <SidebarShell
+            accountId={accountId}
+            userName={userName}
+            userEmail={userEmail}
+            groups={groups}
+            homeHref={homeHref}
+        />
     );
 }
