@@ -51,18 +51,34 @@ export default async function LoonkloofPage({
     const { accountSlug } = await params;
     const supabase = await createClient();
 
-    // Load mart_loonkloof gefilterd op laatste kwartaal + join met functie
-    const { data: martData, error } = await supabase
+    // Tenant lookup: mart_loonkloof is een materialized view die RLS bypasst.
+    // We filteren daarom expliciet op de legale_entiteit(en) van de huidige
+    // tenant. dim_legale_entiteit heeft wél RLS dus deze query retourneert
+    // alleen entiteiten die deze user mag zien.
+    const { data: entiteitenData } = await supabase
+        .from("dim_legale_entiteit")
+        .select("legale_entiteit_id");
+    const entiteitIds = (entiteitenData ?? []).map((e: { legale_entiteit_id: string }) => e.legale_entiteit_id);
+    const primaryEntiteitId = entiteitIds[0] ?? null;
+
+    // Load mart_loonkloof gefilterd op tenant + kwartaal
+    const martQuery = supabase
         .from("mart_loonkloof")
         .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
         .eq("referentiedatum", "2024-06-30");
+    const { data: martData, error } = entiteitIds.length > 0
+        ? await martQuery.in("legale_entiteit_id", entiteitIds)
+        : { data: [], error: null };
     const rows = (martData ?? []) as MartRow[];
 
-    // Load Kitagawa-decompositie via GDPR-safe RPC (T-033)
-    const { data: decompData } = await supabase.rpc("mart_loonkloof_decomp_read", {
-        p_rechtsgrondslag: "loonkloof analysepagina — decompositie weergave",
-        p_kwartaal: "2024-Q2",
-    });
+    // Load Kitagawa-decompositie via GDPR-safe RPC (T-033) mét tenant filter
+    const { data: decompData } = primaryEntiteitId
+        ? await supabase.rpc("mart_loonkloof_decomp_read", {
+            p_rechtsgrondslag: "loonkloof analysepagina — decompositie weergave",
+            p_kwartaal: "2024-Q2",
+            p_legale_entiteit_id: primaryEntiteitId,
+        })
+        : { data: [] };
     const decomp = ((decompData ?? []) as DecompRow[])[0] ?? null;
 
     // Aggregate per geslacht
