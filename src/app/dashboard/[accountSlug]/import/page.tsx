@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Link2 } from "lucide-react";
 import ImportForm from "@/components/import/import-form";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 export default async function ImportPage({
     params,
@@ -15,16 +16,12 @@ export default async function ImportPage({
     const totalContracts = count ?? 0;
 
     return (
-        <div className="mx-auto max-w-5xl py-8 space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold flex items-center gap-2">
-                    <Upload className="h-7 w-7" />
-                    Data import
-                </h1>
-                <p className="text-muted-foreground text-sm mt-1">
-                    Bulk-import contracten + baseline lonen. Momenteel {totalContracts} contracten in populatie.
-                </p>
-            </div>
+        <div className="mx-auto max-w-5xl space-y-6">
+            <PageHeader
+                icon={Upload}
+                title="Data import"
+                description={`Bulk-import contracten + baseline lonen. Momenteel ${totalContracts} contracten in populatie.`}
+            />
 
             <div className="grid gap-6 md:grid-cols-2">
                 <ImportForm accountSlug={accountSlug} />

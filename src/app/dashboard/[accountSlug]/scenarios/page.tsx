@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { FlaskConical, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import ScenariosTabs from "@/components/scenarios/scenarios-tabs";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 type Scenario = { scenario_id: string; naam: string; kind: string; created_at: string };
 type Functie = { functie_id: string; functienaam: string };
@@ -36,16 +37,13 @@ export default async function ScenariosPage({
     const functies = (functiesData ?? []) as Functie[];
 
     return (
-        <div className="mx-auto max-w-5xl py-8 space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold flex items-center gap-2">
-                    <FlaskConical className="h-7 w-7" />
-                    Scenario editor
-                </h1>
-                <p className="text-muted-foreground text-sm mt-1">
-                    Maak een what-if scenario door baseline te kopiëren met een mutatie op basisloon
-                </p>
-            </div>
+        <div className="mx-auto max-w-5xl space-y-6">
+            <PageHeader
+                icon={FlaskConical}
+                title="Scenario editor"
+                description="Maak een what-if scenario door baseline te kopiëren met een mutatie op basisloon of een wagen-toewijzing"
+                actions={<Badge variant="secondary">{scenarios.length} scenarios</Badge>}
+            />
 
             <ScenariosTabs
                 accountSlug={accountSlug}

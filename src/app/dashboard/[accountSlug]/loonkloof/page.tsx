@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Scale, TrendingUp, TrendingDown, Minus, SplitSquareHorizontal } from "lucide-react";
 import OaxacaSection from "@/components/loonkloof/oaxaca-section";
 import RefreshMartButton from "@/components/loonkloof/refresh-mart-button";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 type MartRow = {
     persoon_id: string;
@@ -102,19 +103,13 @@ export default async function LoonkloofPage({
         .sort((a, b) => a.niveau - b.niveau);
 
     return (
-        <div className="mx-auto max-w-6xl py-8 space-y-6">
-            <div className="flex items-start justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold flex items-center gap-2">
-                        <Scale className="h-7 w-7" />
-                        Loonkloof analyse
-                    </h1>
-                    <p className="text-muted-foreground text-sm mt-1">
-                        Bruto uurloon per geslacht × functieniveau — bron: <code>mart_loonkloof</code> Q2 2024
-                    </p>
-                </div>
-                <RefreshMartButton accountSlug={accountSlug} />
-            </div>
+        <div className="mx-auto max-w-6xl space-y-6">
+            <PageHeader
+                icon={Scale}
+                title="Loonkloof analyse"
+                description={<>Bruto uurloon per geslacht × functieniveau — bron <code className="text-xs">mart_loonkloof</code> Q2 2024</>}
+                actions={<RefreshMartButton accountSlug={accountSlug} />}
+            />
 
             {error && (
                 <Card>

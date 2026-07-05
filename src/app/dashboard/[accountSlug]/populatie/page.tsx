@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Users, TrendingUp, TrendingDown, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PageHeader } from "@/components/dashboard/page-header";
 import {
     RowDetailSheet,
     type PopRow,
@@ -136,12 +137,13 @@ export default async function PopulatiePage({
         : null;
 
     return (
-        <div className="mx-auto max-w-7xl py-8 space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Populatie snapshot
+        <div className="mx-auto max-w-7xl space-y-6">
+            <PageHeader
+                icon={Users}
+                title="Populatie snapshot"
+                description={`Rekencascade toegepast op ${rows.length} contracten voor periode ${periode}`}
+                actions={
+                    <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary">{rows.length} contracten</Badge>
                         {activeScenario && (
                             <Badge variant={activeScenario.kind === "baseline" ? "outline" : "default"}>
@@ -151,7 +153,13 @@ export default async function PopulatiePage({
                         {activeTeam && (
                             <Badge variant="outline">Team: {activeTeam.functienaam}</Badge>
                         )}
-                    </CardTitle>
+                    </div>
+                }
+            />
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Filters</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form className="flex items-end gap-3 flex-wrap" method="get">

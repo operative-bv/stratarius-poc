@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { TrendingUp, ChevronDown, Car, AlertTriangle } from "lucide-react";
+import { TrendingUp, ChevronDown, Car, AlertTriangle, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 type CascadeResult = {
     stap2_basis_rsz: number | null;
@@ -173,7 +174,12 @@ export default async function SimulatorPage({
     const isForecasting = periodeDate > today;
 
     return (
-        <div className="mx-auto max-w-3xl py-8 space-y-6">
+        <div className="mx-auto max-w-3xl space-y-6">
+            <PageHeader
+                icon={Sparkles}
+                title="Ad-hoc simulator"
+                description="Simuleer één contract met eigen parameters — cascade 9 stappen live"
+            />
             {isForecasting && (
                 <Alert>
                     <TrendingUp className="h-4 w-4" />
