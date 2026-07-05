@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FileSpreadsheet, Info, Upload, CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { importCsvAction } from "@/lib/actions/import-action";
+import { Separator } from "@/components/ui/separator";
+import { FileSpreadsheet, Info, Upload, CheckCircle2, XCircle, Loader2, Sparkles } from "lucide-react";
+import { importCsvAction, loadDemoDatasetAction } from "@/lib/actions/import-action";
 import { initialImportState } from "@/lib/actions/import-types";
 
-function Btn() {
+function CsvBtn() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" className="w-full" disabled={pending}>
@@ -23,9 +24,22 @@ function Btn() {
     );
 }
 
+function DemoBtn() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" variant="outline" className="w-full" disabled={pending}>
+            {pending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
+            {pending ? "Bezig met genereren..." : "Laad demo dataset (1000 medewerkers)"}
+        </Button>
+    );
+}
+
 export default function ImportForm({ accountSlug }: { accountSlug: string }) {
-    const bound = importCsvAction.bind(null, accountSlug);
-    const [state, formAction] = useFormState(bound, initialImportState);
+    const boundCsv = importCsvAction.bind(null, accountSlug);
+    const boundDemo = loadDemoDatasetAction.bind(null, accountSlug);
+    const [csvState, csvAction] = useFormState(boundCsv, initialImportState);
+    const [demoState, demoAction] = useFormState(boundDemo, initialImportState);
+    const state = csvState.result || csvState.error ? csvState : demoState;
 
     useEffect(() => {
         if (state.result && state.result.created > 0) {
@@ -73,8 +87,8 @@ export default function ImportForm({ accountSlug }: { accountSlug: string }) {
                         <Badge variant="secondary">Beschikbaar</Badge>
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <form action={formAction} className="space-y-4">
+                <CardContent className="space-y-6">
+                    <form action={csvAction} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="csv">Selecteer CSV bestand</Label>
                             <Input id="csv" name="csv" type="file" accept=".csv,text/csv" required />
@@ -98,7 +112,22 @@ Bob Peeters,m,1990-07-22,middel_geschoold,Engineering,bediende,200,5200`}
                             </ul>
                         </div>
 
-                        <Btn />
+                        <CsvBtn />
+                    </form>
+
+                    <div className="flex items-center gap-2">
+                        <Separator className="flex-1" />
+                        <span className="text-xs text-muted-foreground uppercase tracking-wide">of</span>
+                        <Separator className="flex-1" />
+                    </div>
+
+                    <form action={demoAction} className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                            Wil je eerst even spelen? Laad een gegenereerde populatie met 1000 medewerkers
+                            (Belgische namen, 5 teams, realistische salaris- en opleidingsdistributie). Handig voor
+                            demo&apos;s en performance-checks.
+                        </p>
+                        <DemoBtn />
                     </form>
                 </CardContent>
             </Card>

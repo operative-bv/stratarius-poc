@@ -3,23 +3,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import type { ImportState } from "./import-types";
+import { generateDemoRows, type DemoRow } from "@/lib/demo-dataset";
 
-export async function importCsvAction(
-    accountSlug: string,
-    _prev: ImportState,
-    formData: FormData,
-): Promise<ImportState> {
-    const file = formData.get("csv") as File | null;
-    if (!file || file.size === 0) {
-        return { error: "Geen bestand geselecteerd", result: null };
-    }
-
-    const text = await file.text();
-    const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-    if (lines.length < 2) {
-        return { error: "CSV moet header + minstens 1 rij bevatten", result: null };
-    }
-
+async function importRows(accountSlug: string, rows: DemoRow[]): Promise<ImportState> {
     const supabase = await createClient();
 
     const [{ data: entData }, { data: funcData }, { data: scenData }] = await Promise.all([
@@ -39,43 +25,36 @@ export async function importCsvAction(
         return { error: "Legale entiteit of baseline scenario ontbreekt", result: null };
     }
 
-    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
-    const col = (row: string[], name: string): string => {
-        const idx = header.indexOf(name);
-        return idx >= 0 ? row[idx]?.trim() ?? "" : "";
-    };
-
     const result = { created: 0, skipped: 0, errors: [] as string[] };
 
-    for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(",");
-        const naam = col(row, "naam");
-        const geslacht = col(row, "geslacht").toLowerCase();
-        const geboortedatum = col(row, "geboortedatum");
-        const opleidingsniveau = col(row, "opleidingsniveau") || "middel_geschoold";
-        const team = col(row, "team");
-        const status = col(row, "status").toLowerCase() || "bediende";
-        const pc = col(row, "pc") || (status === "arbeider" ? "124" : "200");
-        const brutoRaw = col(row, "bruto");
-        const bruto = brutoRaw ? Number(brutoRaw) : 0;
+    for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        const naam = r.naam;
+        const geslacht = r.geslacht;
+        const geboortedatum = r.geboortedatum;
+        const opleidingsniveau = r.opleidingsniveau;
+        const team = r.team;
+        const status = r.status;
+        const pc = r.pc;
+        const bruto = r.bruto;
 
         if (!naam) {
-            result.errors.push(`Rij ${i}: naam ontbreekt`);
+            result.errors.push(`Rij ${i + 1}: naam ontbreekt`);
             result.skipped++;
             continue;
         }
         if (!["m", "v", "x"].includes(geslacht)) {
-            result.errors.push(`Rij ${i} (${naam}): ongeldig geslacht "${geslacht}" (verwacht m/v/x)`);
+            result.errors.push(`Rij ${i + 1} (${naam}): ongeldig geslacht "${geslacht}"`);
             result.skipped++;
             continue;
         }
         if (!geboortedatum || !/^\d{4}-\d{2}-\d{2}$/.test(geboortedatum)) {
-            result.errors.push(`Rij ${i} (${naam}): geboortedatum moet YYYY-MM-DD zijn`);
+            result.errors.push(`Rij ${i + 1} (${naam}): geboortedatum moet YYYY-MM-DD zijn`);
             result.skipped++;
             continue;
         }
         if (bruto <= 0) {
-            result.errors.push(`Rij ${i} (${naam}): bruto moet > 0 zijn`);
+            result.errors.push(`Rij ${i + 1} (${naam}): bruto moet > 0 zijn`);
             result.skipped++;
             continue;
         }
@@ -93,7 +72,7 @@ export async function importCsvAction(
             }
         }
         if (!functie) {
-            result.errors.push(`Rij ${i} (${naam}): team "${team}" niet gevonden en kon niet worden aangemaakt`);
+            result.errors.push(`Rij ${i + 1} (${naam}): team "${team}" niet gevonden`);
             result.skipped++;
             continue;
         }
@@ -110,7 +89,7 @@ export async function importCsvAction(
             .single();
 
         if (persoonErr || !persoonInsert) {
-            result.errors.push(`Rij ${i} (${naam}): persoon insert faalde — ${persoonErr?.message}`);
+            result.errors.push(`Rij ${i + 1} (${naam}): persoon insert faalde — ${persoonErr?.message}`);
             result.skipped++;
             continue;
         }
@@ -130,7 +109,7 @@ export async function importCsvAction(
             .single();
 
         if (contractErr || !contractInsert) {
-            result.errors.push(`Rij ${i} (${naam}): contract insert faalde — ${contractErr?.message}`);
+            result.errors.push(`Rij ${i + 1} (${naam}): contract insert faalde — ${contractErr?.message}`);
             result.skipped++;
             continue;
         }
@@ -144,7 +123,7 @@ export async function importCsvAction(
         });
 
         if (factErr) {
-            result.errors.push(`Rij ${i} (${naam}): fact_looncomponent faalde — ${factErr.message}`);
+            result.errors.push(`Rij ${i + 1} (${naam}): fact_looncomponent faalde — ${factErr.message}`);
             result.skipped++;
             continue;
         }
@@ -154,4 +133,56 @@ export async function importCsvAction(
 
     revalidatePath(`/dashboard/${accountSlug}`);
     return { error: null, result };
+}
+
+export async function importCsvAction(
+    accountSlug: string,
+    _prev: ImportState,
+    formData: FormData,
+): Promise<ImportState> {
+    const file = formData.get("csv") as File | null;
+    if (!file || file.size === 0) {
+        return { error: "Geen bestand geselecteerd", result: null };
+    }
+
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+    if (lines.length < 2) {
+        return { error: "CSV moet header + minstens 1 rij bevatten", result: null };
+    }
+
+    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+    const col = (row: string[], name: string): string => {
+        const idx = header.indexOf(name);
+        return idx >= 0 ? row[idx]?.trim() ?? "" : "";
+    };
+
+    const rows: DemoRow[] = [];
+    for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(",");
+        const status = (col(parts, "status").toLowerCase() || "bediende") as DemoRow["status"];
+        const opl = (col(parts, "opleidingsniveau") || "middel_geschoold") as DemoRow["opleidingsniveau"];
+        const geslacht = col(parts, "geslacht").toLowerCase();
+        rows.push({
+            naam: col(parts, "naam"),
+            geslacht: (geslacht === "m" || geslacht === "v" ? geslacht : "m") as "m" | "v",
+            geboortedatum: col(parts, "geboortedatum"),
+            opleidingsniveau: opl,
+            team: col(parts, "team"),
+            status,
+            pc: col(parts, "pc") || (status === "arbeider" ? "124" : "200"),
+            bruto: Number(col(parts, "bruto") || 0),
+        });
+    }
+
+    return importRows(accountSlug, rows);
+}
+
+export async function loadDemoDatasetAction(
+    accountSlug: string,
+    _prev: ImportState,
+    _formData: FormData,
+): Promise<ImportState> {
+    const rows = generateDemoRows(1000);
+    return importRows(accountSlug, rows);
 }
