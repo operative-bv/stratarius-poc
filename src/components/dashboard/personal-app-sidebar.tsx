@@ -1,3 +1,5 @@
+"use client";
+
 import { Home, User, Users } from "lucide-react";
 import SidebarShell, { type SidebarNavGroup } from "@/components/dashboard/sidebar-shell";
 

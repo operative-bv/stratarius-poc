@@ -39,14 +39,13 @@ export async function runOaxacaAction(
         return { result: null, error: "Geen loonkloof-data voor huidige populatie/periode." };
     }
 
-    // dim_persoon.opleidingsniveau is GDPR-protected (T-034). Query via
-    // de RLS'd table (RLS filtert op owning_account_id) mét beperking
-    // tot alleen de persoon_id's die we ook uit de mart hebben.
-    const persoonIds = Array.from(new Set(rows_data.map((r: { persoon_id: string }) => r.persoon_id)));
+    // dim_persoon.opleidingsniveau is GDPR-protected (T-034). RLS op
+    // dim_persoon filtert al op owning_account_id, dus we hoeven geen
+    // .in("persoon_id", ...) filter mee te sturen — bij 1000+ persoons
+    // zou dat "URI too long" opleveren op de PostgREST GET request.
     const { data: personen, error: personenErr } = await supabase
         .from("dim_persoon")
-        .select("persoon_id, opleidingsniveau")
-        .in("persoon_id", persoonIds);
+        .select("persoon_id, opleidingsniveau");
     if (personenErr) {
         return { result: null, error: `Persoon-lookup faalde: ${personenErr.message}` };
     }

@@ -1,0 +1,21 @@
+-- ================================================================
+-- Setup wizard fix: INSERT grant op dim_legale_entiteit
+-- ================================================================
+--
+-- Setup-action.ts doet directe .from("dim_legale_entiteit").insert()
+-- vanuit een authenticated context, maar dim_legale_entiteit heeft
+-- alleen SELECT grant naar authenticated (uit 20260703350000). Result:
+-- "permission denied for table dim_legale_entiteit" op elke nieuwe
+-- organisatie setup.
+--
+-- Gedetecteerd tijdens e2e demo walkthrough van deze sessie.
+--
+-- RLS policy dim_legale_entiteit_tenant staat INSERT toe zolang
+-- basejump.has_role_on_account(owning_account_id) true is → grant
+-- INSERT toevoegen is veilig, RLS filtert cross-tenant.
+--
+-- Ook UPDATE + DELETE toevoegen zodat multi-entiteit tenants hun eigen
+-- data kunnen beheren (met RLS-check op tenant).
+-- ================================================================
+
+grant insert, update, delete on public.dim_legale_entiteit to authenticated;
