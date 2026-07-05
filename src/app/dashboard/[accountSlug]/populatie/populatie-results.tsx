@@ -56,16 +56,41 @@ export default async function PopulatieResults({
         rows = cacheRes.data as unknown as PopRow[];
         refreshedAt = (cacheRes.data[0] as { refreshed_at: string }).refreshed_at;
         fromCache = true;
-    } else {
-        // Cache miss → live cascade fallback.
-        const filters = teamId ? { functie_ids: [teamId] } : {};
-        const { data, error } = await supabase.rpc("cascade_populatie_snapshot", {
+    } else if (scenarioId) {
+        // Cache miss → populate cache (deze eerste keer duurt langer), dan re-query.
+        // Volgende page-load leest direct uit cache.
+        const { error: refreshErr } = await supabase.rpc("refresh_populatie_loonkost_cache", {
             p_periode: periode,
             p_scenario_id: scenarioId,
-            p_filters: filters,
         });
-        if (error) console.error("[populatie-results] cascade fallback:", error);
-        rows = (data ?? []) as PopRow[];
+        if (refreshErr) {
+            console.error("[populatie-results] cache populate failed:", refreshErr);
+            // Live cascade fallback als cache populate faalt (bijv. permission)
+            const filters = teamId ? { functie_ids: [teamId] } : {};
+            const { data, error } = await supabase.rpc("cascade_populatie_snapshot", {
+                p_periode: periode,
+                p_scenario_id: scenarioId,
+                p_filters: filters,
+            });
+            if (error) console.error("[populatie-results] cascade fallback:", error);
+            rows = (data ?? []) as PopRow[];
+        } else {
+            // Cache is nu gepopuleerd, re-query voor rows.
+            let requery = supabase
+                .from("mart_populatie_loonkost")
+                .select("*, refreshed_at")
+                .eq("periode", periode)
+                .eq("scenario_id", scenarioId);
+            if (teamId) requery = requery.eq("functie_id", teamId);
+            const requeryRes = await requery;
+            rows = (requeryRes.data ?? []) as unknown as PopRow[];
+            if (requeryRes.data && requeryRes.data.length > 0) {
+                refreshedAt = (requeryRes.data[0] as { refreshed_at: string }).refreshed_at;
+                fromCache = true;
+            }
+        }
+    } else {
+        rows = [];
     }
 
     // ISS-080: expliciete error propagation ipv `?? []` fallbacks. Als de
