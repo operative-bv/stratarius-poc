@@ -25,7 +25,7 @@ export default function UserAccountButton({
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="w-full justify-start gap-2 px-2">
-                    <UserIcon className="h-4 w-4" />
+                    <UserIcon className="size-4" />
                     <span className="truncate text-sm">{name ?? "Account"}</span>
                 </Button>
             </DropdownMenuTrigger>
@@ -51,7 +51,7 @@ export default function UserAccountButton({
                 <DropdownMenuItem asChild>
                     <form action={signOutAction}>
                         <button type="submit" className="flex w-full items-center gap-2 text-sm">
-                            <LogOut className="h-4 w-4" />
+                            <LogOut className="size-4" />
                             Log uit
                         </button>
                     </form>

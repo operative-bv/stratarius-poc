@@ -356,40 +356,46 @@ function DecompositionCard({ decomp }: { decomp: DecompRow }) {
     const rawSignificant = Math.abs(rawGap) > ci;
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
             <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-lg border p-4 space-y-1">
-                    <div className="text-xs uppercase text-muted-foreground">Ruwe kloof</div>
-                    <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(rawGap))}</div>
-                    <div className="text-xs text-muted-foreground">
-                        {rawGap >= 0 ? "mannen +" : "vrouwen +"}{Math.abs(rawGapPct).toFixed(1)}% per uur
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-2">
-                        95% CI: ± € {fmtEur(ci)} · {rawSignificant ? "✓ significant" : "⚠ niet significant"}
-                    </div>
-                </div>
+                <Card>
+                    <CardContent className="pt-6 flex flex-col gap-1">
+                        <div className="text-xs uppercase text-muted-foreground">Ruwe kloof</div>
+                        <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(rawGap))}</div>
+                        <div className="text-xs text-muted-foreground">
+                            {rawGap >= 0 ? "mannen +" : "vrouwen +"}{Math.abs(rawGapPct).toFixed(1)}% per uur
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-2">
+                            95% CI: ± € {fmtEur(ci)} · {rawSignificant ? "✓ significant" : "⚠ niet significant"}
+                        </div>
+                    </CardContent>
+                </Card>
 
-                <div className="rounded-lg border p-4 bg-blue-50 dark:bg-blue-950/20 space-y-1">
-                    <div className="text-xs uppercase text-muted-foreground">Endowment (verklaarbaar)</div>
-                    <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(endowment))}</div>
-                    <div className="text-xs text-muted-foreground">
-                        {(endowmentShare * 100).toFixed(0)}% van de kloof
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-2 italic">
-                        Verschillen in observables (functieniveau, opleiding, ancienniteit)
-                    </div>
-                </div>
+                <Card className="bg-blue-50 dark:bg-blue-950/20">
+                    <CardContent className="pt-6 flex flex-col gap-1">
+                        <div className="text-xs uppercase text-muted-foreground">Endowment (verklaarbaar)</div>
+                        <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(endowment))}</div>
+                        <div className="text-xs text-muted-foreground">
+                            {(endowmentShare * 100).toFixed(0)}% van de kloof
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-2 italic">
+                            Verschillen in observables (functieniveau, opleiding, ancienniteit)
+                        </div>
+                    </CardContent>
+                </Card>
 
-                <div className={`rounded-lg border p-4 space-y-1 ${Math.abs(residual) > ci ? "bg-orange-50 dark:bg-orange-950/20 border-orange-500/40" : "bg-secondary"}`}>
-                    <div className="text-xs uppercase text-muted-foreground">Residual (onverklaarbaar)</div>
-                    <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(residual))}</div>
-                    <div className="text-xs text-muted-foreground">
-                        {(residualShare * 100).toFixed(0)}% · {Math.abs(residualPct).toFixed(1)}% per uur
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-2 italic">
-                        Binnen-stratum verschil na controle op observables
-                    </div>
-                </div>
+                <Card className={Math.abs(residual) > ci ? "bg-orange-50 dark:bg-orange-950/20 border-orange-500/40" : "bg-secondary"}>
+                    <CardContent className="pt-6 flex flex-col gap-1">
+                        <div className="text-xs uppercase text-muted-foreground">Residual (onverklaarbaar)</div>
+                        <div className="text-2xl font-semibold tabular-nums">€ {fmtEur(Math.abs(residual))}</div>
+                        <div className="text-xs text-muted-foreground">
+                            {(residualShare * 100).toFixed(0)}% · {Math.abs(residualPct).toFixed(1)}% per uur
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-2 italic">
+                            Binnen-stratum verschil na controle op observables
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Stacked bar visualisatie */}
@@ -432,9 +438,9 @@ function DecompositionCard({ decomp }: { decomp: DecompRow }) {
 }
 
 function GapIcon({ value }: { value: number }) {
-    if (Math.abs(value) < 1) return <Minus className="h-5 w-5 text-muted-foreground" />;
-    if (value > 0) return <TrendingUp className="h-5 w-5 text-orange-500" />;
-    return <TrendingDown className="h-5 w-5 text-green-600" />;
+    if (Math.abs(value) < 1) return <Minus className="size-5 text-muted-foreground" />;
+    if (value > 0) return <TrendingUp className="size-5 text-orange-500" />;
+    return <TrendingDown className="size-5 text-green-600" />;
 }
 
 function BarCompare({ label, mannen, vrouwen }: { label: string; mannen: number; vrouwen: number }) {

@@ -9,6 +9,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { TrendingUp, ChevronDown, Car, AlertTriangle, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 
@@ -232,14 +233,14 @@ export default async function SimulatorPage({
                             <Label htmlFor="periode">Periode (kwartaal-begin)</Label>
                             <DatePicker id="periode" name="periode" defaultValue={params.periode ?? "2026-01-01"} />
                         </div>
-                        <details className="md:col-span-2 rounded-lg border p-3 [&_svg.chev]:open:rotate-180">
-                            <summary className="flex items-center gap-2 cursor-pointer list-none text-sm font-medium">
-                                <ChevronDown className="h-4 w-4 transition-transform chev" />
-                                <Car className="h-4 w-4" />
+                        <Collapsible className="md:col-span-2 rounded-lg border p-3 group">
+                            <CollapsibleTrigger className="flex items-center gap-2 w-full text-sm font-medium">
+                                <ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" />
+                                <Car className="size-4" />
                                 Bedrijfswagen (optioneel)
                                 <Badge variant="outline" className="ml-auto text-xs">CO2-solidariteitsbijdrage</Badge>
-                            </summary>
-                            <div className="grid md:grid-cols-2 gap-4 mt-4 pt-4 border-t">
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="grid md:grid-cols-2 gap-4 mt-4 pt-4 border-t">
                                 <div className="space-y-2">
                                     <Label htmlFor="catalog">Cataloguswaarde (EUR)</Label>
                                     <Input id="catalog" name="catalog" type="number" step="0.01" defaultValue={params.catalog ?? "38000"} placeholder="38000" />
@@ -273,8 +274,8 @@ export default async function SimulatorPage({
                                         Volledige lease-fee excl. BTW — telt volledig als werkgeverskost.
                                     </p>
                                 </div>
-                            </div>
-                        </details>
+                            </CollapsibleContent>
+                        </Collapsible>
 
                         <div className="md:col-span-2">
                             <Button type="submit" className="w-full">Simuleer</Button>

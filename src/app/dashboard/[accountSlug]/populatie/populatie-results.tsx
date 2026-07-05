@@ -332,20 +332,22 @@ function DeltaBox({
     const pct = baseline > 0 ? (delta / baseline) * 100 : 0;
     const isUp = delta >= 0;
     return (
-        <div className={`rounded-lg border p-4 ${highlight ? "bg-secondary" : ""}`}>
-            <div className="text-xs text-muted-foreground">{label}</div>
-            <div className="text-2xl font-semibold mt-1 tabular-nums flex items-center gap-2">
-                {isUp ? (
-                    <TrendingUp className="h-5 w-5 text-orange-500" />
-                ) : (
-                    <TrendingDown className="h-5 w-5 text-green-600" />
-                )}
-                {isUp ? "+" : ""}€ {roundFinal(Math.abs(delta))}
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-                {isUp ? "+" : ""}
-                {pct.toFixed(1)}% vs baseline (€ {roundFinal(baseline)})
-            </div>
-        </div>
+        <Card className={highlight ? "bg-secondary" : ""}>
+            <CardContent className="pt-6">
+                <div className="text-xs text-muted-foreground">{label}</div>
+                <div className="text-2xl font-semibold mt-1 tabular-nums flex items-center gap-2">
+                    {isUp ? (
+                        <TrendingUp className="size-5 text-orange-500" />
+                    ) : (
+                        <TrendingDown className="size-5 text-green-600" />
+                    )}
+                    {isUp ? "+" : ""}€ {roundFinal(Math.abs(delta))}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                    {isUp ? "+" : ""}
+                    {pct.toFixed(1)}% vs baseline (€ {roundFinal(baseline)})
+                </div>
+            </CardContent>
+        </Card>
     );
 }
