@@ -12,6 +12,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const LABELS: Record<string, string> = {
     dashboard: "Dashboard",
@@ -48,6 +49,7 @@ export default function SiteHeader({
         <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
+            <div className="flex-1">
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem className="hidden sm:block">
@@ -86,6 +88,8 @@ export default function SiteHeader({
                     )}
                 </BreadcrumbList>
             </Breadcrumb>
+            </div>
+            <ThemeToggle />
         </header>
     );
 }
