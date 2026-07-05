@@ -3,23 +3,22 @@ create extension if not exists pgtap;
 
 select plan(13);
 
--- Setup: two team accounts, each with a legale entiteit.
+-- Setup als postgres (ISS-085 pattern)
 select tests.create_supabase_user('team_a_owner');
 select tests.create_supabase_user('team_b_owner');
 
+insert into basejump.accounts (id, name, slug, personal_account, primary_owner_user_id) values
+    ('30300100-1111-1111-1111-111111111111', 'Team A', 'team-a-30', false, tests.get_supabase_uid('team_a_owner')),
+    ('30300100-2222-2222-2222-222222222222', 'Team B', 'team-b-30', false, tests.get_supabase_uid('team_b_owner'));
+insert into basejump.account_user (user_id, account_id, account_role) values
+    (tests.get_supabase_uid('team_a_owner'), '30300100-1111-1111-1111-111111111111', 'owner'),
+    (tests.get_supabase_uid('team_b_owner'), '30300100-2222-2222-2222-222222222222', 'owner');
+
+insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
+    ('30300200-1111-1111-1111-111111111111', '30300100-1111-1111-1111-111111111111', 1, 'Team A BVBA', 'BE'),
+    ('30300200-2222-2222-2222-222222222222', '30300100-2222-2222-2222-222222222222', 1, 'Team B BVBA', 'BE');
+
 select tests.authenticate_as('team_a_owner');
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('11111111-1111-1111-1111-111111111111', 'Team A', 'team-a', false);
-
-insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
-    ('aaaaaaaa-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 1, 'Team A BVBA', 'BE');
-
-select tests.authenticate_as('team_b_owner');
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('22222222-2222-2222-2222-222222222222', 'Team B', 'team-b', false);
-
-insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
-    ('aaaaaaaa-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 1, 'Team B BVBA', 'BE');
 
 
 ------------------------------------------------------------
@@ -41,7 +40,7 @@ select tests.authenticate_as('team_a_owner');
 select lives_ok(
     $$ insert into public.dim_scenario (scenario_id, legale_entiteit_id, naam, kind, geldig_van, geldig_tot)
        values ('bbbbbbbb-1111-1111-1111-111111111111',
-               'aaaaaaaa-1111-1111-1111-111111111111',
+               '30300200-1111-1111-1111-111111111111',
                'Actual 2024', 'actual', '2024-01-01', '2025-01-01') $$,
     'team A owner can insert an actual scenario'
 );
@@ -53,7 +52,7 @@ select lives_ok(
 
 select throws_ok(
     $$ insert into public.dim_scenario (legale_entiteit_id, naam, kind)
-       values ('aaaaaaaa-1111-1111-1111-111111111111', 'Bad', 'invalid_kind') $$,
+       values ('30300200-1111-1111-1111-111111111111', 'Bad', 'invalid_kind') $$,
     '23514'
 );
 
@@ -64,7 +63,7 @@ select throws_ok(
 
 select throws_ok(
     $$ insert into public.dim_scenario (legale_entiteit_id, naam, kind, geldig_van, geldig_tot)
-       values ('aaaaaaaa-1111-1111-1111-111111111111', 'Bad dates', 'what_if', '2024-06-01', '2024-01-01') $$,
+       values ('30300200-1111-1111-1111-111111111111', 'Bad dates', 'what_if', '2024-06-01', '2024-01-01') $$,
     '23514'
 );
 
@@ -88,7 +87,7 @@ select is(
 
 select throws_ok(
     $$ insert into public.dim_scenario (legale_entiteit_id, naam, kind)
-       values ('aaaaaaaa-1111-1111-1111-111111111111', 'Hijack', 'what_if') $$,
+       values ('30300200-1111-1111-1111-111111111111', 'Hijack', 'what_if') $$,
     '42501'
 );
 
@@ -98,15 +97,13 @@ select throws_ok(
 -- Runs as service_role to bypass RLS/REVOKE so FK RESTRICT genuinely fires.
 ------------------------------------------------------------
 
+-- Reset naar postgres om FK RESTRICT te bereiken (service_role mist DELETE grant).
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
-    $$ delete from public.dim_legale_entiteit where legale_entiteit_id = 'aaaaaaaa-1111-1111-1111-111111111111' $$,
+    $$ delete from public.dim_legale_entiteit where legale_entiteit_id = '30300200-1111-1111-1111-111111111111' $$,
     '23503'
 );
-
-reset role;
 
 
 ------------------------------------------------------------
@@ -118,14 +115,14 @@ select tests.authenticate_as('team_a_owner');
 
 select lives_ok(
     $$ insert into public.dim_scenario (legale_entiteit_id, naam, kind, beschrijving)
-       values ('aaaaaaaa-1111-1111-1111-111111111111',
+       values ('30300200-1111-1111-1111-111111111111',
                'Voorstel indexatie +2%', 'what_if',
                'Simulatie: indexcoëfficient +2% ipv +1.5%') $$,
     'team A owner can add a what_if scenario to same legale entiteit'
 );
 
 select is(
-    (select count(*)::int from public.dim_scenario where legale_entiteit_id = 'aaaaaaaa-1111-1111-1111-111111111111'),
+    (select count(*)::int from public.dim_scenario where legale_entiteit_id = '30300200-1111-1111-1111-111111111111'),
     2,
     'Team A legale entiteit heeft 2 scenarios (actual + what_if)'
 );
@@ -137,8 +134,8 @@ select is(
 
 select lives_ok(
     $$ insert into public.dim_scenario (legale_entiteit_id, naam, kind)
-       values ('aaaaaaaa-1111-1111-1111-111111111111', 'Forecast 2025', 'forecast'),
-              ('aaaaaaaa-1111-1111-1111-111111111111', 'Baseline oorspronkelijke begroting', 'baseline') $$,
+       values ('30300200-1111-1111-1111-111111111111', 'Forecast 2025', 'forecast'),
+              ('30300200-1111-1111-1111-111111111111', 'Baseline oorspronkelijke begroting', 'baseline') $$,
     'forecast + baseline kind values accepted'
 );
 

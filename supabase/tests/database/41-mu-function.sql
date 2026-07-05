@@ -17,33 +17,34 @@ create extension if not exists pgtap;
 
 select plan(9);
 
--- Setup: 1 tenant met 3 contracten (A voltijds PC 200, B voltijds PC 124, C deeltijds PC 200)
+-- Setup als postgres (ISS-085 pattern; unit test → geen authenticate_as)
 select tests.create_supabase_user('tenant_a_owner');
-select tests.authenticate_as('tenant_a_owner');
 
-insert into basejump.accounts (id, name, slug, personal_account) values
-    ('a1111111-1111-1111-1111-111111111111', 'Tenant', 'tenant', false);
+insert into basejump.accounts (id, name, slug, personal_account, primary_owner_user_id) values
+    ('41410100-1111-1111-1111-111111111111', 'Tenant', 'tenant-41', false, tests.get_supabase_uid('tenant_a_owner'));
+insert into basejump.account_user (user_id, account_id, account_role) values
+    (tests.get_supabase_uid('tenant_a_owner'), '41410100-1111-1111-1111-111111111111', 'owner');
 
 insert into public.dim_legale_entiteit (legale_entiteit_id, owning_account_id, werkgeverscategorie, naam, land_id) values
-    ('aaaaaaaa-1111-1111-1111-111111111111', 'a1111111-1111-1111-1111-111111111111', 1, 'Test BVBA', 'BE');
+    ('41410200-1111-1111-1111-111111111111', '41410100-1111-1111-1111-111111111111', 1, 'Test BVBA', 'BE');
 
 insert into public.dim_persoon (persoon_id, owning_account_id, geslacht, geboortedatum) values
-    ('a2222222-1111-1111-1111-111111111111', 'a1111111-1111-1111-1111-111111111111', 'v', '1985-01-01'),
-    ('b2222222-2222-2222-2222-222222222222', 'a1111111-1111-1111-1111-111111111111', 'm', '1990-01-01'),
-    ('c2222222-3333-3333-3333-333333333333', 'a1111111-1111-1111-1111-111111111111', 'v', '1995-01-01');
+    ('a2222222-1111-1111-1111-111111111111', '41410100-1111-1111-1111-111111111111', 'v', '1985-01-01'),
+    ('b2222222-2222-2222-2222-222222222222', '41410100-1111-1111-1111-111111111111', 'm', '1990-01-01'),
+    ('c2222222-3333-3333-3333-333333333333', '41410100-1111-1111-1111-111111111111', 'v', '1995-01-01');
 
 insert into public.dim_functie (functie_id, owning_account_id, functienaam) values
-    ('f1000000-0000-0000-0000-000000000001', 'a1111111-1111-1111-1111-111111111111', 'Test Functie');
+    ('41410400-0000-0000-0000-000000000001', '41410100-1111-1111-1111-111111111111', 'Test Functie');
 
 -- Contract A: PC 200 (38u/week → S=164.6667), voltijds
 insert into public.dim_contract (contract_id, persoon_id, legale_entiteit_id, functie_id, pc_id, status, fte_breuk, geldig_van) values
-    ('aa000000-0000-0000-0000-000000000001', 'a2222222-1111-1111-1111-111111111111', 'aaaaaaaa-1111-1111-1111-111111111111', 'f1000000-0000-0000-0000-000000000001', '200', 'bediende', 1.0000, '2024-01-01');
+    ('aa000000-0000-0000-0000-000000000001', 'a2222222-1111-1111-1111-111111111111', '41410200-1111-1111-1111-111111111111', '41410400-0000-0000-0000-000000000001', '200', 'bediende', 1.0000, '2024-01-01');
 -- Contract B: PC 124 (40u/week → S=173.3333), voltijds
 insert into public.dim_contract (contract_id, persoon_id, legale_entiteit_id, functie_id, pc_id, status, fte_breuk, geldig_van) values
-    ('bb000000-0000-0000-0000-000000000002', 'b2222222-2222-2222-2222-222222222222', 'aaaaaaaa-1111-1111-1111-111111111111', 'f1000000-0000-0000-0000-000000000001', '124', 'arbeider', 1.0000, '2024-01-01');
+    ('bb000000-0000-0000-0000-000000000002', 'b2222222-2222-2222-2222-222222222222', '41410200-1111-1111-1111-111111111111', '41410400-0000-0000-0000-000000000001', '124', 'arbeider', 1.0000, '2024-01-01');
 -- Contract C: PC 200 (38u/week → S=164.6667), DEELTIJDS fte_breuk=0.5
 insert into public.dim_contract (contract_id, persoon_id, legale_entiteit_id, functie_id, pc_id, status, fte_breuk, geldig_van) values
-    ('cc000000-0000-0000-0000-000000000003', 'c2222222-3333-3333-3333-333333333333', 'aaaaaaaa-1111-1111-1111-111111111111', 'f1000000-0000-0000-0000-000000000001', '200', 'bediende', 0.5000, '2024-01-01');
+    ('cc000000-0000-0000-0000-000000000003', 'c2222222-3333-3333-3333-333333333333', '41410200-1111-1111-1111-111111111111', '41410400-0000-0000-0000-000000000001', '200', 'bediende', 0.5000, '2024-01-01');
 
 
 ------------------------------------------------------------

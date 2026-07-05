@@ -8,6 +8,14 @@ create extension if not exists pgtap;
 
 select plan(6);
 
+-- ISS-085: create_simulator_scenario roept intern cascade_populatie_snapshot aan
+-- die nu SECURITY DEFINER is met auth.uid() check. Set JWT claim direct naar
+-- Demo BVBA's seed owner uid — tests.authenticate_as gebruikt md5-based UUIDs
+-- die niet matchen met a0000000-0000-0000-0000-000000000001 uit seed.
+select set_config('role', 'authenticated', true);
+select set_config('request.jwt.claims',
+    json_build_object('sub','a0000000-0000-0000-0000-000000000001','role','authenticated')::text, true);
+
 
 ------------------------------------------------------------
 -- T1: Function existence
