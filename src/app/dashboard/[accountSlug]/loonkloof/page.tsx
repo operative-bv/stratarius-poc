@@ -68,12 +68,17 @@ function aggregateDecomp(rows: DecompRow[]): DecompRow | null {
     };
 }
 
+type Entiteit = { legale_entiteit_id: string; naam: string };
+
 export default async function LoonkloofPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ accountSlug: string }>;
+    searchParams: Promise<{ entiteit?: string }>;
 }) {
     const { accountSlug } = await params;
+    const { entiteit: entiteitFilter } = await searchParams;
     const supabase = await createClient();
 
     // ISS-078: tenant-lookup error EXPLICIET checken — silent failure zou
@@ -81,9 +86,16 @@ export default async function LoonkloofPage({
     // fallback ziet er uit als "lege tenant" maar kan een echte error zijn).
     const { data: entiteitenData, error: entiteitErr } = await supabase
         .from("dim_legale_entiteit")
-        .select("legale_entiteit_id");
-    const entiteitIds = (entiteitenData ?? []).map((e: { legale_entiteit_id: string }) => e.legale_entiteit_id);
-    const showsMultiEntiteitWarning = entiteitIds.length > 1;
+        .select("legale_entiteit_id, naam")
+        .order("naam", { ascending: true });
+    const entiteiten = (entiteitenData ?? []) as Entiteit[];
+    const entiteitIds = entiteiten.map((e) => e.legale_entiteit_id);
+    const isMultiEntiteit = entiteitIds.length > 1;
+
+    // Valide filter? Anders reset naar "all".
+    const activeEntiteitId = entiteitFilter && entiteitIds.includes(entiteitFilter)
+        ? entiteitFilter
+        : null;
 
     let error: { message: string } | null = entiteitErr
         ? { message: `Tenant lookup faalde: ${entiteitErr.message}` }
@@ -93,11 +105,13 @@ export default async function LoonkloofPage({
 
     if (!error && entiteitIds.length > 0) {
         // mart_loonkloof is nu een tabel met RLS op owning_account_id — Postgres filtert
-        // automatisch tot caller's eigen tenant. Geen expliciete .in() filter meer nodig.
-        let { data: martData, error: martErr } = await supabase
+        // automatisch tot caller's eigen tenant. Optioneel filter op gekozen entiteit.
+        let martQuery = supabase
             .from("mart_loonkloof")
-            .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
+            .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren, legale_entiteit_id")
             .eq("referentiedatum", "2026-06-30");
+        if (activeEntiteitId) martQuery = martQuery.eq("legale_entiteit_id", activeEntiteitId);
+        let { data: martData, error: martErr } = await martQuery;
         if (martErr) error = { message: `Mart-query faalde: ${martErr.message}` };
 
         // Auto-populate cache bij eerste visit (of na invalidation door bulk_import/clear).
@@ -108,19 +122,22 @@ export default async function LoonkloofPage({
             if (refreshErr) {
                 console.error("[loonkloof] mart refresh failed:", refreshErr);
             } else {
-                const requery = await supabase
+                let requeryBuilder = supabase
                     .from("mart_loonkloof")
-                    .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren")
+                    .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren, legale_entiteit_id")
                     .eq("referentiedatum", "2026-06-30");
+                if (activeEntiteitId) requeryBuilder = requeryBuilder.eq("legale_entiteit_id", activeEntiteitId);
+                const requery = await requeryBuilder;
                 martData = requery.data;
             }
         }
         rows = (martData ?? []) as MartRow[];
 
-        // ISS-079: multi-entiteit — RPC is single-entiteit; loop + aggregate
-        // Voor POC met single-entiteit tenants is dit één call.
+        // Multi-entiteit: als user "alle entiteiten" heeft (geen filter), loop + aggregate.
+        // Bij enkele entiteit filter → single-entiteit RPC call.
+        const targetEntiteitIds = activeEntiteitId ? [activeEntiteitId] : entiteitIds;
         const decompResults = await Promise.all(
-            entiteitIds.map((id) =>
+            targetEntiteitIds.map((id) =>
                 supabase.rpc("mart_loonkloof_decomp_read", {
                     p_rechtsgrondslag: "loonkloof analysepagina — decompositie weergave",
                     p_kwartaal: "2026-Q2",
@@ -179,12 +196,46 @@ export default async function LoonkloofPage({
                 description={<>Bruto uurloon per geslacht × functieniveau — bron <code className="text-xs">mart_loonkloof</code> Q2 2026</>}
             />
 
-            {showsMultiEntiteitWarning && (
+            {isMultiEntiteit && (
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-6 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <label className="text-xs uppercase text-muted-foreground shrink-0" htmlFor="entiteit-filter">
+                            Legale entiteit
+                        </label>
+                        <form action={async (formData: FormData) => {
+                            "use server";
+                            const { redirect } = await import("next/navigation");
+                            const val = String(formData.get("entiteit") ?? "");
+                            const suffix = val && val !== "all" ? `?entiteit=${encodeURIComponent(val)}` : "";
+                            redirect(`/dashboard/${accountSlug}/loonkloof${suffix}`);
+                        }} className="flex flex-wrap items-center gap-2 flex-1">
+                            <select
+                                id="entiteit-filter"
+                                name="entiteit"
+                                defaultValue={activeEntiteitId ?? "all"}
+                                className="border rounded-md text-sm px-2 py-1 bg-background"
+                            >
+                                <option value="all">Alle {entiteitIds.length} entiteiten (aggregate)</option>
+                                {entiteiten.map((e) => (
+                                    <option key={e.legale_entiteit_id} value={e.legale_entiteit_id}>
+                                        {e.naam}
+                                    </option>
+                                ))}
+                            </select>
+                            <button type="submit" className="text-xs px-3 py-1 border rounded-md bg-background hover:bg-muted">
+                                Toepassen
+                            </button>
+                        </form>
+                    </CardContent>
+                </Card>
+            )}
+
+            {isMultiEntiteit && activeEntiteitId === null && (
+                <Card>
+                    <CardContent className="pt-4 pb-4">
                         <p className="text-xs text-muted-foreground">
-                            Multi-entiteit tenant gedetecteerd ({entiteitIds.length} entiteiten). Decompositie is een
-                            weighted average over alle entiteiten. Per-entiteit view komt in een volgende iteratie.
+                            Weergave: aggregate over {entiteitIds.length} entiteiten (weighted average op headcount).
+                            Kies een specifieke entiteit hierboven voor per-entiteit KPIs.
                         </p>
                     </CardContent>
                 </Card>
