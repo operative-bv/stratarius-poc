@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Home, User, Users } from "lucide-react";
 import UserAccountButton from "@/components/basejump/user-account-button";
-import NavigatingAccountSelector from "@/components/dashboard/navigation-account-selector";
+import { TeamSwitcher } from "@/components/dashboard/team-switcher";
 
 type Item = { name: string; href: string; icon: React.ComponentType<{ className?: string }> };
 
@@ -45,19 +45,8 @@ export default function PersonalAppSidebar({
 
     return (
         <Sidebar collapsible="icon">
-            <SidebarHeader className="border-b">
-                <div className="flex items-center gap-2 px-2 py-1">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
-                        S
-                    </div>
-                    <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                        <span className="text-sm font-semibold tracking-tight">Stratarius</span>
-                        <span className="text-xs text-muted-foreground">Persoonlijk account</span>
-                    </div>
-                </div>
-                <div className="px-1 group-data-[collapsible=icon]:hidden">
-                    <NavigatingAccountSelector accountId={accountId} />
-                </div>
+            <SidebarHeader>
+                <TeamSwitcher activeAccountId={accountId} />
             </SidebarHeader>
 
             <SidebarContent>
@@ -80,10 +69,12 @@ export default function PersonalAppSidebar({
                 </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="border-t">
-                <div className="p-2 group-data-[collapsible=icon]:hidden">
-                    <UserAccountButton name={userName} email={userEmail} />
-                </div>
+            <SidebarFooter>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <UserAccountButton name={userName} email={userEmail} />
+                    </SidebarMenuItem>
+                </SidebarMenu>
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>
