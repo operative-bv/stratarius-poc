@@ -123,7 +123,6 @@ select throws_ok(
 ------------------------------------------------------------
 
 select tests.clear_authentication();
-set local role service_role;
 
 select throws_ok(
     $$ insert into public.dim_prestatiecode (prestatiecode, naam, familie, telt_voor_mu, gelijkgesteld_rsz, gelijkgesteld_vakantiegeld, betaalbron)
@@ -131,7 +130,6 @@ select throws_ok(
     '23514'
 );
 
-reset role;
 
 
 select * from finish();

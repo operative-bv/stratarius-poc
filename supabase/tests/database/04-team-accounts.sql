@@ -285,6 +285,9 @@ SELECT is(
 -- Anonymous
 --------------
 select tests.clear_authentication();
+-- ISS-085: expliciete anon role — clear_authentication set nu default naar
+-- postgres (superuser), niet naar anon. Voor anon-checks handmatig switchen.
+set local role anon;
 
 -- anonymous should receive no results from accounts
 SELECT throws_ok(

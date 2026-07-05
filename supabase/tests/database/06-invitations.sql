@@ -253,6 +253,8 @@ SELECT throws_ok(
 -- Anonymous
 --------------
 select tests.clear_authentication();
+-- ISS-085: expliciete anon role (clear_authentication → postgres nu).
+set local role anon;
 
 -- should not find any invitations
 SELECT throws_ok(
@@ -271,17 +273,25 @@ SELECT throws_ok(
 -- Expired 24_hour tokens
 -----------
 
+-- Reset naar postgres om tests schema weer te kunnen benaderen na anon role.
+reset role;
 select tests.authenticate_as('owner');
 
-select tests.freeze_time(CURRENT_TIMESTAMP - interval '25 hours');
-
+-- ISS-085: tests.freeze_time/unfreeze_time bestaan niet in de basejump shim.
+-- Simuleer expired token via directe UPDATE op created_at ná insert
+-- (trigger set_timestamps overschrijdt anders naar now()). Postgres role
+-- disable/enable trigger want authenticated mag dat niet.
 insert into basejump.invitations (account_id, account_role, token, invitation_type)
 values ('d126ecef-35f6-4b5d-9f28-d9f00a9fb46f',
         'owner',
         'expired_token',
         '24_hour');
 
-select tests.unfreeze_time();
+reset role;
+alter table basejump.invitations disable trigger basejump_set_invitations_timestamp;
+update basejump.invitations set created_at = current_timestamp - interval '25 hours' where token = 'expired_token';
+alter table basejump.invitations enable trigger basejump_set_invitations_timestamp;
+select tests.authenticate_as('owner');
 
 select tests.authenticate_as('expired');
 
