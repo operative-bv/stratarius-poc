@@ -18,6 +18,7 @@ import {
 import { Home, User, Users } from "lucide-react";
 import UserAccountButton from "@/components/basejump/user-account-button";
 import { TeamSwitcher } from "@/components/dashboard/team-switcher";
+import { SidebarThemeToggle } from "@/components/theme-toggle";
 
 type Item = { name: string; href: string; icon: React.ComponentType<{ className?: string }> };
 
@@ -71,6 +72,9 @@ export default function PersonalAppSidebar({
 
             <SidebarFooter>
                 <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarThemeToggle />
+                    </SidebarMenuItem>
                     <SidebarMenuItem>
                         <UserAccountButton name={userName} email={userEmail} />
                     </SidebarMenuItem>
