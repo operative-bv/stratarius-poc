@@ -3,7 +3,8 @@ import { roundFinal as roundFinalMirror } from "@/lib/cascade-mirror";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import {
     RowDetailSheet,
     type PopRow,
@@ -51,8 +52,14 @@ export default async function PopulatieResults({
     let rows: PopRow[];
     let refreshedAt: string | null = null;
     let fromCache = false;
+    // ISS-090: expliciete error propagation — onderscheid "berekening mislukt"
+    // van "geen contracten voor deze filter".
+    let fetchError: string | null = null;
 
-    if (cacheRes.data && cacheRes.data.length > 0) {
+    if (cacheRes.error) {
+        fetchError = `Cache-query faalde: ${cacheRes.error.message}`;
+        rows = [];
+    } else if (cacheRes.data && cacheRes.data.length > 0) {
         rows = cacheRes.data as unknown as PopRow[];
         refreshedAt = (cacheRes.data[0] as { refreshed_at: string }).refreshed_at;
         fromCache = true;
@@ -72,8 +79,13 @@ export default async function PopulatieResults({
                 p_scenario_id: scenarioId,
                 p_filters: filters,
             });
-            if (error) console.error("[populatie-results] cascade fallback:", error);
-            rows = (data ?? []) as PopRow[];
+            if (error) {
+                console.error("[populatie-results] cascade fallback:", error);
+                fetchError = `Berekening mislukt (cache + live fallback beide): ${error.message}. Oorspronkelijke cache-fout: ${refreshErr.message}`;
+                rows = [];
+            } else {
+                rows = (data ?? []) as PopRow[];
+            }
         } else {
             // Cache is nu gepopuleerd, re-query voor rows.
             let requery = supabase
@@ -83,10 +95,15 @@ export default async function PopulatieResults({
                 .eq("scenario_id", scenarioId);
             if (teamId) requery = requery.eq("functie_id", teamId);
             const requeryRes = await requery;
-            rows = (requeryRes.data ?? []) as unknown as PopRow[];
-            if (requeryRes.data && requeryRes.data.length > 0) {
-                refreshedAt = (requeryRes.data[0] as { refreshed_at: string }).refreshed_at;
-                fromCache = true;
+            if (requeryRes.error) {
+                fetchError = `Cache-requery na refresh faalde: ${requeryRes.error.message}`;
+                rows = [];
+            } else {
+                rows = (requeryRes.data ?? []) as unknown as PopRow[];
+                if (requeryRes.data && requeryRes.data.length > 0) {
+                    refreshedAt = (requeryRes.data[0] as { refreshed_at: string }).refreshed_at;
+                    fromCache = true;
+                }
             }
         }
     } else {
@@ -185,6 +202,22 @@ export default async function PopulatieResults({
                   tco: sum(compareRows, "tco"),
               }
             : null;
+
+    if (fetchError) {
+        return (
+            <Alert variant="destructive">
+                <AlertTriangle className="size-4" />
+                <AlertTitle>Berekening mislukt</AlertTitle>
+                <AlertDescription>
+                    {fetchError}
+                    <div className="mt-2 text-xs opacity-80">
+                        Dit is geen filter-probleem — de RSZ-cascade RPC kon geen resultaten leveren.
+                        Check server-logs of neem contact op met support.
+                    </div>
+                </AlertDescription>
+            </Alert>
+        );
+    }
 
     if (rows.length === 0) {
         return (

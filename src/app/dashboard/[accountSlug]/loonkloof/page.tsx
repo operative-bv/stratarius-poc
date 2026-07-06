@@ -121,6 +121,7 @@ export default async function LoonkloofPage({
         if (martErr) error = { message: `Mart-query faalde: ${martErr.message}` };
 
         // Auto-populate cache bij eerste visit (of na invalidation door bulk_import/clear).
+        // ISS-090: expliciete error propagation ipv silent console.error.
         if (!error && (martData ?? []).length === 0 && owningAccountId) {
             const { error: refreshErr } = await supabase.rpc("refresh_mart_loonkloof", {
                 p_owning_account_id: owningAccountId,
@@ -128,6 +129,7 @@ export default async function LoonkloofPage({
             });
             if (refreshErr) {
                 console.error("[loonkloof] mart refresh failed:", refreshErr);
+                error = { message: `Loonkloof-berekening mislukt: ${refreshErr.message}. Dit is geen filter-probleem — de decompositie-RPC kon geen resultaten leveren.` };
             } else {
                 let requeryBuilder = supabase
                     .from("mart_loonkloof")
@@ -135,7 +137,11 @@ export default async function LoonkloofPage({
                     .eq("referentiedatum", "2026-06-30");
                 if (activeEntiteitId) requeryBuilder = requeryBuilder.eq("legale_entiteit_id", activeEntiteitId);
                 const requery = await requeryBuilder;
-                martData = requery.data;
+                if (requery.error) {
+                    error = { message: `Mart-requery na refresh faalde: ${requery.error.message}` };
+                } else {
+                    martData = requery.data;
+                }
             }
         }
         rows = (martData ?? []) as MartRow[];
