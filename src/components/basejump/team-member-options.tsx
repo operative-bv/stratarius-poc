@@ -29,10 +29,10 @@ export default function TeamMemberOptions({ teamMember, accountId, isPrimaryOwne
     return (
         <>
             <DropdownMenu>
-                <DropdownMenuTrigger asChild><Button variant="ghost"><Ellipsis className="size-4" /></Button></DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><Ellipsis className="size-4" /><span className="sr-only">Team member options</span></Button></DropdownMenuTrigger>
                 <DropdownMenuContent>
                     <DropdownMenuItem onSelect={() => toggleUpdateTeamRole(true)}>Change role</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => toggleRemoveTeamMember(true)} className="text-red-600">Remove member</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => toggleRemoveTeamMember(true)} className="text-destructive">Remove member</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
             <Dialog open={updateTeamRole} onOpenChange={toggleUpdateTeamRole}>

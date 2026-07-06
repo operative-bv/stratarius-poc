@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { createClient } from "@/lib/supabase/server";
-import { Table, TableRow, TableBody, TableCell } from "../ui/table";
+import { Table, TableRow, TableBody, TableCell, TableHead, TableHeader } from "../ui/table";
 import { Badge } from "../ui/badge";
 import CreateTeamInvitationButton from "./create-team-invitation-button";
 import { formatDistanceToNow } from "date-fns";
@@ -33,6 +33,12 @@ export default async function ManageTeamInvitations({ accountId }: Props) {
             {Boolean(invitations?.length) && (
                 <CardContent>
                     <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Invitation</TableHead>
+                                <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
+                            </TableRow>
+                        </TableHeader>
                         <TableBody>
                             {invitations?.map((invitation: any) => (
                                 <TableRow key={invitation.invitation_id}>

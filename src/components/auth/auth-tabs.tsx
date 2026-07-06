@@ -131,8 +131,8 @@ export default function AuthTabs({
                         </Alert>
                     )}
                     {kind === "user_exists" && (
-                        <Alert className="border-blue-500/40 bg-blue-500/5">
-                            <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                        <Alert>
+                            <CheckCircle2 className="size-4" />
                             <AlertTitle>Account bestaat al</AlertTitle>
                             <AlertDescription>
                                 Er is al een account voor <span className="font-medium">{email}</span>. Wissel bovenaan

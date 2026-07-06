@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { createClient } from "@/lib/supabase/server";
-import { Table, TableRow, TableBody, TableCell } from "../ui/table";
+import { Table, TableRow, TableBody, TableCell, TableHead, TableHeader } from "../ui/table";
 
 import { Badge } from "../ui/badge";
 import TeamMemberOptions from "./team-member-options";
@@ -30,6 +30,12 @@ export default async function ManageTeamMembers({accountId}: Props) {
             </CardHeader>
             <CardContent>
                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Member</TableHead>
+                            <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
+                        </TableRow>
+                    </TableHeader>
                     <TableBody>
                         {members?.map((member: any) => (
                             <TableRow key={member.user_id}>

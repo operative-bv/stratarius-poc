@@ -401,7 +401,7 @@ function DrillDown({
                     </div>
                     <div>
                         <span className="text-muted-foreground">Bron: </span>
-                        <a href={details.bron} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">{details.bron}</a>
+                        <a href={details.bron} target="_blank" rel="noopener noreferrer" className="text-primary underline">{details.bron}</a>
                     </div>
                 </div>
             </AccordionContent>

@@ -375,7 +375,7 @@ function Step({
                     href={bron}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-blue-500 hover:underline"
+                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                 >
                     <ExternalLink className="h-3 w-3" />
                     Bron

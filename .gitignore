@@ -47,3 +47,6 @@ next-env.d.ts
 .story/status.json
 .env*
 api/__pycache__/
+
+# supporting material — working notes, not source
+_supporting-material/books/

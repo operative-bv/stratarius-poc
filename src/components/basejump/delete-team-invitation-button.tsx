@@ -25,7 +25,7 @@ export default function DeleteTeamInvitationButton({invitationId}: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost"><Trash className="text-red-600 size-4" /></Button>
+        <Button variant="ghost" size="icon"><Trash className="text-destructive size-4" /><span className="sr-only">Delete invitation</span></Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
