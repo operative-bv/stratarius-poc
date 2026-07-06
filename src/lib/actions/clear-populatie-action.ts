@@ -28,7 +28,6 @@ export async function clearPopulatieAction(
 
     const { data, error } = await supabase.rpc("clear_tenant_populatie", {
         p_legale_entiteit_id: legaleEntiteitId,
-        p_rechtsgrondslag: "user reset via import page",
     });
 
     if (error) {
@@ -36,13 +35,13 @@ export async function clearPopulatieAction(
     }
 
     const row = (data ?? [])[0] as
-        | { dim_contract_deleted: number; dim_persoon_deleted: number }
+        | { deleted_contracten: number; deleted_personen: number }
         | undefined;
 
     revalidatePath(`/dashboard/${accountSlug}`);
     return {
         status: "success",
-        deletedContracten: row?.dim_contract_deleted ?? 0,
-        deletedPersonen: row?.dim_persoon_deleted ?? 0,
+        deletedContracten: row?.deleted_contracten ?? 0,
+        deletedPersonen: row?.deleted_personen ?? 0,
     };
 }
