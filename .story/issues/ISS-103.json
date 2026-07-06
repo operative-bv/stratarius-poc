@@ -1,0 +1,19 @@
+{
+  "components": [
+    "testing",
+    "multi-tenant"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-103",
+  "impact": "Codex ronde 2 S1. Bestaande cross-tenant test 65 test scenario \"user zonder toegang tot andere tenant\". Ontbrekend: user MET toegang tot beide tenants — cover alle pages + mutations om te bewijzen dat accountSlug filtering werkt.",
+  "location": [
+    "supabase/tests/database/"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit 938ad00. Nieuwe pgTAP test 66-multi-membership-tenant-scope.sql: één user met membership op tenant A + B, 4 assertions cover read_mart_loonkloof scope, create_what_if_scenario cross-tenant baseline reject, clear_tenant_populatie tenant isolation. 847/847 pgTAP pass (57 files).",
+  "resolvedDate": "2026-07-06",
+  "severity": "medium",
+  "status": "resolved",
+  "title": "Multi-membership pgTAP regression tests ontbreken"
+}

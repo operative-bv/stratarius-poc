@@ -1,0 +1,20 @@
+{
+  "components": [
+    "rls",
+    "loonkloof",
+    "views"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-093",
+  "impact": "De view is aangemaakt zonder `security_invoker=true` (Postgres 15+ optie). Views draaien default als owner (postgres = BYPASSRLS), dus authenticated user die `SELECT * FROM mart_loonkloof_decomp` doet krijgt rijen van ALLE tenants. De read-RPC met has_role_on_account bewaakt correct, maar wie de view direct bevraagt omzeilt dat.\n\n**Vinding:** Claude Agent 3 #2 (92/100). Codex miste dit — divergent.\n\n**Reproduceer:** `select owning_account_id, count(*) from mart_loonkloof_decomp group by 1` als een tenant-A user. Zou 1 group moeten geven, geeft er meer.\n\n**Fix opties:**\n- `CREATE VIEW ... WITH (security_invoker=true)` — view respecteert nu RLS van caller\n- OF `REVOKE ALL ON public.mart_loonkloof_decomp FROM public, anon, authenticated` en dwing access via RPC\n- Bij voorkeur beide.",
+  "location": [
+    "supabase/migrations/20260706040000_mart_loonkloof_to_table_with_rls.sql:212-294"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit (verzonden na deze update) via migration 20260706100000_mart_loonkloof_decomp_view_security_invoker.sql. ALTER VIEW SET (security_invoker=true) — view respecteert nu RLS van onderliggende mart_loonkloof + dim_persoon tables. REVOKE ALL FROM public + GRANT SELECT alleen aan authenticated. Directe SELECT op view toont alleen caller's tenant rijen. mart_loonkloof_decomp_read RPC blijft canonieke access-path met extra tenant-check + audit.",
+  "resolvedDate": "2026-07-06",
+  "severity": "critical",
+  "status": "resolved",
+  "title": "mart_loonkloof_decomp view zonder security_invoker — cross-tenant leak via directe query"
+}

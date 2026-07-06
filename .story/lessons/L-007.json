@@ -1,0 +1,20 @@
+{
+  "content": "Voor high-stakes reviews (POC-checkpoint, prod-readiness, security-audit): draai Claude multi-agent EN een onafhankelijke Codex-review parallel op dezelfde codebase. Rules of engagement voor beide: read-only, geen edits, geen commits, geen issue-creation. Output alleen als tekst. Consolidatie-stap (convergent vs divergent findings) doet één partij achteraf. Convergent finding = high-confidence critical, direct issue. Divergent finding = ook waardevol (unieke lens), aparte issue met notatie welke reviewer het vond.",
+  "context": "2026-07-06 POC checkpoint review: 3 Claude review-agents (cache architectuur, silent failures, RLS + type safety) + Codex second-opinion. Van 10 findings waren 5 convergent (beide vonden hetzelfde), 3 Claude-uniek (mid-import cache-DELETE ordering ISS-092, view security_invoker ISS-093, type-safety casts ISS-097), en 2 Codex-uniek (scenario-RPCs tenant check ISS-088 — critical prod-blocker, refresh_mart_loonkloof cross-tenant scope hint). Codex' ISS-088 vinding werd gemist door alle 3 Claude-agents ondanks parallelle scope. Bewijs dat verschillende model-families verschillende blinde vlekken hebben en dat parallelle review kritieke findings vangt die één reviewer mist. Rules of engagement essentieel: zonder \"geen issue-creation\" zouden beide reviewers duplicaat-tickets aanmaken voor convergent findings zonder deduplication-stap. Zie ook: `_supporting-material/reviews/codex-review-prompt.md` voor de exacte Codex-prompt-template.",
+  "createdDate": "2026-07-06",
+  "id": "L-007",
+  "lastValidated": "2026-07-06",
+  "reinforcements": 0,
+  "source": "review",
+  "status": "active",
+  "supersedes": null,
+  "tags": [
+    "review",
+    "multi-agent",
+    "codex",
+    "claude",
+    "security"
+  ],
+  "title": "Twee onafhankelijke AI-reviewers &gt; één (Claude + Codex parallel)",
+  "updatedDate": "2026-07-06"
+}

@@ -1,0 +1,20 @@
+{
+  "components": [
+    "cache",
+    "loonkloof",
+    "data-integrity"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-102",
+  "impact": "Codex ronde 2 I3 (94/100). mart_loonkloof PK is (persoon_id, referentiedatum). Bronrouter (`lonen_maand` CTE) groepeert op meer velden dus produceert meerdere rijen per persoon als: geldig_van verschilt (job-switch mid-quarter), of pc_id verschilt, of legale_entiteit_id verschilt (multi-entity binnen tenant). ISS-094's ON CONFLICT DO NOTHING drop dan silent één rij per conflict.\n\n**Fix opties**:\n1. Aggregeer bronrouter naar één rij per (persoon_id, referentiedatum) — SUM basis_vte + variabele_vte.\n2. Expand PK om legale_entiteit_id + pc_id + functieniveau te bevatten — nauwkeuriger.\n3. Aparte mart_loonkloof_contract als grain expliciet contract-level moet zijn.",
+  "location": [
+    "supabase/migrations/20260706110000_cache_refresh_concurrency_safety.sql:205-258"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit 64d38a3. Extra CTE lonen_per_persoon in refresh_mart_loonkloof aggregeert SUM basis+variabele over alle contracten per (persoon_id, referentiedatum). distinct on met order by basis_vte desc — dominant contract levert non-key attributen. Geen data-loss meer bij multi-contract personen.",
+  "resolvedDate": "2026-07-06",
+  "severity": "high",
+  "status": "resolved",
+  "title": "ON CONFLICT DO NOTHING op mart_loonkloof verbergt data-loss bij multi-contract persoon"
+}

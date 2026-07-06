@@ -1,0 +1,20 @@
+{
+  "components": [
+    "cache",
+    "concurrency"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-101",
+  "impact": "Codex ronde 2 I2 (93/100). ISS-094 advisory lock in refresh RPCs serialiseert refreshes onderling. Trigger-based invalidatie (ISS-089) neemt dezelfde lock niet. Scenario: A begint refresh + houdt lock; A doet DELETE; B doet INSERT fact_looncomponent, trigger DELETE (no-op want cache leeg); B commit; A finish cascade computation met of zonder B's data; A commit met potentieel stale rijen. Cache lijkt fresh (refreshed_at recent) maar bevat stale data → auto-populate triggert niet meer.\n\n**Fix**: Gedeelde advisory lock namespace tussen refresh RPCs én invalidation triggers (triggers moeten lock nemen vóór DELETE). Alternatief: cache-epoch/version-tracking waar refresh de epoch valideert vóór commit — retry als mutatie tussendoor gebeurde.",
+  "location": [
+    "supabase/migrations/20260706110000_cache_refresh_concurrency_safety.sql",
+    "supabase/migrations/20260706080000_cache_invalidation_triggers.sql"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit 5b374af. Gedeelde advisory lock namespace: triggers nemen pg_advisory_xact_lock op (owning_account, salt=40) per affected tenant vóór DELETE. Refresh RPCs nemen EERST tenant-lock (salt=40) DAN scope-lock (salt=42 of 43). Consistente lock-order voorkomt deadlock. Trigger die tegelijk met refresh loopt, wacht op refresh — refresh's SELECT ziet vervolgens alle commits.",
+  "resolvedDate": "2026-07-06",
+  "severity": "high",
+  "status": "resolved",
+  "title": "Refresh-vs-mutation race blijft — advisory lock dekt alleen refresh-vs-refresh"
+}

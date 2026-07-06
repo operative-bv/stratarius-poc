@@ -1,0 +1,21 @@
+{
+  "components": [
+    "gdpr",
+    "rls",
+    "loonkloof"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-099",
+  "impact": "Codex ronde 2 C2 (98/100). dim_persoon.geslacht/opleidingsniveau hebben column-REVOKE voor authenticated. Maar mart_loonkloof repliceert persoon_id + geslacht + uurloon_bruto en geeft direct SELECT aan authenticated. Reads gaan niet via rechtsgrondslag-gated RPC en worden niet in gdpr_access_log gelogd. De hele GDPR-compliance is dus omzeilbaar via `SELECT geslacht FROM mart_loonkloof`.\n\n**Fix**: REVOKE SELECT op mart_loonkloof van authenticated. Expose reads via SECURITY DEFINER RPC met rechtsgrondslag-parameter + gdpr_access_log audit. Update loonkloof/page.tsx.",
+  "location": [
+    "supabase/migrations/20260706040000_mart_loonkloof_to_table_with_rls.sql:37-72",
+    "src/app/dashboard/[accountSlug]/loonkloof/page.tsx:115-118"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit 3c2940d. REVOKE SELECT op mart_loonkloof van authenticated. Nieuwe read_mart_loonkloof RPC (SECURITY DEFINER + has_role_on_account + gdpr_access_log audit) is canonieke read-path. loonkloof/page.tsx gebruikt nu RPC ipv direct .from(). Test 65 assertion 1 update: verwacht permission-denied bij direct SELECT. 843/843 pgTAP pass.",
+  "resolvedDate": "2026-07-06",
+  "severity": "critical",
+  "status": "resolved",
+  "title": "GDPR column-REVOKE via mart_loonkloof omzeild — beschermde kolommen leesbaar"
+}

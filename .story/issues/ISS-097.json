@@ -1,0 +1,23 @@
+{
+  "components": [
+    "types",
+    "populatie"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-097",
+  "impact": "Vier `as unknown as PopRow[]` casts in populatie-results.tsx (regels 56, 86, 126, 157) erasen PostgREST typing. mart_populatie_loonkost heeft 21 kolommen maar PopRow definieert er 14; renamed kolom = silent undefined at runtime. PopRow woont ook in row-detail-sheet.tsx ipv populatie-types.ts (breekt \"types in -types.ts\" conventie uit memory). Basejump billing.ts / invitations.ts / members.ts hebben `prevState: any` — laatste `any` in src/lib/actions/.\n\n**Vinding:** Claude Agent 3 #4+#5 (80-82). Codex miste dit — divergent.\n\n**Fix:**\n- Definieer MartPopulatieLoonkostRow type dat DB-shape spiegelt, gebruik direct ipv cast\n- Move PopRow naar src/lib/actions/populatie-types.ts of components/populatie/types.ts\n- Type basejump actions (of accepteer dat basejump legacy is)",
+  "location": [
+    "src/app/dashboard/[accountSlug]/populatie/populatie-results.tsx:56,86,126,157",
+    "src/app/dashboard/[accountSlug]/populatie/row-detail-sheet.tsx",
+    "src/lib/actions/billing.ts:5,30",
+    "src/lib/actions/invitations.ts:7,35,56",
+    "src/lib/actions/members.ts:6,29"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Partially fixed in commit (verzonden na deze update). PopRow, RSZParam, StructureleParam, ExtralegaalDetail geëxtraheerd naar populatie-types.ts. row-detail-sheet.tsx re-exportert voor backward-compat. Bewuste out-of-scope: `as unknown as` casts blijven (Supabase typegen-workflow is post-POC follow-up), basejump `prevState: any` blijft (legacy code). Next build pass.",
+  "resolvedDate": "2026-07-06",
+  "severity": "low",
+  "status": "resolved",
+  "title": "Type-safety: `as unknown as` casts + basejump `any` — types naar -types.ts"
+}

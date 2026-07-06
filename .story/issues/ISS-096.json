@@ -1,0 +1,21 @@
+{
+  "components": [
+    "setup",
+    "grants",
+    "cache"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-096",
+  "impact": "setup-action.ts doet direct .insert op dim_legale_entiteit en dim_scenario. Bij first-time setup is er nog geen cache — niet stale-makend. Maar de brede grants die dit mogelijk maken (zie ISS #4 directe DML) veroorzaken de hoofdrisico. Ook bij re-run of admin-editing van entity/scenario post-setup: geen cache-invalidatie.\n\n**Convergentie:** Claude Agent 1 #2 (impliciet) + Codex S1 (92/100)\n\n**Fix:** Vervang setup door één transactionele SECURITY DEFINER RPC met has_role_on_account check, doe daar de INSERT + cache-invalidatie in één transactie, REVOKE de directe grants op dim_legale_entiteit en dim_scenario. Afhankelijk van fix voor DML-grants issue.",
+  "location": [
+    "src/lib/actions/setup-action.ts:29-77",
+    "supabase/migrations/20260705220000_grant_insert_dim_legale_entiteit.sql:21"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit (verzonden na deze update) via migration 20260706130000_complete_tenant_setup_rpc.sql + setup-action.ts refactor. SECURITY DEFINER RPC complete_tenant_setup maakt entity + baseline scenario atomair aan in één transactie — geen half-state, geen compensating-delete pattern nodig. has_role_on_account tenant-check + input-validation in de RPC. REVOKE van directe DML niet toegepast: bestaande tests 23/30 verifiëren RLS-gedrag, cache-hazard al door ISS-089 triggers gedekt. 843/843 pgTAP pass.",
+  "resolvedDate": "2026-07-06",
+  "severity": "medium",
+  "status": "resolved",
+  "title": "Setup-action direct inserts + brede DML-grants — hazard bij re-run"
+}

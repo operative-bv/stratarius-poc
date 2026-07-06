@@ -1,0 +1,21 @@
+{
+  "components": [
+    "cache",
+    "bulk-import",
+    "exception-handling"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-092",
+  "impact": "In bulk_import_populatie zit de \"DELETE FROM mart_populatie_loonkost\" invalidation-hook aan het EIND van de RPC. Als een rij een infra-error krijgt (Class 53/57/XX) en `raise;` triggert, springt de exception uit vóór de cache-DELETE. Contracten die succesvol geïmporteerd zijn vóór de crash blijven bestaan, maar mart-caches zijn NIET geïnvalideerd — dashboards tonen mix van oude cache + nieuwe rijen.\n\n**Vinding:** Claude Agent 2 #2 (critical). Codex miste dit — divergent.\n\n**Fix opties:**\n- Cache-DELETE vóór de row-loop (safer: leegte tijdens import → auto-populate na)\n- OF BEGIN/EXCEPTION rondom raise dat cache-DELETE altijd runt via WHEN OTHERS\n- OF verplaats cache-DELETE naar AFTER-trigger op de fact-tabellen",
+  "location": [
+    "supabase/migrations/20260706040000_mart_loonkloof_to_table_with_rls.sql:512-524",
+    "supabase/migrations/20260706010000_cache_auto_invalidate.sql:157-164"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Side-effect fix van ISS-089 in commit 6b6ebb5. STATEMENT-level AFTER-triggers runnen binnen dezelfde transactie als de triggering INSERT/UPDATE/DELETE. Bij mid-import crash (bulk_import_populatie raise) rolt de cache-DELETE mee met de mutation-rollback → cache blijft coherent met source. Geen `raise vs cache-DELETE ordering` issue meer.",
+  "resolvedDate": "2026-07-06",
+  "severity": "critical",
+  "status": "resolved",
+  "title": "bulk_import cache-DELETE komt NA `raise` in row-loop → stale cache bij mid-import crash"
+}

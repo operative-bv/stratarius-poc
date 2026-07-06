@@ -1,0 +1,22 @@
+{
+  "components": [
+    "scenarios",
+    "security",
+    "rls"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-088",
+  "impact": "Auth'd user van tenant A kan een scenario aan tenant B koppelen én tenant B's baseline-data kopiëren via p_baseline_scenario_id. RLS wordt door SECURITY DEFINER omzeild.\n\n**Vindingen:** Codex C1 (99/100 confidence)\n\n**Probleem:** create_scenario_with_mutations, create_scenario_rpc en create_wagen_scenario_rpc zijn SECURITY DEFINER maar valideren geen has_role_on_account. De unified RPC checkt zelfs auth.uid() niet.\n\n**Reproduceer:** Roep de RPC aan met p_legale_entiteit_id en p_baseline_scenario_id van een andere tenant.\n\n**Fix:** Leid het account af uit entiteit én baseline, eis dat beide dezelfde tenant hebben, valideer auth.uid() + has_role_on_account, beperk functie/teamfilters tot die entiteit. Template: cascade_populatie_snapshot (commit 3343d8f).",
+  "location": [
+    "supabase/migrations/20260704001000_create_scenario_with_mutations.sql:30-83",
+    "supabase/migrations/20260703360000_create_scenario_rpc.sql:29-69",
+    "supabase/migrations/20260703370000_create_wagen_scenario_rpc.sql:32-77"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit 00e9992 via migration 20260706060000_scenario_rpcs_tenant_check.sql. Alle 3 RPCs (create_what_if_scenario, create_wagen_scenario, create_scenario_with_mutations) hebben nu auth.uid() + has_role_on_account tenant-check + baseline-scenario tenant-match validatie. Extra fix in create_wagen_scenario: c.legale_entiteit_id filter toegevoegd op alle wagen-INSERT queries (was cross-tenant hazard). Test 61 JWT-auth toegevoegd (patroon uit test 63). 843/843 pgTAP assertions pass lokaal.",
+  "resolvedDate": "2026-07-06",
+  "severity": "critical",
+  "status": "resolved",
+  "title": "Scenario-RPCs valideren geen tenant — cross-tenant scenario+baseline lek"
+}

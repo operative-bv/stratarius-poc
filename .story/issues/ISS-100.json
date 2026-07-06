@@ -1,0 +1,19 @@
+{
+  "components": [
+    "cache",
+    "invalidation"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-100",
+  "impact": "Codex ronde 2 I1 (99/100). ISS-089 trigger op dim_legale_entiteit is DELETE-only. Comment zei \"INSERT/UPDATE van entiteit-config verandert geen cascade-berekening\" — dat is fout: werkgeverscategorie stuurt RSZ-tarief, gewest stuurt doelgroepvermindering. authenticated heeft direct UPDATE-recht via basejump grants.\n\n**Reproduceer**: bouw cache, UPDATE dim_legale_entiteit SET werkgeverscategorie=2, herlaad populatie-page → oude berekening blijft staan.\n\n**Fix**: Change trigger naar INSERT/UPDATE/DELETE. Bij UPDATE beide OLD en NEW rows meenemen (als owning_account_id verandert, invalideer beide).",
+  "location": [
+    "supabase/migrations/20260706080000_cache_invalidation_triggers.sql:293-302"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit 77ebbcf. dim_legale_entiteit trigger uitgebreid naar INSERT+UPDATE+DELETE. Alle UPDATE-triggers op andere tabellen ook uitgebreid met OLD table voor row-migration coverage. Trigger function nu 3-way dispatch per operatie-type.",
+  "resolvedDate": "2026-07-06",
+  "severity": "high",
+  "status": "resolved",
+  "title": "dim_legale_entiteit UPDATE-trigger ontbreekt — werkgeverscategorie/gewest wijziging laat cache stale"
+}

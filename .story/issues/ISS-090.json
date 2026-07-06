@@ -1,0 +1,22 @@
+{
+  "components": [
+    "cache",
+    "ux",
+    "error-handling"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-090",
+  "impact": "Als refresh_populatie_loonkost_cache of refresh_mart_loonkloof faalt in de auto-populate flow, wordt de error alleen ge-console-log'd. De page rendert daarna een lege state (\"Geen contracten gevonden\") — user denkt dat filters mismatch geven, niet dat de berekening crashte. Verbergt permission-issues + cascade-fouten.\n\n**Convergentie:** Claude Agent 2 #3+#4 (critical) + Codex I2 (97/100)\n\n**Reproduceer:** Force een PK-conflict of permission error tijdens auto-populate.\n\n**Fix:** Zet refresh-, fallback- en requery-errors in de zichtbare error-state. Onderscheid \"geen records\" van \"berekening mislukt\". Voeg errorId toe voor server-log correlatie.",
+  "location": [
+    "src/app/dashboard/[accountSlug]/loonkloof/page.tsx:118-135",
+    "src/app/dashboard/[accountSlug]/populatie/populatie-results.tsx:62-89",
+    "src/app/dashboard/[accountSlug]/populatie/populatie-results.tsx:146-167"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit (verzonden na deze update). populatie-results.tsx: fetchError string state bij cache-query fail / BEIDE refresh + cascade fallback fail / requery-na-refresh fail — rendert shadcn Alert destructive met verklaring \"geen filter-probleem\". loonkloof/page.tsx: error object gevuld bij refresh_mart_loonkloof fail of requery fail — bestaand render-pad toont dit. Blijft console.error voor server-log correlatie.",
+  "resolvedDate": "2026-07-06",
+  "severity": "critical",
+  "status": "resolved",
+  "title": "Silent cache refresh failures — user ziet 'geen data' ipv error"
+}

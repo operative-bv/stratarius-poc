@@ -14,9 +14,9 @@
   "recipeOverrides": {
     "stages": {
       "VERIFY": {
-        "enabled": true,
+        "startCommand": "npm run dev",
         "readinessUrl": "http://localhost:3000",
-        "startCommand": "npm run dev"
+        "enabled": true
       }
     },
     "codexReviewBackends": [

@@ -1,0 +1,22 @@
+{
+  "components": [
+    "cache",
+    "grants",
+    "invalidation"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-089",
+  "impact": "authenticated role kan rechtstreeks INSERT/UPDATE/DELETE doen op fact_looncomponent, fact_prestatie, fact_wagen, dim_scenario en dim_legale_entiteit. RLS bewaakt tenant, maar cache-invalidatie leeft ALLEEN in mutation-RPCs. Iedere directe Supabase DML laat mart_populatie_loonkost en mart_loonkloof onbeperkt stale.\n\n**Convergentie:** Claude Agent 1 #2 (92/100) + Codex C2 (98/100)\n\n**Reproduceer:** Update een bestaande fact_wagen-rij via de Supabase client. Beide cachetabellen blijven intact met oude waarden.\n\n**Fix opties:**\n- REVOKE directe DML en verplicht tenant-safe RPCs\n- OF database-triggers op fact_*/dim_scenario die beide marts per tenant invalideren (AFTER INSERT/UPDATE/DELETE)",
+  "location": [
+    "supabase/migrations/20260703350000_fix_domain_table_grants.sql:41-44",
+    "supabase/migrations/20260705220000_grant_insert_dim_legale_entiteit.sql:21",
+    "supabase/migrations/20260705280000_grant_insert_fact_wagen.sql:15"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit 6b6ebb5 via migration 20260706080000_cache_invalidation_triggers.sql. STATEMENT-level AFTER-triggers op fact_looncomponent, fact_prestatie, fact_wagen, dim_contract, dim_persoon, dim_functie, dim_scenario (INS+UPD+DEL) en dim_legale_entiteit (DEL only). Invalideert beide mart-caches binnen dezelfde transactie via transition tables. Werkt ook voor directe DML (Studio, setup-action, ad-hoc admin). Redundante DELETE FROM mart_* in bulk_import_populatie + clear_tenant_populatie blijven als defense-in-depth. 843/843 pgTAP pass.",
+  "resolvedDate": "2026-07-06",
+  "severity": "critical",
+  "status": "resolved",
+  "title": "Directe DML-grants op fact_* en dim_scenario omzeilen cache-invalidation"
+}

@@ -1,0 +1,20 @@
+{
+  "components": [
+    "cache",
+    "concurrency"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-094",
+  "impact": "Twee users hit een empty cache tegelijk → beide refresh-calls doen DELETE + INSERT SELECT zonder advisory-lock of ON CONFLICT-strategie. Onder READ COMMITTED slagen beide DELETEs (leeg = niets te locken), beide INSERTs starten, tweede caller crash op PK-violation op (contract_id, scenario_id, periode). Second caller ziet error + fallback naar live cascade, terwijl cache halfweg gevuld is door de eerste.\n\n**Convergentie:** Claude Agent 1 #3 (88/100) + Codex I1 (96/100)\n\n**Fix opties (van simpel naar robuust):**\n- `INSERT ... ON CONFLICT DO NOTHING` — accepteer race, second caller wint niet maar first-caller data blijft\n- Advisory lock op (scenario_id, periode, owning_account_id) — serialiseer refresh\n- `LOCK TABLE mart_populatie_loonkost IN EXCLUSIVE MODE` binnen RPC — sterkste, meer contention",
+  "location": [
+    "supabase/migrations/20260706000000_mart_populatie_loonkost.sql:135-163",
+    "supabase/migrations/20260706040000_mart_loonkloof_to_table_with_rls.sql:133-194"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit (verzonden na deze update) via migration 20260706110000_cache_refresh_concurrency_safety.sql. Twee-lagige fix: (1) pg_advisory_xact_lock op scope-key hash — concurrent refreshes voor dezelfde scope serialiseren; verschillende scopes parallel. (2) ON CONFLICT DO NOTHING op INSERT als defense-in-depth voor race conditions. refresh_populatie_loonkost_cache scoped op (owning_account, scenario, periode); refresh_mart_loonkloof scoped op owning_account. 843/843 pgTAP pass.",
+  "resolvedDate": "2026-07-06",
+  "severity": "high",
+  "status": "resolved",
+  "title": "Concurrent cache-populate → PK-clash op mart-tables"
+}

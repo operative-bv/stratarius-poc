@@ -1,0 +1,21 @@
+{
+  "components": [
+    "cache",
+    "parameters",
+    "freshness"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-095",
+  "impact": "refreshed_at kolom bestaat op mart_populatie_loonkost + mart_loonkloof maar wordt alleen als UI-metadata gebruikt, nooit als expiry-gate. Cache-invalidatie hangt puur aan mutation-RPCs. Als een param_rsz / param_structurele_vermindering / param_bedrijfswagen_forfait migration een tenant's berekening verandert, wordt de cache NOOIT ongeldig. Comment in cache_auto_invalidate.sql erkent dit als \"we doen dit handmatig via migration TRUNCATE\" — maar er is geen guard/trigger die dit afdwingt en geen enkele param_* migration doet daadwerkelijk een TRUNCATE.\n\n**Convergentie:** Claude Agent 1 #4 (85/100) + Codex I3 (95/100)\n\n**Fix opties:**\n- Simpel: pages verwerpen refreshed_at < now() - interval '24h' en triggeren refresh\n- Beter: bewaar param_snapshot_batch_id op cache-row (kolom bestaat al op dim_scenario) en invalideer als batch-id verandert\n- Automatisch: post-migration hook die op param_* wijziging alle marts TRUNCATE't",
+  "location": [
+    "supabase/migrations/20260706000000_mart_populatie_loonkost.sql:45-53",
+    "supabase/migrations/20260706010000_cache_auto_invalidate.sql:16-18"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit (verzonden na deze update) via migration 20260706120000_param_change_invalidates_all_marts.sql. STATEMENT-level triggers op alle 13 param_* tabellen die beide mart-caches TRUNCATE'n bij INSERT/UPDATE/DELETE. Parameter-wijziging = globale cache-refresh op eerstvolgende page-visit per tenant. Trade-off: extra latency bij param-migratie (zeldzaam). Trigger-enforced ipv documented convention (te makkelijk vergeten). 843/843 pgTAP pass.",
+  "resolvedDate": "2026-07-06",
+  "severity": "high",
+  "status": "resolved",
+  "title": "Geen freshness-contract — parameter-migraties laten caches permanent stale"
+}

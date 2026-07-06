@@ -1,0 +1,20 @@
+{
+  "components": [
+    "cache",
+    "loonkloof",
+    "multi-tenant"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-091",
+  "impact": "De function collect array_agg(account_id) FROM basejump.account_user WHERE user_id = auth.uid() en doet vervolgens DELETE + INSERT voor ALLE tenants van de caller in één call. Als user tot meerdere tenants behoort, wipet auto-populate op tenant A ook tenant B's cache. Massive I/O amplification + concurrent-user deadlock scenario expandeert naar alle tenants van beide callers.\n\n**Vinding:** Claude Agent 1 #1 (95/100 confidence). Codex noemt het impliciet in I1 fix suggestie (\"Laat refresh_mart_loonkloof bovendien één expliciete p_owning_account_id refreshen\").\n\n**Fix:** Accept p_owning_account_id uuid als expliciete parameter (net zoals populatie-variant p_scenario_id doet). Valideer via has_role_on_account. Lock scope tot dat single account.",
+  "location": [
+    "supabase/migrations/20260706040000_mart_loonkloof_to_table_with_rls.sql:104-135"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit 4de97a4 via migration 20260706090000_refresh_mart_loonkloof_single_tenant.sql. Nieuwe signature refresh_mart_loonkloof(p_owning_account_id uuid, p_rechtsgrondslag text) met has_role_on_account tenant-check. DELETE + INSERT gescoped tot single account — geen cross-tenant amplification meer. Client loonkloof/page.tsx haalt owning_account_id via get_account_by_slug op. Test 65 en pgTAP suite 843/843 pass.",
+  "resolvedDate": "2026-07-06",
+  "severity": "critical",
+  "status": "resolved",
+  "title": "refresh_mart_loonkloof scope = ALLE tenants van caller — cross-tenant amplification + deadlock"
+}

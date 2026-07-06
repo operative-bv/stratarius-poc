@@ -1,0 +1,23 @@
+{
+  "components": [
+    "multi-tenant",
+    "security",
+    "actions"
+  ],
+  "discoveredDate": "2026-07-06",
+  "id": "ISS-098",
+  "impact": "Codex ronde 2 C1 (99/100). Pages en mutation actions vragen alle door RLS toegestane tenants op maar filteren niet op het account uit de URL. Voor multi-membership users: pagina A toont data van B, en 'populatie wissen' op A kan tenant B's eerste entiteit verwijderen via de `.limit(1)` in clear-populatie-action.ts:14-31 / import-action.ts:13-37.\n\n**Files**: clear-populatie-action.ts, import-action.ts, loonkloof/page.tsx, scenarios/page.tsx (+ mogelijk populatie/page.tsx, setup/page.tsx).\n\n**Fix**: Resolve accountSlug naar account_id via get_account_by_slug in ALL flows. Voeg overal `.eq(\"owning_account_id\", accountId)` toe. Mutation RPCs zouden ook expected-account moeten ontvangen + valideren.",
+  "location": [
+    "src/lib/actions/clear-populatie-action.ts:14-31",
+    "src/lib/actions/import-action.ts:13-37",
+    "src/app/dashboard/[accountSlug]/loonkloof/page.tsx:85-120",
+    "src/app/dashboard/[accountSlug]/scenarios/page.tsx:20-37"
+  ],
+  "phase": null,
+  "relatedTickets": [],
+  "resolution": "Fixed in commit 69bbf70. Alle mutation actions + Server Components resolven nu accountSlug naar account_id via get_account_by_slug en filteren queries op owning_account_id (of via join). Files: import-action.ts, clear-populatie-action.ts, scenarios/page.tsx, loonkloof/page.tsx, populatie/page.tsx. ISS-103 test 66 regression guard voor multi-membership isolation.",
+  "resolvedDate": "2026-07-06",
+  "severity": "critical",
+  "status": "resolved",
+  "title": "accountSlug begrenst tenantdata niet — multi-membership cross-tenant destructie"
+}
