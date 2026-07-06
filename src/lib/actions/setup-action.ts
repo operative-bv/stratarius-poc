@@ -26,52 +26,19 @@ export async function completeSetupAction(
         return { error: "Ondernemingsnummer moet formaat 0XXX.XXX.XXX volgen" };
     }
 
-    const { data: entiteitData, error: entiteitErr } = await supabase
-        .from("dim_legale_entiteit")
-        .insert({
-            owning_account_id: accountId,
-            werkgeverscategorie,
-            ondernemingsnr,
-            naam,
-            land_id: "BE",
-            gewest,
-        })
-        .select("legale_entiteit_id")
-        .single();
+    // ISS-096: atomische setup via SECURITY DEFINER RPC — vervangt de oude
+    // direct-insert + compensating-delete pattern. Entiteit + baseline
+    // scenario worden in één transactie aangemaakt.
+    const { error: setupErr } = await supabase.rpc("complete_tenant_setup", {
+        p_owning_account_id: accountId,
+        p_naam: naam,
+        p_gewest: gewest,
+        p_werkgeverscategorie: werkgeverscategorie,
+        p_ondernemingsnr: ondernemingsnr,
+    });
 
-    if (entiteitErr || !entiteitData) {
-        return { error: `Entiteit kon niet aangemaakt worden: ${entiteitErr?.message ?? "unknown"}` };
-    }
-
-    const { error: scenarioErr } = await supabase
-        .from("dim_scenario")
-        .insert({
-            legale_entiteit_id: entiteitData.legale_entiteit_id,
-            naam: "Baseline 2026",
-            kind: "baseline",
-        });
-
-    if (scenarioErr) {
-        // Compensating delete: entiteit zonder scenario is een half-af state.
-        // User zou vast zitten op retry (unique constraint). Rollback zodat
-        // hij opnieuw kan setup'en.
-        const { error: rollbackErr } = await supabase
-            .from("dim_legale_entiteit")
-            .delete()
-            .eq("legale_entiteit_id", entiteitData.legale_entiteit_id);
-        if (rollbackErr) {
-            console.error(
-                "[setup] scenario faalde EN rollback faalde:",
-                scenarioErr.message,
-                rollbackErr.message,
-            );
-            return {
-                error: `Setup faalde (${scenarioErr.message}) en cleanup mislukte (${rollbackErr.message}). Neem contact op met support.`,
-            };
-        }
-        return {
-            error: `Setup faalde bij baseline scenario: ${scenarioErr.message}. Je kunt opnieuw proberen.`,
-        };
+    if (setupErr) {
+        return { error: `Setup faalde: ${setupErr.message}` };
     }
 
     revalidatePath(`/dashboard/${accountSlug}`);
