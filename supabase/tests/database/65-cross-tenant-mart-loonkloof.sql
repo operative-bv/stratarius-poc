@@ -121,22 +121,16 @@ select is(
 );
 
 ------------------------------------------------------------
--- Assertion 1: Team B ziet ZERO rijen via de app-side filter pattern
--- (loonkloof/page.tsx + oaxaca-action.ts pattern: filter mart op
--- legale_entiteit_id IN (select ... from dim_legale_entiteit) waar
--- dim_legale_entiteit RLS de subquery leeg maakt voor team B).
+-- Assertion 1: ISS-099 — direct SELECT op mart_loonkloof is REVOKED
+-- voor authenticated. Team B krijgt permission denied ipv rijen te zien.
+-- Sterkere garantie dan de oude RLS-filter check.
 ------------------------------------------------------------
 
-select is(
-    (
-        select count(*)::int
-        from public.mart_loonkloof m
-        where m.legale_entiteit_id in (
-            select legale_entiteit_id from public.dim_legale_entiteit
-        )
-    ),
-    0,
-    'team B ziet 0 mart_loonkloof rijen via .in(entiteitIds) — RLS op dim_legale_entiteit filtert subquery leeg (regression guard 79b22f4)'
+select throws_ok(
+    $$ select count(*) from public.mart_loonkloof $$,
+    '42501',
+    null,
+    'ISS-099: direct SELECT op mart_loonkloof geeft permission denied voor authenticated'
 );
 
 ------------------------------------------------------------

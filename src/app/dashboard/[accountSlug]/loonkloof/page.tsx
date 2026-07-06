@@ -115,20 +115,23 @@ export default async function LoonkloofPage({
     let rows: MartRow[] = [];
     let decomp: DecompRow | null = null;
 
-    if (!error && entiteitIds.length > 0) {
-        // mart_loonkloof is nu een tabel met RLS op owning_account_id — Postgres filtert
-        // automatisch tot caller's eigen tenant. Optioneel filter op gekozen entiteit.
-        let martQuery = supabase
-            .from("mart_loonkloof")
-            .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren, legale_entiteit_id")
-            .eq("referentiedatum", "2026-06-30");
-        if (activeEntiteitId) martQuery = martQuery.eq("legale_entiteit_id", activeEntiteitId);
-        let { data: martData, error: martErr } = await martQuery;
+    if (!error && entiteitIds.length > 0 && owningAccountId) {
+        // ISS-099: read via read_mart_loonkloof RPC (SECURITY DEFINER + audit).
+        // Direct SELECT op mart_loonkloof is voor authenticated REVOKED omdat
+        // de mart geslacht + uurloon_bruto repliceert (dim_persoon column-REVOKE
+        // ISS-086 werd anders omzeild).
+        const rechtsgrondslag = "HR loonkloof-decompositie — Wet 22 april 2012 (loonkloof-rapportering)";
+        let { data: martData, error: martErr } = await supabase.rpc("read_mart_loonkloof", {
+            p_owning_account_id: owningAccountId,
+            p_rechtsgrondslag: rechtsgrondslag,
+            p_referentiedatum: "2026-06-30",
+            p_legale_entiteit_id: activeEntiteitId,
+        });
         if (martErr) error = { message: `Mart-query faalde: ${martErr.message}` };
 
         // Auto-populate cache bij eerste visit (of na invalidation door bulk_import/clear).
         // ISS-090: expliciete error propagation ipv silent console.error.
-        if (!error && (martData ?? []).length === 0 && owningAccountId) {
+        if (!error && (martData ?? []).length === 0) {
             const { error: refreshErr } = await supabase.rpc("refresh_mart_loonkloof", {
                 p_owning_account_id: owningAccountId,
                 p_rechtsgrondslag: "loonkloof pagina eerste visit — auto-populate cache",
@@ -137,12 +140,12 @@ export default async function LoonkloofPage({
                 console.error("[loonkloof] mart refresh failed:", refreshErr);
                 error = { message: `Loonkloof-berekening mislukt: ${refreshErr.message}. Dit is geen filter-probleem — de decompositie-RPC kon geen resultaten leveren.` };
             } else {
-                let requeryBuilder = supabase
-                    .from("mart_loonkloof")
-                    .select("persoon_id, referentiedatum, kwartaal, uurloon_bruto, basis_vte, variabele_vte, geslacht, functieniveau, ancienniteit_jaren, legale_entiteit_id")
-                    .eq("referentiedatum", "2026-06-30");
-                if (activeEntiteitId) requeryBuilder = requeryBuilder.eq("legale_entiteit_id", activeEntiteitId);
-                const requery = await requeryBuilder;
+                const requery = await supabase.rpc("read_mart_loonkloof", {
+                    p_owning_account_id: owningAccountId,
+                    p_rechtsgrondslag: rechtsgrondslag,
+                    p_referentiedatum: "2026-06-30",
+                    p_legale_entiteit_id: activeEntiteitId,
+                });
                 if (requery.error) {
                     error = { message: `Mart-requery na refresh faalde: ${requery.error.message}` };
                 } else {
