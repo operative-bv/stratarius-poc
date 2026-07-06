@@ -98,7 +98,10 @@ insert into public.fact_looncomponent (contract_id, periode, component_id, scena
 ------------------------------------------------------------
 
 select tests.authenticate_as('mart_team_a_owner');
-select public.refresh_mart_loonkloof('pgTAP test setup');
+select public.refresh_mart_loonkloof(
+    'aa000000-0000-0000-0000-000000000001'::uuid,
+    'pgTAP test setup'
+);
 
 ------------------------------------------------------------
 -- Switch naar team B → assertions

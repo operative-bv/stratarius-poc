@@ -82,6 +82,11 @@ export default async function LoonkloofPage({
     const { entiteit: entiteitFilter } = await searchParams;
     const supabase = await createClient();
 
+    // ISS-091: refresh_mart_loonkloof vereist p_owning_account_id — leidt af
+    // van de accountSlug in URL via basejump helper.
+    const { data: accountData } = await supabase.rpc("get_account_by_slug", { slug: accountSlug });
+    const owningAccountId = accountData?.account_id as string | undefined;
+
     // ISS-078: tenant-lookup error EXPLICIET checken — silent failure zou
     // de cross-tenant leak-fix uit 79b22f4 ondermijnen (entiteitIds=[]
     // fallback ziet er uit als "lege tenant" maar kan een echte error zijn).
@@ -116,8 +121,9 @@ export default async function LoonkloofPage({
         if (martErr) error = { message: `Mart-query faalde: ${martErr.message}` };
 
         // Auto-populate cache bij eerste visit (of na invalidation door bulk_import/clear).
-        if (!error && (martData ?? []).length === 0) {
+        if (!error && (martData ?? []).length === 0 && owningAccountId) {
             const { error: refreshErr } = await supabase.rpc("refresh_mart_loonkloof", {
+                p_owning_account_id: owningAccountId,
                 p_rechtsgrondslag: "loonkloof pagina eerste visit — auto-populate cache",
             });
             if (refreshErr) {
