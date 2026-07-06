@@ -4,6 +4,12 @@ BEGIN;
 
 create extension if not exists pgtap;
 
+-- ISS-088: RPC is nu SECURITY DEFINER met auth.uid() + has_role_on_account check.
+-- Set JWT claim direct naar Demo BVBA's seed owner uid (patroon uit test 63).
+select set_config('role', 'authenticated', true);
+select set_config('request.jwt.claims',
+    json_build_object('sub','a0000000-0000-0000-0000-000000000001','role','authenticated')::text, true);
+
 select plan(6);
 
 -- Helper: temp table voor scenario-IDs die we tijdens de test aanmaken.
