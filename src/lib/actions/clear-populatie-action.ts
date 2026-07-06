@@ -11,9 +11,22 @@ export async function clearPopulatieAction(
 ): Promise<ClearPopulatieState> {
     const supabase = await createClient();
 
+    // ISS-098: resolve accountSlug naar account_id en filter dim_legale_entiteit
+    // hierop. Zonder deze filter kon een multi-membership user per ongeluk
+    // een ANDERE tenant's populatie wissen ("eerste RLS-toegankelijke entiteit").
+    const { data: accountData, error: accountErr } = await supabase.rpc("get_account_by_slug", { slug: accountSlug });
+    if (accountErr) {
+        return { status: "error", message: `Account lookup faalde: ${accountErr.message}` };
+    }
+    const accountId = accountData?.account_id as string | undefined;
+    if (!accountId) {
+        return { status: "error", message: `Account voor slug '${accountSlug}' niet gevonden` };
+    }
+
     const { data: entData, error: entErr } = await supabase
         .from("dim_legale_entiteit")
         .select("legale_entiteit_id")
+        .eq("owning_account_id", accountId)
         .limit(1);
     if (entErr) {
         return { status: "error", message: `Tenant lookup faalde: ${entErr.message}` };

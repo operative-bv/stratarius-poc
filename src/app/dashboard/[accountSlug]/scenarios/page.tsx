@@ -17,23 +17,36 @@ export default async function ScenariosPage({
     const { accountSlug } = await params;
     const supabase = await createClient();
 
+    // ISS-098: resolve accountSlug naar account_id en filter alle tenant-queries
+    // hierop. Zonder deze filter kon een multi-membership user scenarios/functies
+    // van een andere tenant zien.
+    const { data: accountData } = await supabase.rpc("get_account_by_slug", { slug: accountSlug });
+    const accountId = accountData?.account_id as string | undefined;
+
     const { data: entiteitData } = await supabase
         .from("dim_legale_entiteit")
         .select("legale_entiteit_id, naam")
+        .eq("owning_account_id", accountId ?? "")
         .limit(1);
     const entiteit = entiteitData?.[0];
 
-    const { data: scenariosData } = await supabase
-        .from("dim_scenario")
-        .select("scenario_id, naam, kind, created_at")
-        .order("created_at", { ascending: false });
+    const { data: scenariosData } = accountId && entiteit
+        ? await supabase
+            .from("dim_scenario")
+            .select("scenario_id, naam, kind, created_at, legale_entiteit_id, dim_legale_entiteit!inner(owning_account_id)")
+            .eq("dim_legale_entiteit.owning_account_id", accountId)
+            .order("created_at", { ascending: false })
+        : { data: [] };
     const scenarios = (scenariosData ?? []) as Scenario[];
     const baseline = scenarios.find((s) => s.kind === "baseline");
 
-    const { data: functiesData } = await supabase
-        .from("dim_functie")
-        .select("functie_id, functienaam")
-        .order("functienaam");
+    const { data: functiesData } = accountId
+        ? await supabase
+            .from("dim_functie")
+            .select("functie_id, functienaam")
+            .eq("owning_account_id", accountId)
+            .order("functienaam")
+        : { data: [] };
     const functies = (functiesData ?? []) as Functie[];
 
     return (

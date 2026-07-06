@@ -84,16 +84,22 @@ export default async function LoonkloofPage({
 
     // ISS-091: refresh_mart_loonkloof vereist p_owning_account_id — leidt af
     // van de accountSlug in URL via basejump helper.
+    // ISS-098: gebruik owningAccountId óók als filter op alle tenant-queries
+    // om te voorkomen dat een multi-membership user data van een andere tenant
+    // ziet.
     const { data: accountData } = await supabase.rpc("get_account_by_slug", { slug: accountSlug });
     const owningAccountId = accountData?.account_id as string | undefined;
 
     // ISS-078: tenant-lookup error EXPLICIET checken — silent failure zou
     // de cross-tenant leak-fix uit 79b22f4 ondermijnen (entiteitIds=[]
     // fallback ziet er uit als "lege tenant" maar kan een echte error zijn).
-    const { data: entiteitenData, error: entiteitErr } = await supabase
-        .from("dim_legale_entiteit")
-        .select("legale_entiteit_id, naam")
-        .order("naam", { ascending: true });
+    const { data: entiteitenData, error: entiteitErr } = owningAccountId
+        ? await supabase
+            .from("dim_legale_entiteit")
+            .select("legale_entiteit_id, naam")
+            .eq("owning_account_id", owningAccountId)
+            .order("naam", { ascending: true })
+        : { data: [], error: null };
     const entiteiten = (entiteitenData ?? []) as Entiteit[];
     const entiteitIds = entiteiten.map((e) => e.legale_entiteit_id);
     const isMultiEntiteit = entiteitIds.length > 1;

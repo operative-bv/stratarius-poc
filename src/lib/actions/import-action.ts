@@ -8,11 +8,33 @@ import { generateDemoRows, type DemoRow } from "@/lib/demo-dataset";
 async function bulkImport(accountSlug: string, rows: DemoRow[]): Promise<ImportState> {
     const supabase = await createClient();
 
+    // ISS-098: resolve accountSlug naar account_id en filter alle tenant-lookups
+    // hierop. Zonder deze filter kon een multi-membership user data van een
+    // andere tenant raken bij import ("eerste RLS-toegankelijke entiteit").
+    const { data: accountData, error: accountErr } = await supabase.rpc("get_account_by_slug", { slug: accountSlug });
+    if (accountErr) {
+        return { error: `Account lookup faalde: ${accountErr.message}`, result: null };
+    }
+    const accountId = accountData?.account_id as string | undefined;
+    if (!accountId) {
+        return { error: `Account voor slug '${accountSlug}' niet gevonden`, result: null };
+    }
+
     // ISS-080: expliciet error check ipv silent drop — voorkomt dat "entiteit
     // ontbreekt" wordt getoond terwijl het eigenlijk een RLS-block of timeout is.
+    // ISS-098: filter op owning_account_id / (via join) om alleen deze tenant te raken.
     const [entRes, scenRes] = await Promise.all([
-        supabase.from("dim_legale_entiteit").select("legale_entiteit_id").limit(1),
-        supabase.from("dim_scenario").select("scenario_id").eq("kind", "baseline").limit(1),
+        supabase
+            .from("dim_legale_entiteit")
+            .select("legale_entiteit_id")
+            .eq("owning_account_id", accountId)
+            .limit(1),
+        supabase
+            .from("dim_scenario")
+            .select("scenario_id, legale_entiteit_id, dim_legale_entiteit!inner(owning_account_id)")
+            .eq("kind", "baseline")
+            .eq("dim_legale_entiteit.owning_account_id", accountId)
+            .limit(1),
     ]);
     if (entRes.error) {
         return { error: `Tenant lookup faalde: ${entRes.error.message}`, result: null };

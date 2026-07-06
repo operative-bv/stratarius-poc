@@ -18,21 +18,40 @@ type Scenario = { scenario_id: string; naam: string; kind: string };
 type Functie = { functie_id: string; functienaam: string };
 
 export default async function PopulatiePage({
+    params: routeParams,
     searchParams,
 }: {
+    params: Promise<{ accountSlug: string }>;
     searchParams: Promise<{ periode?: string; scenario?: string; team?: string; compare?: string; view?: string }>;
 }) {
+    const { accountSlug } = await routeParams;
     const params = await searchParams;
     const periode = params.periode ?? "2026-06-01";
     const view = params.view === "jaar" ? "jaar" : "maand";
     const factor = view === "jaar" ? 12 : 1;
     const supabase = await createClient();
 
+    // ISS-098: resolve accountSlug naar account_id en filter alle tenant-queries
+    // hierop. Zonder deze filter kon een multi-membership user scenarios/functies
+    // van een andere tenant zien in de filter-dropdowns.
+    const { data: accountData } = await supabase.rpc("get_account_by_slug", { slug: accountSlug });
+    const accountId = accountData?.account_id as string | undefined;
+
     // Snelle metadata queries — renderen direct in de shell
-    const [{ data: scenariosData }, { data: functiesData }] = await Promise.all([
-        supabase.from("dim_scenario").select("scenario_id, naam, kind").order("kind", { ascending: true }),
-        supabase.from("dim_functie").select("functie_id, functienaam").order("functienaam", { ascending: true }),
-    ]);
+    const [{ data: scenariosData }, { data: functiesData }] = accountId
+        ? await Promise.all([
+            supabase
+                .from("dim_scenario")
+                .select("scenario_id, naam, kind, legale_entiteit_id, dim_legale_entiteit!inner(owning_account_id)")
+                .eq("dim_legale_entiteit.owning_account_id", accountId)
+                .order("kind", { ascending: true }),
+            supabase
+                .from("dim_functie")
+                .select("functie_id, functienaam")
+                .eq("owning_account_id", accountId)
+                .order("functienaam", { ascending: true }),
+        ])
+        : [{ data: [] }, { data: [] }];
     const scenarios = (scenariosData ?? []) as Scenario[];
     const functies = (functiesData ?? []) as Functie[];
     const baseline = scenarios.find((s) => s.kind === "baseline");
