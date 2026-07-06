@@ -43,12 +43,12 @@ export function DatePicker({
                         type="button"
                         variant="outline"
                         className={cn(
-                            "justify-start text-left font-normal",
+                            "w-full justify-start text-left font-normal",
                             !date && "text-muted-foreground",
                             className,
                         )}
                     >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon className="mr-2 size-4" />
                         {date ? format(date, "d MMMM yyyy", { locale: nl }) : placeholder}
                     </Button>
                 </PopoverTrigger>
