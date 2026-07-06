@@ -4,48 +4,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Info, ExternalLink } from "lucide-react";
+import type { PopRow, RSZParam, StructureleParam, ExtralegaalDetail } from "./populatie-types";
 
-export type PopRow = {
-    contract_id: string;
-    persoon_id: string;
-    pc_id: string;
-    status: string;
-    werkgeverscategorie: number;
-    functienaam: string;
-    bruto: number;
-    stap2_basis_rsz: number;
-    stap3_vermindering: number;
-    stap5_bijzondere: number;
-    stap6_vakantiegeld: number;
-    stap7_extralegaal: number;
-    totaal_patronale_kost: number;
-    tco: number;
-};
-
-export type RSZParam = {
-    status: string;
-    werkgeverscategorie: number;
-    basisbijdrage_pct: number;
-    basisfactor_pct: number;
-    bron_url: string;
-};
-
-export type StructureleParam = {
-    werkgeverscategorie: number;
-    forfait: number;
-    coefficient_a: number;
-    coefficient_b: number;
-    drempel_s0: number;
-    drempel_s1: number;
-    bron_url: string;
-};
-
-export type ExtralegaalDetail = {
-    component_id: string;
-    name: string;
-    bedrag: number;
-    bron_ref: string | null;
-};
+// Re-export voor bestaande imports (populatie-results.tsx c.s.)
+export type { PopRow, RSZParam, StructureleParam, ExtralegaalDetail };
 
 function fmt(n: number): string {
     return n.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
